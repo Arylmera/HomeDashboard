@@ -115,6 +115,15 @@ const MOCK_FLOWS = [
   { id: "f8", name: "Vacation Lights",   trigger: "when away · random",enabled: false },
 ];
 
+const EXPAND_KEY = "homey:expandedZones";
+function loadExpanded() {
+  try { return new Set(JSON.parse(localStorage.getItem(EXPAND_KEY) || "[]")); }
+  catch { return new Set(); }
+}
+function saveExpanded(set) {
+  try { localStorage.setItem(EXPAND_KEY, JSON.stringify([...set])); } catch {}
+}
+
 function Device({ d }) {
   const cls = "dev " + (d.on ? "on" : "");
   const ds = d.on === true ? "ON" : d.on === false ? "OFF" : (d.reading || "—");
@@ -134,12 +143,50 @@ export default function Homey() {
   const nc = useNextcloud();
   const homey = useHomey();
   const auth = useHomeyAuth();
+  const [expanded, setExpanded] = useState(loadExpanded);
+  const toggleZone = (id) => setExpanded(prev => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    saveExpanded(next);
+    return next;
+  });
 
   const isLive = homey.state === "live" && homey.zones.length > 0;
   const ZONES = isLive
     ? homey.zones.filter(z => !isHiddenZone(z.name) && (z.devices?.length ?? 0) > 0)
     : MOCK_ZONES;
   const FLOWS = isLive ? homey.flows : MOCK_FLOWS;
+  const FOLDERS = isLive ? (homey.folders || []) : [];
+
+  const folderName = (id) => FOLDERS.find(f => f.id === id)?.name || null;
+  const flowGroupsMap = new Map();
+  for (const f of FLOWS) {
+    const key = f.folder || "__none__";
+    if (!flowGroupsMap.has(key)) flowGroupsMap.set(key, []);
+    flowGroupsMap.get(key).push(f);
+  }
+  const flowGroups = [...flowGroupsMap.entries()]
+    .map(([key, list]) => ({
+      id: key,
+      name: key === "__none__" ? "Uncategorized" : (folderName(key) || "Unknown folder"),
+      flows: list,
+    }))
+    .sort((a, b) => {
+      if (a.id === "__none__") return 1;
+      if (b.id === "__none__") return -1;
+      return a.name.localeCompare(b.name);
+    });
+
+  const [expandedFolders, setExpandedFolders] = useState(() => {
+    try { return new Set(JSON.parse(localStorage.getItem("homey:expandedFolders") || "[]")); }
+    catch { return new Set(); }
+  });
+  const toggleFolder = (id) => setExpandedFolders(prev => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    try { localStorage.setItem("homey:expandedFolders", JSON.stringify([...next])); } catch {}
+    return next;
+  });
 
   const lightsOn = ZONES.reduce((s, z) => s + z.devices.filter(d => d.type === "light" && d.on).length, 0);
   const totalDevs = ZONES.reduce((s, z) => s + z.devices.length, 0);
@@ -209,22 +256,45 @@ export default function Homey() {
         <span className="meta">{ZONES.length} zones · {totalDevs} devices · {lightsOn} on · {totalPower} W</span>
       </div>
       <div className="zones">
-        {ZONES.map(z => (
-          <div className="zone" key={z.id}>
-            <div className="zone-head">
-              <div className="ico">{iconForZone(z.name)}</div>
-              <span className="zt">{z.name}</span>
-              <span className="zm">{z.devices.length} dev</span>
+        {ZONES.map(z => {
+          const isCollapsed = !expanded.has(z.id);
+          const onCount = z.devices.filter(d => d.on).length;
+          return (
+            <div className={"zone" + (isCollapsed ? " collapsed" : "")} key={z.id}>
+              <button
+                type="button"
+                className="zone-head"
+                onClick={() => toggleZone(z.id)}
+                aria-expanded={!isCollapsed}
+                aria-controls={`zone-body-${z.id}`}
+              >
+                <div className="ico">{iconForZone(z.name)}</div>
+                <span className="zt">{z.name}</span>
+                <span className="zm">{z.devices.length} dev</span>
+                <svg className="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+              {isCollapsed && (
+                <div className="zone-summary">
+                  <span className="t">{z.temp != null ? Number(z.temp).toFixed(1) : "—"}<span className="u">°C</span></span>
+                  {z.humidity != null && <><span className="sep">·</span><span>{Math.round(z.humidity)}% RH</span></>}
+                  <span className="sep">·</span>
+                  <span className={onCount > 0 ? "lights-on" : ""}>{onCount}/{z.devices.length} on</span>
+                </div>
+              )}
+              {!isCollapsed && (
+                <div id={`zone-body-${z.id}`} className="zone-body">
+                  <div className="zone-climate">
+                    <div className="t">{z.temp != null ? Number(z.temp).toFixed(1) : "—"}<span className="u">°C</span></div>
+                    <div className="h"><span>RH</span>{z.humidity != null ? `${Math.round(z.humidity)}%` : "—"}</div>
+                  </div>
+                  <div className="dev-list">
+                    {z.devices.map(d => <Device d={d} key={d.id} />)}
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="zone-climate">
-              <div className="t">{z.temp != null ? Number(z.temp).toFixed(1) : "—"}<span className="u">°C</span></div>
-              <div className="h"><span>RH</span>{z.humidity != null ? `${Math.round(z.humidity)}%` : "—"}</div>
-            </div>
-            <div className="dev-list">
-              {z.devices.map(d => <Device d={d} key={d.id} />)}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="nas-section-title">
@@ -232,15 +302,36 @@ export default function Homey() {
         <h2>Automations</h2>
         <span className="meta">{flowsOn}/{FLOWS.length} active</span>
       </div>
-      <div className="flows">
-        {FLOWS.map((f, i) => (
-          <div className={"flow " + (f.enabled ? "on" : "off")} key={f.id}>
-            <span className="fnum">{String(i + 1).padStart(2, "0")} · flow</span>
-            <span className="ft">{f.name}</span>
-            <span className="fd">{f.trigger}</span>
-            <div className="fdot" />
-          </div>
-        ))}
+      <div className="flow-groups">
+        {flowGroups.map(g => {
+          const isCollapsed = !expandedFolders.has(g.id);
+          const onCount = g.flows.filter(f => f.enabled).length;
+          return (
+            <div className={"flow-group" + (isCollapsed ? " collapsed" : "")} key={g.id}>
+              <button
+                type="button"
+                className="flow-group-head"
+                onClick={() => toggleFolder(g.id)}
+                aria-expanded={!isCollapsed}
+              >
+                <span className="fgt">{g.name}</span>
+                <span className="fgm">{onCount}/{g.flows.length} on</span>
+                <svg className="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+              {!isCollapsed && (
+                <div className="flows">
+                  {g.flows.map(f => (
+                    <div className={"flow " + (f.enabled ? "on" : "off")} key={f.id}>
+                      <span className="ft">{f.name}</span>
+                      <span className="fd">{f.trigger}</span>
+                      <div className="fdot" />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       <div className="footnote">

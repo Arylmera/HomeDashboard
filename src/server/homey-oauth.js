@@ -100,7 +100,7 @@ function send(res, status, obj) {
 }
 
 // ─── Snapshot serializer (trim SDK objects to plain JSON) ─────
-function serializeSnapshot({ system, zones, devices, flows, advFlows }) {
+function serializeSnapshot({ system, zones, devices, flows, advFlows, folders }) {
   return {
     system: system && {
       hostname: system.hostname,
@@ -140,11 +140,16 @@ function serializeSnapshot({ system, zones, devices, flows, advFlows }) {
     flows: [
       ...Object.values(flows || {}).map(f => ({
         id: f.id, name: f.name, enabled: f.enabled, broken: f.broken, type: 'flow',
+        folder: f.folder ?? null,
       })),
       ...Object.values(advFlows || {}).map(f => ({
         id: f.id, name: f.name, enabled: f.enabled, broken: f.broken, type: 'advancedflow',
+        folder: f.folder ?? null,
       })),
     ],
+    folders: Object.values(folders || {}).map(f => ({
+      id: f.id, name: f.name, parent: f.parent ?? null,
+    })),
   };
 }
 
@@ -214,14 +219,15 @@ export function homeyOAuthMiddleware() {
       try {
         const homeyApi = await getHomeyApi();
         if (!homeyApi) return send(res, 401, { error: 'not_authenticated' });
-        const [system, zones, devices, flows, advFlows] = await Promise.all([
+        const [system, zones, devices, flows, advFlows, folders] = await Promise.all([
           homeyApi.system?.getInfo?.()  .catch(() => null),
           homeyApi.zones.getZones()     .catch(() => ({})),
           homeyApi.devices.getDevices() .catch(() => ({})),
           homeyApi.flow?.getFlows?.()   .catch(() => ({})),
           homeyApi.flow?.getAdvancedFlows?.().catch(() => ({})),
+          homeyApi.flow?.getFlowFolders?.().catch(() => ({})),
         ]);
-        return send(res, 200, serializeSnapshot({ system, zones, devices, flows, advFlows }));
+        return send(res, 200, serializeSnapshot({ system, zones, devices, flows, advFlows, folders }));
       } catch (e) {
         invalidateHomeyApi();
         return send(res, 502, { error: 'homey_api_error', detail: String(e?.message || e) });

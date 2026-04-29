@@ -435,7 +435,7 @@ export function useAudiobookshelf({ poll = 5 * 60_000 } = {}) {
 // Maps to the Homey.jsx page shape: zones contain their devices and
 // climate is derived from the first temp/humidity sensor in each zone.
 export function useHomey({ poll = 30_000 } = {}) {
-  const [data, setData] = useState({ state: "loading", system: null, zones: [], devices: [], flows: [] });
+  const [data, setData] = useState({ state: "loading", system: null, zones: [], devices: [], flows: [], folders: [] });
   useEffect(() => {
     let alive = true;
     const run = async () => {
@@ -481,8 +481,10 @@ export function useHomey({ poll = 30_000 } = {}) {
           devices: snap.devices || [],
           flows: (snap.flows || []).map(f => ({
             id: f.id, name: f.name, enabled: f.enabled, broken: f.broken,
+            folder: f.folder ?? null,
             trigger: f.type === 'advancedflow' ? "advanced" : "—",
           })),
+          folders: snap.folders || [],
         });
       } catch (e) {
         console.warn("[homey]", e);

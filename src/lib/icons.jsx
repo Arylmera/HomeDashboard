@@ -1,0 +1,103 @@
+/* ---------------------------------------------------------------- *
+ *  Icons — UI glyphs (inline Lucide) + service marks (dashboardicons.com)
+ *  https://dashboardicons.com/ — served from jsdelivr.
+ *  Each ICONS entry returns { svg: <img/> } to keep the consumer API stable.
+ * ---------------------------------------------------------------- */
+
+export const UI = {
+  search:  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>,
+  arrow:   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg>,
+  sun:     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>,
+  moon:    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>,
+  sliders: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="4" y1="21" y2="14"/><line x1="4" x2="4" y1="10" y2="3"/><line x1="12" x2="12" y1="21" y2="12"/><line x1="12" x2="12" y1="8" y2="3"/><line x1="20" x2="20" y1="21" y2="16"/><line x1="20" x2="20" y1="12" y2="3"/><line x1="2" x2="6" y1="14" y2="14"/><line x1="10" x2="14" y1="8" y2="8"/><line x1="18" x2="22" y1="16" y2="16"/></svg>,
+  x:       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>,
+  clock:   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+  cloud:   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.5 19a4.5 4.5 0 1 0-1.5-8.75 7 7 0 1 0-12 5.5"/><circle cx="12" cy="17" r="0" /></svg>,
+  film:    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 3v18M17 3v18M3 7.5h4M3 12h4M3 16.5h4M17 7.5h4M17 12h4M17 16.5h4"/></svg>,
+  server:  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 8h.01M7 17h.01"/></svg>,
+  chevron: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>,
+  google:  <svg viewBox="0 0 48 48"><path fill="#4285F4" d="M24 9.5c3.9 0 6.6 1.7 8.1 3.1l6-5.8C34.6 3.1 29.8 1 24 1 14.8 1 6.9 6.3 3.1 14l7 5.4C11.8 13.3 17.4 9.5 24 9.5z"/><path fill="#34A853" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.9 7.2l7.5 5.8c4.4-4.1 7.2-10.1 7.2-17.5z"/><path fill="#FBBC05" d="M10.1 28.6c-.5-1.5-.8-3-.8-4.6 0-1.6.3-3.1.8-4.6l-7-5.4C1.6 17.1.5 20.4.5 24s1.1 6.9 2.6 9.9l7-5.3z"/><path fill="#EA4335" d="M24 47c6.5 0 12-2.1 16-5.8l-7.5-5.8c-2.1 1.4-4.8 2.3-8.5 2.3-6.6 0-12.2-3.8-14.9-10l-7 5.3C6.9 41.7 14.8 47 24 47z"/></svg>,
+};
+
+const ICON_BASE = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg";
+const di = (slug) => ({
+  svg: (
+    <img
+      src={`${ICON_BASE}/${slug}.svg`}
+      alt={slug}
+      loading="lazy"
+      style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
+    />
+  ),
+});
+
+export const ICONS = {
+  // Media
+  plex:           di("plex"),
+  sonarr:         di("sonarr"),
+  radarr:         di("radarr"),
+  lidarr:         di("lidarr"),
+  tautulli:       di("tautulli"),
+  maintainerr:    di("maintainerr"),
+  seerr:          di("jellyseerr"),
+  prowlarr:       di("prowlarr"),
+  flaresolverr:   di("flaresolverr"),
+  cinephage:      di("kometa"),
+  huntarr:        di("huntarr"),
+
+  // Downloads
+  qbittorrent:    di("qbittorrent"),
+  joal:           di("joal"),
+
+  // Books / Audio
+  audiobookshelf: di("audiobookshelf"),
+  lazylibrarian:  di("lazylibrarian"),
+  shelfarr:       di("readarr"),
+
+  // Smart home
+  homey:          di("homey"),
+  homeassistant:  di("home-assistant"),
+
+  // Cloud / Files
+  nextcloud:      di("nextcloud"),
+  syncthing:      di("syncthing"),
+  filebrowser:    di("filebrowser"),
+  cloudreve:      di("cloudreve"),
+
+  // Network
+  pihole:         di("pi-hole"),
+  nginx:          di("nginx-proxy-manager"),
+  truenas:        di("truenas"),
+  router:         di("mikrotik"),
+  socketproxy:    di("docker"),
+  twingate:       di("twingate"),
+
+  // Notify / Automation
+  ntfy:           di("ntfy"),
+  n8n:            di("n8n"),
+  cronmaster:     di("cronicle"),
+
+  // Dashboards
+  homepage:       di("homepage"),
+
+  // Monitoring
+  glances:        di("glances"),
+  speedtest:      di("speedtest"),
+  beszel:         di("beszel"),
+  tugtainer:      di("portainer"),
+  uptime:         di("uptime-kuma"),
+
+  // Management
+  arcane:         di("portainer"),
+  qui:            di("qbittorrent"),
+  dockdeploy:     di("dockge"),
+
+  // Utility / AI
+  scanopy:        di("paperless-ngx"),
+  vert:           di("ffmpeg"),
+  mazanoke:       di("immich"),
+  weaviate:       di("weaviate"),
+
+  // Projects
+  leaderboard:    di("grafana"),
+};

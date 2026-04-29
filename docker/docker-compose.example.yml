@@ -1,0 +1,28 @@
+# Example for deploying on the NAS.
+# Pull image from GitLab registry, inject runtime secrets via env_file.
+#
+#   docker login registry.gitlab.com
+#   cp .env.example .env  &&  fill in secrets
+#   docker compose -f docker-compose.example.yml up -d
+
+services:
+  homedashboard:
+    image: registry.gitlab.com/<group>/<project>:latest
+    container_name: homedashboard
+    restart: unless-stopped
+    ports:
+      - "4173:4173"
+    env_file:
+      - .env
+    environment:
+      PREFS_DB: /data/prefs.db
+    volumes:
+      - homedashboard-data:/data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:4173/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  homedashboard-data:

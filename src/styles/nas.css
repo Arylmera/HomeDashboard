@@ -1,0 +1,84 @@
+/* ============================================================== *
+ *  NAS page — uniform 4-up tile grid with sparklines + disk table.
+ *  Ported from NAS.html <style>.
+ * ============================================================== */
+:root { --card-h: 178px; }
+
+.nas-grid-4 {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+}
+@media (max-width: 1040px) { .nas-grid-4 { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px)  { .nas-grid-4 { grid-template-columns: 1fr; } }
+
+.nas-card {
+  position: relative; background: var(--bg-card); border: 1px solid var(--line-soft); border-radius: 12px;
+  padding: 16px; overflow: hidden; height: var(--card-h);
+  box-shadow: 0 1px 0 oklch(1 0 0 / .04) inset, 0 6px 18px oklch(0 0 0 / .22);
+  display: flex; flex-direction: column; gap: 6px;
+}
+.nas-card .h { display: flex; align-items: center; gap: 10px; }
+.nas-card .h .ico {
+  width: 28px; height: 28px; border-radius: 7px; padding: 4px;
+  background: oklch(1 0 0 / .04); border: 1px solid var(--line-soft);
+  display: grid; place-items: center; flex: 0 0 auto; overflow: hidden;
+}
+.nas-card .h .ico img { width: 100%; height: 100%; object-fit: contain; }
+.nas-card .h .t { font-weight: 600; font-size: 14px; letter-spacing: -0.01em; }
+.nas-card .h .sub { margin-left: auto; font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); }
+
+.nas-card .num { font-family: var(--font-mono); font-size: 22px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.1; }
+.nas-card .num small { font-size: 12px; color: var(--ink-faint); font-weight: 400; }
+.nas-card .num .dual { display: inline-flex; gap: 14px; }
+.nas-card .hint { font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); margin-top: auto; }
+
+.nas-card .nas-bar { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-top: 6px; }
+.nas-card .nas-bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--ember), var(--ember-hi)); }
+
+.nas-card .nas-spark {
+  display: block; height: 62px;
+  width: calc(100% + 32px); margin: 4px -16px 2px;
+  color: var(--ink-faint);
+  border-top: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--line-soft);
+  background: oklch(1 0 0 / .015);
+}
+.nas-card .content { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+
+.status-up   { color: var(--status-up); }
+.status-warn { color: var(--status-warn); }
+.status-down { color: var(--status-down); }
+.ember-txt   { color: var(--ember-hi); }
+
+/* Section heading variant for NAS page (left-aligned, with meta on right) */
+.nas-section-title { display: flex; align-items: baseline; gap: 12px; margin: 40px 0 14px; padding-bottom: 10px; border-bottom: 1px solid var(--line-soft); }
+.nas-section-title .numeral { font-family: var(--font-mono); font-size: 12px; color: var(--ember); letter-spacing: 0.14em; text-transform: uppercase; }
+.nas-section-title h2 { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
+.nas-section-title .meta { margin-left: auto; font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* Disk table */
+.disks { display: grid; gap: 8px; }
+.disk-row {
+  display: grid; grid-template-columns: 20px 1.2fr 1fr 80px 70px 80px; gap: 14px;
+  align-items: center;
+  padding: 12px 16px; background: var(--bg-card); border: 1px solid var(--line-soft); border-radius: 10px;
+  font-family: var(--font-mono); font-size: 12px;
+}
+.disk-row.head { background: transparent; border: none; padding: 4px 16px; color: var(--ink-faint); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; }
+.disk-row .name { color: var(--ink); font-weight: 500; font-family: var(--font-sans); font-size: 13px; }
+.disk-row .s { display: inline-flex; align-items: center; gap: 6px; }
+.disk-row .s .d { width: 7px; height: 7px; border-radius: 50%; }
+.disk-row .s.healthy .d { background: var(--status-up); box-shadow: 0 0 0 3px color-mix(in oklch, var(--status-up) 25%, transparent); }
+.disk-row .s.warn .d { background: var(--status-warn); }
+@media (max-width: 820px) {
+  .disk-row { grid-template-columns: 20px 1fr 80px; }
+  .disk-row .model, .disk-row .size, .disk-row .temp { display: none; }
+}
+
+.eyebrow { font-family: var(--font-mono); font-size: 11px; color: var(--ember); letter-spacing: 0.14em; text-transform: uppercase; display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.eyebrow::before { content: ""; width: 18px; height: 1px; background: var(--ember); }
+.page-h1 { font-size: clamp(32px, 4.5vw, 44px); font-weight: 600; letter-spacing: -0.03em; line-height: 1.05; margin: 0 0 10px; }
+.page-h1 em { font-style: normal; color: var(--ember); }
+.page-lede { color: var(--ink-dim); max-width: 60ch; margin-bottom: 32px; }
+.page-lede code { font-family: var(--font-mono); font-size: 12px; padding: 2px 6px; background: var(--bg-card); border: 1px solid var(--line-soft); border-radius: 4px; color: var(--ink); }
+
+.footnote { margin-top: 40px; font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); text-align: center; }

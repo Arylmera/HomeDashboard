@@ -1,0 +1,96 @@
+/* ============================================================== *
+ *  Quicklinks page — uniform card grid + scoped search.
+ *  Ported verbatim from quicklinks.html <style>.
+ * ============================================================== */
+
+/* Search scope toggle (svc / web) */
+.search-scope {
+  display: flex; background: var(--bg); border: 1px solid var(--line-soft);
+  border-radius: 8px; padding: 3px; flex: 0 0 auto;
+}
+.search-scope button {
+  font: inherit; font-size: 12px; font-weight: 500; color: var(--ink-dim);
+  background: transparent; border: 0; padding: 5px 10px; border-radius: 6px; cursor: pointer;
+  font-family: var(--font-mono); letter-spacing: 0.02em;
+}
+.search-scope button.on { background: var(--bg-card-hi); color: var(--ember-hi); box-shadow: inset 0 0 0 1px var(--line); }
+
+.search-google {
+  padding: 12px; border-top: 1px solid var(--line-soft); margin-top: 6px;
+  display: flex; align-items: center; gap: 10px; color: var(--ink-dim); font-size: 13px;
+  cursor: pointer; border-radius: 8px;
+}
+.search-google:hover { background: var(--bg-card-hi); color: var(--ink); }
+
+/* Card grid (uniform) */
+.qlinks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+}
+
+.qlinks-card {
+  position: relative;
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 14px;
+  background: var(--bg-card); border: 1px solid var(--line-soft); border-radius: var(--radius);
+  color: inherit; text-decoration: none;
+  transition: transform 180ms cubic-bezier(.2,.7,.2,1), box-shadow 180ms ease, border-color 180ms ease, background 180ms ease;
+  height: 68px;
+  box-shadow: var(--shadow-card);
+}
+.qlinks-card:hover { transform: translateY(-2px); border-color: var(--line); background: var(--bg-card-hi); box-shadow: 0 1px 0 oklch(1 0 0 / .06) inset, 0 14px 36px oklch(0 0 0 / .38), 0 0 0 1px var(--ember-soft); }
+.qlinks-card:hover .qlinks-card-title { color: var(--ember-hi); }
+.qlinks-card:hover .qlinks-card-arrow { opacity: 1; transform: translate(2px, -2px); }
+
+.qlinks-card-ico {
+  width: 38px; height: 38px; border-radius: 8px;
+  display: grid; place-items: center; flex: 0 0 auto;
+  background: oklch(1 0 0 / .04); border: 1px solid var(--line-soft);
+  color: var(--ink);
+  overflow: hidden; padding: 6px;
+}
+.qlinks-card-ico svg, .qlinks-card-ico img { width: 100%; height: 100%; object-fit: contain; }
+
+.qlinks-card-body { flex: 1; min-width: 0; }
+.qlinks-card-title {
+  font-weight: 600; font-size: 13.5px; letter-spacing: -0.005em;
+  display: flex; align-items: center; gap: 8px; transition: color 160ms;
+}
+.qlinks-card-desc {
+  color: var(--ink-faint); font-size: 11.5px; font-family: var(--font-mono); letter-spacing: 0.01em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;
+}
+
+.status-dot { width: 7px; height: 7px; border-radius: 50%; flex: 0 0 auto; position: relative; }
+.status-dot.up { background: var(--status-up); box-shadow: 0 0 0 0 color-mix(in oklch, var(--status-up) 60%, transparent); animation: pulse 2.6s ease-out infinite; }
+.status-dot.warn { background: var(--status-warn); }
+.status-dot.down { background: var(--status-down); }
+.status-dot.off { background: var(--ink-faint); opacity: 0.5; }
+
+.qlinks-card-arrow { position: absolute; top: 10px; right: 10px; color: var(--ink-faint); opacity: 0; transition: 180ms ease; }
+.qlinks-card-arrow svg { width: 12px; height: 12px; }
+
+.qlinks-card.featured { border-color: color-mix(in oklch, var(--ember) 35%, var(--line-soft)); }
+.qlinks-card.featured::before {
+  content: ""; position: absolute; inset: 0; border-radius: var(--radius);
+  background: radial-gradient(120% 80% at 0% 0%, var(--ember-soft) 0%, transparent 55%);
+  pointer-events: none;
+}
+
+/* Footer strip */
+.footbar {
+  margin-top: 48px; padding: 16px 18px; border-top: 1px solid var(--line-soft);
+  display: flex; gap: 24px; justify-content: space-between; align-items: center;
+  font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); letter-spacing: 0.02em;
+  flex-wrap: wrap;
+}
+.footbar .stats { display: flex; gap: 20px; flex-wrap: wrap; }
+.footbar .stats b { color: var(--ink); font-weight: 600; }
+
+/* Density overrides */
+html[data-density="dense"] body .qlinks-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 6px; }
+html[data-density="dense"] body .qlinks-card { padding: 9px 11px; height: 54px; gap: 9px; border-radius: 8px; }
+html[data-density="dense"] body .qlinks-card-ico { width: 30px; height: 30px; padding: 4px; border-radius: 6px; }
+html[data-density="dense"] body .qlinks-card-title { font-size: 12.5px; }
+html[data-density="dense"] body .qlinks-card-desc { font-size: 10.5px; }

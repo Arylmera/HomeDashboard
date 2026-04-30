@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import { resolve } from 'node:path';
 import { prefsPlugin } from './src/server/prefs.js';
 import { homeyOAuthPlugin } from './src/server/homey-oauth.js';
+import { healthPlugin } from './src/server/health.js';
 
 /**
  * Build a proxy entry that:
@@ -159,7 +160,7 @@ export default defineConfig(({ mode }) => {
   // resolution which Vite's static proxy table can't express.
 
   return {
-    plugins: [react(), prefsPlugin(), homeyOAuthPlugin()],
+    plugins: [react(), prefsPlugin(), homeyOAuthPlugin(), healthPlugin()],
     server: { proxy: proxies },
     preview: { host: true, port: 4173, proxy: proxies, allowedHosts: true },
     build: {

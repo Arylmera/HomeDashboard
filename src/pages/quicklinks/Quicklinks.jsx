@@ -8,6 +8,7 @@ import { ICONS, UI } from '../../lib/icons.jsx';
 import { SECTIONS, ALL_SERVICES } from '../../lib/services.js';
 import { useClock, useGreeting, useWeather } from '../../lib/hooks.js';
 import { usePrefs } from '../../lib/usePrefs.js';
+import { useHealth } from '../../lib/useHealth.js';
 
 function Mark({ id }) {
   const def = ICONS[id];
@@ -15,11 +16,12 @@ function Mark({ id }) {
   return def.svg;
 }
 
-function ServiceCard({ s, editing, disabled, onToggle }) {
+function ServiceCard({ s, editing, disabled, onToggle, status }) {
   const cls = "qlinks-card "
     + (s.featured ? "featured " : "")
     + (editing ? "editing " : "")
     + (disabled ? "disabled" : "");
+  const live = status || s.status;
 
   if (editing) {
     return (
@@ -28,7 +30,7 @@ function ServiceCard({ s, editing, disabled, onToggle }) {
         <div className="qlinks-card-body">
           <div className="qlinks-card-title">
             {s.name}
-            <span className={`status-dot ${s.status}`} title={s.status} />
+            <span className={`status-dot ${live}`} title={live} />
           </div>
           <div className="qlinks-card-desc">{s.desc}</div>
         </div>
@@ -44,7 +46,7 @@ function ServiceCard({ s, editing, disabled, onToggle }) {
       <div className="qlinks-card-body">
         <div className="qlinks-card-title">
           {s.name}
-          <span className={`status-dot ${s.status}`} title={s.status} />
+          <span className={`status-dot ${live}`} title={live} />
         </div>
         <div className="qlinks-card-desc">{s.desc}</div>
       </div>
@@ -53,7 +55,7 @@ function ServiceCard({ s, editing, disabled, onToggle }) {
   );
 }
 
-function Section({ s, editing, disabledSet, onToggle }) {
+function Section({ s, editing, disabledSet, onToggle, live }) {
   const visible = editing ? s.services : s.services.filter(svc => !disabledSet.has(svc.id));
   if (!visible.length) return null;
   return (
@@ -70,7 +72,8 @@ function Section({ s, editing, disabledSet, onToggle }) {
           <ServiceCard key={svc.id} s={svc}
             editing={editing}
             disabled={disabledSet.has(svc.id)}
-            onToggle={onToggle} />
+            onToggle={onToggle}
+            status={live[svc.id]} />
         ))}
       </div>
     </section>
@@ -177,6 +180,7 @@ export default function Quicklinks() {
   const [disabled, setDisabled] = usePrefs('quicklinks.disabled', []);
   const [editing, setEditing] = useState(false);
   const disabledSet = useMemo(() => new Set(disabled), [disabled]);
+  const live = useHealth();
 
   const onToggle = (id) => {
     const next = disabledSet.has(id)
@@ -187,11 +191,12 @@ export default function Quicklinks() {
 
   const counts = useMemo(() => {
     const visible = ALL_SERVICES.filter(s => !disabledSet.has(s.id));
-    const up   = visible.filter(s => s.status === "up").length;
-    const warn = visible.filter(s => s.status === "warn").length;
-    const down = visible.filter(s => s.status === "down" || s.status === "off").length;
+    const stat = (s) => live[s.id] || s.status;
+    const up   = visible.filter(s => stat(s) === "up").length;
+    const warn = visible.filter(s => stat(s) === "warn").length;
+    const down = visible.filter(s => { const x = stat(s); return x === "down" || x === "off"; }).length;
     return { total: visible.length, up, warn, down, hidden: ALL_SERVICES.length - visible.length };
-  }, [disabledSet]);
+  }, [disabledSet, live]);
 
   return (
     <div className="shell">
@@ -247,7 +252,7 @@ export default function Quicklinks() {
       <SearchBar disabledSet={disabledSet} />
 
       {SECTIONS.map((s) => (
-        <Section key={s.id} s={s} editing={editing} disabledSet={disabledSet} onToggle={onToggle} />
+        <Section key={s.id} s={s} editing={editing} disabledSet={disabledSet} onToggle={onToggle} live={live} />
       ))}
 
       <div className="footbar">

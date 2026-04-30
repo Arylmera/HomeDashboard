@@ -34,6 +34,8 @@ const di = (slug, ext = "svg") => ({
 export const ICONS = {
   // Media
   plex:           di("plex"),
+  jellyfin:       di("jellyfin"),
+  music:          di("navidrome"),
   sonarr:         di("sonarr"),
   radarr:         di("radarr"),
   lidarr:         di("lidarr"),
@@ -41,6 +43,8 @@ export const ICONS = {
   maintainerr:    di("maintainerr"),
   seerr:          di("jellyseerr"),
   prowlarr:       di("prowlarr"),
+  jackett:        di("jackett"),
+  recyclarr:      di("recyclarr", "png"),
   flaresolverr:   di("flaresolverr"),
   cinephage:      di("kometa", "png"),
   huntarr:        di("huntarr", "png"),
@@ -53,6 +57,8 @@ export const ICONS = {
   audiobookshelf: di("audiobookshelf"),
   lazylibrarian:  di("lazylibrarian", "png"),
   shelfarr:       di("readarr"),
+  book:           di("calibre-web"),
+  vaultwarden:    di("vaultwarden"),
 
   // Smart home
   homey:          di("homey"),
@@ -71,6 +77,8 @@ export const ICONS = {
   router:         di("mikrotik"),
   socketproxy:    di("docker"),
   twingate:       di("twingate"),
+  authentik:      di("authentik"),
+  dockge:         di("dockge"),
 
   // Notify / Automation
   ntfy:           di("ntfy"),
@@ -97,7 +105,12 @@ export const ICONS = {
   vert:           di("vertiv"),
   mazanoke:       di("immich"),
   weaviate:       di("qdrant"),
+  ai:             di("open-webui"),
+  baserow:        di("baserow"),
+  organizr:       di("organizr"),
+  astropath:      di("homarr"),
 
   // Projects
   leaderboard:    di("grafana"),
+  openclaw:       di("retroarch"),
 };

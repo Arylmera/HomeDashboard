@@ -146,6 +146,13 @@ export default defineConfig(({ mode }) => {
     },
   }));
 
+  // Arcane (docker manager) — X-Api-Key
+  add('/api/arcane', proxy({
+    target: env.VITE_ARCANE_URL,
+    rewrite: (p) => p.replace(/^\/api\/arcane/, ''),
+    headers: () => ({ 'X-Api-Key': rt('ARCANE_API_KEY') }),
+  }));
+
   // Homey: handled entirely by homeyOAuthPlugin() — server-side OAuth2
   // flow, token storage, refresh, and proxy to the cloud-routed Homey.
   // No entry in `proxies` because the middleware needs async token
@@ -163,6 +170,7 @@ export default defineConfig(({ mode }) => {
           plex: resolve(__dirname, 'plex.html'),
           homey: resolve(__dirname, 'homey.html'),
           quicklinks: resolve(__dirname, 'quicklinks.html'),
+          docker: resolve(__dirname, 'docker.html'),
         },
       },
     },

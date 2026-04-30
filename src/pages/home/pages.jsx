@@ -32,6 +32,17 @@ const PageGlyphs = {
       <path d="M26 26 L29 29" />
     </svg>
   ),
+  docker: (
+    <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="4"  y="14" width="4" height="4" rx="0.6" />
+      <rect x="9"  y="14" width="4" height="4" rx="0.6" />
+      <rect x="14" y="14" width="4" height="4" rx="0.6" />
+      <rect x="9"  y="9"  width="4" height="4" rx="0.6" />
+      <rect x="14" y="9"  width="4" height="4" rx="0.6" />
+      <rect x="14" y="4"  width="4" height="4" rx="0.6" />
+      <path d="M3 19 c1.5 4 6 6 11 6 c8 0 13-4 14-9 c-1.5 1-3.5 1-5 0" />
+    </svg>
+  ),
 };
 
 export const PAGES = [
@@ -55,6 +66,13 @@ export const PAGES = [
     accent: "oklch(0.80 0.13 150)",
     accentSoft: "oklch(0.80 0.13 150 / .14)",
     pattern: "rings",
+  },
+  {
+    id: "docker", name: "Containers", desc: "arcane · stacks · live",
+    href: "docker.html", glyph: PageGlyphs.docker,
+    accent: "oklch(0.78 0.12 250)",
+    accentSoft: "oklch(0.78 0.12 250 / .14)",
+    pattern: "grid",
   },
   {
     id: "quicklinks", name: "Directory", desc: "every service · search",

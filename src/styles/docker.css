@@ -1,0 +1,276 @@
+/* ============================================================== *
+ *  Containers (Arcane) — extends Quicklinks tokens.
+ * ============================================================== */
+
+.docker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
+}
+
+.docker-card {
+  position: relative;
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 12px 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  transition: transform 180ms cubic-bezier(.2,.7,.2,1), border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+  box-shadow: var(--shadow-card);
+  min-height: 96px;
+}
+.docker-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--line);
+  background: var(--bg-card-hi);
+  box-shadow: 0 1px 0 oklch(1 0 0 / .06) inset, 0 14px 36px oklch(0 0 0 / .38), 0 0 0 1px var(--ember-soft);
+}
+.docker-card.is-down { opacity: 0.6; }
+.docker-card.is-busy { opacity: 0.5; pointer-events: none; }
+
+.docker-card-head {
+  display: flex; align-items: center; gap: 8px; min-width: 0;
+}
+.docker-card-name {
+  font-weight: 600; font-size: 13.5px; letter-spacing: -0.005em;
+  color: var(--ink);
+  flex: 1; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.docker-card-up {
+  font-family: var(--font-mono);
+  font-size: 10.5px; color: var(--ink-faint);
+  white-space: nowrap;
+}
+.docker-card-img {
+  font-family: var(--font-mono);
+  font-size: 11px; color: var(--ink-dim);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.docker-card-ports {
+  display: flex; flex-wrap: wrap; gap: 4px;
+}
+.port-chip {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  padding: 2px 6px;
+  background: var(--bg);
+  border: 1px solid var(--line-soft);
+  border-radius: 4px;
+  color: var(--ink-dim);
+}
+.port-chip .arrow { margin: 0 4px; color: var(--ember); opacity: 0.7; }
+.port-chip.more { color: var(--ink-faint); }
+
+.docker-card-actions {
+  position: absolute; top: 8px; right: 8px;
+  display: flex; gap: 4px;
+  opacity: 0; transition: opacity 160ms ease;
+}
+.docker-card:hover .docker-card-actions { opacity: 1; }
+.docker-card-actions button {
+  font: inherit;
+  width: 26px; height: 26px;
+  display: grid; place-items: center;
+  border-radius: 6px;
+  background: var(--bg-card-hi);
+  border: 1px solid var(--line-soft);
+  color: var(--ink-dim);
+  cursor: pointer;
+  font-size: 11px;
+  transition: 120ms ease;
+}
+.docker-card-actions button:hover {
+  color: var(--ember-hi); border-color: var(--ember); background: var(--ember-soft);
+}
+.docker-card-actions button:disabled { opacity: 0.4; cursor: wait; }
+
+/* stack section adjustments */
+.docker-stack .section-title h2 {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 0.01em;
+  text-transform: lowercase;
+}
+.section-meta { display: flex; align-items: center; gap: 10px; }
+.stack-actions { display: inline-flex; gap: 4px; }
+.stack-actions button {
+  font: inherit;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--bg-card);
+  border: 1px solid var(--line-soft);
+  color: var(--ink-dim);
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: 120ms ease;
+}
+.stack-actions button:hover {
+  color: var(--ember-hi); border-color: var(--ember); background: var(--ember-soft);
+}
+.stack-actions button:disabled { opacity: 0.4; cursor: wait; }
+
+/* truenas-apps collapsible group */
+.ix-section {
+  display: flex; flex-direction: column; gap: 0;
+  position: relative;
+  margin-top: 40px;
+  padding-top: 38px;
+}
+.ix-section::before {
+  content: "managed externally";
+  position: absolute;
+  top: 18px; left: 14px;
+  padding: 2px 8px;
+  background: var(--bg);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--ink-faint);
+  z-index: 1;
+}
+.ix-section::after {
+  content: "";
+  position: absolute;
+  top: 26px; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    var(--line-soft) 8%,
+    var(--line) 50%,
+    var(--line-soft) 92%,
+    transparent 100%
+  );
+}
+
+.ix-toggle {
+  font: inherit; color: inherit; text-align: left;
+  width: 100%;
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: 160ms ease;
+  box-shadow: var(--shadow-card);
+}
+.ix-toggle:hover {
+  border-color: var(--ember);
+  background: var(--bg-card-hi);
+  box-shadow: 0 0 0 3px var(--ember-soft);
+}
+.ix-toggle .status-dot { flex: 0 0 auto; }
+
+.ix-toggle-numeral {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ember);
+  letter-spacing: 0.1em;
+  flex: 0 0 auto;
+}
+.ix-toggle-title {
+  font-weight: 700; font-size: 14px; letter-spacing: -0.01em;
+  color: var(--ink);
+  flex: 0 0 auto;
+}
+.ix-toggle-badge {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  background: var(--ember-soft);
+  border: 1px solid var(--ember-soft);
+  border-radius: 999px;
+  color: var(--ember-hi);
+  flex: 0 0 auto;
+}
+.ix-toggle-meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-faint);
+  letter-spacing: 0.04em;
+  flex: 1; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.ix-toggle-action {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink-dim);
+  flex: 0 0 auto;
+}
+.ix-toggle:hover .ix-toggle-action { color: var(--ember-hi); }
+.ix-toggle-caret {
+  width: 16px; height: 16px;
+  color: var(--ink-dim);
+  transition: transform 220ms cubic-bezier(.2,.7,.2,1), color 160ms ease;
+  flex: 0 0 auto;
+}
+.ix-toggle:hover .ix-toggle-caret { color: var(--ember-hi); }
+.ix-section.is-open .ix-toggle-caret { transform: rotate(180deg); color: var(--ember); }
+.ix-section.is-open .ix-toggle {
+  border-color: var(--ember);
+  box-shadow: 0 0 0 3px var(--ember-soft);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.ix-children {
+  display: flex; flex-direction: column; gap: 22px;
+  padding: 18px 16px 18px 22px;
+  margin-top: -1px;
+  border: 1px solid var(--ember);
+  border-top: 1px solid var(--line-soft);
+  border-radius: 0 0 var(--radius) var(--radius);
+  background: oklch(from var(--bg-card) l c h / 0.5);
+}
+.ix-children > .section { margin-left: 0; }
+.ix-children > .section .section-title h2 { font-size: 13px; }
+
+/* daemon banner (Homey-style summary row) */
+.docker-banner {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin: 14px 0 18px;
+}
+.docker-banner .sum {
+  padding: 14px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  display: flex; flex-direction: column; gap: 4px;
+  box-shadow: var(--shadow-card);
+  transition: 160ms ease;
+}
+.docker-banner .sum:hover { border-color: var(--line); background: var(--bg-card-hi); }
+.docker-banner .sum .l {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink-faint);
+}
+.docker-banner .sum .v {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ink);
+  display: flex; align-items: baseline; gap: 6px;
+}
+.docker-banner .sum .v.on { color: var(--ember-hi); }
+.docker-banner .sum .v .unit {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-faint);
+  letter-spacing: 0.04em;
+}

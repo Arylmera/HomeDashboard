@@ -19,11 +19,11 @@ export const UI = {
   google:  <svg viewBox="0 0 48 48"><path fill="#4285F4" d="M24 9.5c3.9 0 6.6 1.7 8.1 3.1l6-5.8C34.6 3.1 29.8 1 24 1 14.8 1 6.9 6.3 3.1 14l7 5.4C11.8 13.3 17.4 9.5 24 9.5z"/><path fill="#34A853" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.9 7.2l7.5 5.8c4.4-4.1 7.2-10.1 7.2-17.5z"/><path fill="#FBBC05" d="M10.1 28.6c-.5-1.5-.8-3-.8-4.6 0-1.6.3-3.1.8-4.6l-7-5.4C1.6 17.1.5 20.4.5 24s1.1 6.9 2.6 9.9l7-5.3z"/><path fill="#EA4335" d="M24 47c6.5 0 12-2.1 16-5.8l-7.5-5.8c-2.1 1.4-4.8 2.3-8.5 2.3-6.6 0-12.2-3.8-14.9-10l-7 5.3C6.9 41.7 14.8 47 24 47z"/></svg>,
 };
 
-const ICON_BASE = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg";
-const di = (slug) => ({
+const ICON_BASE = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons";
+const di = (slug, ext = "svg") => ({
   svg: (
     <img
-      src={`${ICON_BASE}/${slug}.svg`}
+      src={`${ICON_BASE}/${ext}/${slug}.${ext}`}
       alt={slug}
       loading="lazy"
       style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
@@ -42,16 +42,16 @@ export const ICONS = {
   seerr:          di("jellyseerr"),
   prowlarr:       di("prowlarr"),
   flaresolverr:   di("flaresolverr"),
-  cinephage:      di("kometa"),
-  huntarr:        di("huntarr"),
+  cinephage:      di("kometa", "png"),
+  huntarr:        di("huntarr", "png"),
 
   // Downloads
   qbittorrent:    di("qbittorrent"),
-  joal:           di("joal"),
+  joal:           di("joal", "png"),
 
   // Books / Audio
   audiobookshelf: di("audiobookshelf"),
-  lazylibrarian:  di("lazylibrarian"),
+  lazylibrarian:  di("lazylibrarian", "png"),
   shelfarr:       di("readarr"),
 
   // Smart home
@@ -78,11 +78,11 @@ export const ICONS = {
   cronmaster:     di("cronicle"),
 
   // Dashboards
-  homepage:       di("homepage"),
+  homepage:       di("homepage", "png"),
 
   // Monitoring
   glances:        di("glances"),
-  speedtest:      di("speedtest"),
+  speedtest:      di("speedtest-tracker", "png"),
   beszel:         di("beszel"),
   tugtainer:      di("portainer"),
   uptime:         di("uptime-kuma"),
@@ -94,9 +94,9 @@ export const ICONS = {
 
   // Utility / AI
   scanopy:        di("paperless-ngx"),
-  vert:           di("ffmpeg"),
+  vert:           di("vertiv"),
   mazanoke:       di("immich"),
-  weaviate:       di("weaviate"),
+  weaviate:       di("qdrant"),
 
   // Projects
   leaderboard:    di("grafana"),

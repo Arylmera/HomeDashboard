@@ -6,7 +6,7 @@ Build tool and dev server. Also serves as the **runtime** in production via `vit
 
 - **Public env vars must be prefixed `VITE_`.** Anything else is invisible to client code. Public vars are baked into the bundle at build time — never put a secret in a `VITE_*` variable.
 - **Runtime secrets live in `process.env`** and are read inside `vite.config.js` proxy `headers` callbacks. The callback form `() => ({...})` is required so values resolve at request-time, not config-load time.
-- **Multi-page setup**: every page is declared in `build.rollupOptions.input` and has its own `<page>.html` at repo root. Adding a page = add the HTML file + a `pages/<page>/main.jsx` + the input entry.
+- **Multi-page setup**: each page has its own `<page>.html` at repo root (vite native MPA). Adding a page = create `pages/<page>/main.jsx` + `<page>.html` (copy an existing one, swap `<title>` and the entry script `src`) + add it to `build.rollupOptions.input` in `vite.config.js`. Do **not** introduce a templating plugin (`vite-plugin-html` and similar route all unknown URLs to the index page in dev when a single shared template is used — broken nav).
 - **Proxies route `/api/<svc>/*`** to upstream services. Never call upstream URLs directly from the browser — always go through `/api/<svc>` so auth headers are injected server-side.
 - **`changeOrigin: true`** is required for most upstreams (matches the `Host` header). `secure: false` is fine for self-signed self-hosted services.
 - **Preview server** binds to `0.0.0.0:4173` in container. `allowedHosts: true` is set so reverse proxies don't 403.

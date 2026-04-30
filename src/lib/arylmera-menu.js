@@ -338,9 +338,21 @@ function init() {
   document.body.appendChild(overlay);
   document.body.appendChild(drawer);
 
-  const slot = document.querySelector(".topbar-right");
-  if (slot) slot.appendChild(trigger);
-  else { trigger.classList.add("am-floating"); document.body.appendChild(trigger); }
+  const attach = () => {
+    const slot = document.querySelector(".topbar-right");
+    if (slot && trigger.parentElement !== slot) {
+      trigger.classList.remove("am-floating");
+      slot.appendChild(trigger);
+      return true;
+    }
+    return false;
+  };
+  if (!attach()) {
+    trigger.classList.add("am-floating");
+    document.body.appendChild(trigger);
+    const obs = new MutationObserver(() => { if (attach()) obs.disconnect(); });
+    obs.observe(document.body, { childList: true, subtree: true });
+  }
 
   const open = () => {
     drawer.classList.add("am-open");

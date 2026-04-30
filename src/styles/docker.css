@@ -168,6 +168,44 @@
 }
 .ix-toggle .status-dot { flex: 0 0 auto; }
 
+/* footer count badges (inline status-dot + bold count) */
+.footbar .stats > span { display: inline-flex; align-items: center; gap: 6px; }
+.footbar .stat-down-num { color: var(--status-down); }
+
+/* action error toast (alarm-channel feedback for stop/redeploy failures) */
+.docker-toast {
+  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+  display: inline-flex; align-items: center; gap: 12px;
+  padding: 10px 12px 10px 14px;
+  background: var(--bg-raised);
+  border: 1px solid color-mix(in oklch, var(--alarm) 60%, var(--line));
+  border-radius: 10px;
+  box-shadow: 0 14px 36px oklch(0 0 0 / .42), 0 1px 0 oklch(1 0 0 / .06) inset;
+  font-family: var(--font-mono); font-size: 12px; color: var(--ink);
+  letter-spacing: 0.02em;
+  max-width: calc(100vw - 24px);
+  z-index: 50;
+  animation: docker-toast-in 220ms cubic-bezier(.2,.7,.2,1);
+}
+.docker-toast button {
+  font: inherit; font-family: var(--font-mono);
+  text-transform: uppercase; letter-spacing: 0.1em;
+  background: transparent; border: 1px solid var(--line-soft);
+  color: var(--ink-dim); padding: 5px 10px; border-radius: 6px;
+  cursor: pointer; transition: 140ms ease;
+}
+.docker-toast button:hover { color: var(--ink); border-color: var(--line); background: var(--bg-card-hi); }
+@keyframes docker-toast-in {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .docker-toast { animation: none; }
+}
+@media (max-width: 480px) {
+  .docker-toast { left: 12px; right: 12px; transform: none; justify-content: space-between; }
+}
+
 .ix-toggle-numeral {
   font-family: var(--font-mono);
   font-size: 11px;

@@ -268,7 +268,7 @@ export default function NAS() {
       <h1 className="page-h1">The <em>vault.</em></h1>
       <p className="page-lede">
         {tnState === "error"
-          ? <>Cannot reach TrueNAS via <code>/api/truenas</code> — check <code>VITE_TRUENAS_URL</code> + <code>TRUENAS_API_KEY</code> in <code>.env</code> and restart the dev server.</>
+          ? <>Cannot reach TrueNAS via <code>/api/truenas</code>. Check <code>VITE_TRUENAS_URL</code> and <code>TRUENAS_API_KEY</code> in <code>.env</code>, then restart the dev server.</>
           : tnState === "loading"
             ? <>Connecting to TrueNAS…</>
             : <>Live from <code>{host.hostname || "TrueNAS"}</code> · {host.cores ? `${host.cores}c` : "—"} · {fmtBytes(host.physmem)} RAM · {pools.length} pools · {disks.length} disks. Auto-refresh every 30s.</>
@@ -376,8 +376,8 @@ export default function NAS() {
       </div>
       <div className="nas-grid-4">
         {pools.length === 0 && tnState !== "loading" ? (
-          <div className="nas-card" style={{ gridColumn: '1 / -1', height: 'auto', padding: '24px', textAlign: 'center', color: 'var(--ink-faint)', fontFamily: 'var(--font-mono)' }}>
-            no pools — set <code>VITE_TRUENAS_URL</code> + <code>TRUENAS_API_KEY</code> in <code>.env</code>
+          <div className="empty-state" style={{ gridColumn: '1 / -1' }}>
+            No pools detected. Set <code>VITE_TRUENAS_URL</code> and <code>TRUENAS_API_KEY</code> in <code>.env</code>.
           </div>
         ) : pools.map((p, i) => {
           const color = POOL_COLORS[i % POOL_COLORS.length];
@@ -456,8 +456,8 @@ export default function NAS() {
           <span>Status</span>
         </div>
         {disks.length === 0 && (
-          <div style={{ padding: 18, textAlign: 'center', color: 'var(--ink-faint)', fontFamily: 'var(--font-mono)', fontSize: 12, border: '1px dashed var(--line-soft)', borderRadius: 'var(--radius)' }}>
-            no disk data — set <code>VITE_GLANCES_URL</code> in <code>.env</code>
+          <div className="empty-state">
+            No disk data. Set <code>VITE_GLANCES_URL</code> in <code>.env</code>.
           </div>
         )}
         {disks.map((d) => {
@@ -472,14 +472,17 @@ export default function NAS() {
               <span className="model" style={{ color: 'var(--ink-dim)' }}>{d.device}</span>
               <span className="size">{fmtBytes(d.size)}</span>
               <span className="temp" style={{ color: d.pct >= 80 ? 'var(--status-warn)' : 'var(--ink)' }}>{d.pct?.toFixed(0)}%</span>
-              <span className={`s ${status}`}><span className="d" />{status === "warn" ? "near full" : "healthy"}</span>
+              <span className={`s ${status}`}>
+                <span className={`status-dot ${status === "warn" ? "warn" : "up"}`} role="img" aria-label={status === "warn" ? "near full" : "healthy"} />
+                {status === "warn" ? "near full" : "healthy"}
+              </span>
             </div>
           );
         })}
       </div>
 
       <div className="footnote">
-        TrueNAS SCALE · live via <code>/api/truenas/api/v2.0</code> · refresh 30s · {tnState === "error" ? <span className="status-down">connection error — check .env + dev server</span> : "connected"}
+        TrueNAS SCALE · live via <code>/api/truenas/api/v2.0</code> · refresh 30s · {tnState === "error" ? <span className="status-down">connection error. check .env and dev server.</span> : "connected"}
       </div>
     </div>
   );

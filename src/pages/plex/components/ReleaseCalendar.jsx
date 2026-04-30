@@ -22,8 +22,8 @@ export function ReleaseCalendar({ upcoming }) {
     return (
       <>
         <SectionTitle count={0} />
-        <div style={{ padding: 18, textAlign: 'center', color: 'var(--ink-faint)', fontFamily: 'var(--font-mono)', fontSize: 12, border: '1px dashed var(--line-soft)', borderRadius: 'var(--radius)' }}>
-          no upcoming items — wire <code>VITE_SONARR_URL</code> + <code>VITE_RADARR_URL</code> to populate
+        <div className="empty-state">
+          No upcoming items. Wire <code>VITE_SONARR_URL</code> and <code>VITE_RADARR_URL</code> to populate.
         </div>
       </>
     );

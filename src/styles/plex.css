@@ -95,6 +95,9 @@
 .plex-stat .l { font-family: var(--font-mono); font-size: 10px; font-weight: 600; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.12em; }
 .plex-stat.loading .v { animation: plexpulse 1.4s ease-in-out infinite; color: var(--ink-faint); }
 @keyframes plexpulse { 0%, 100% { opacity: .35; } 50% { opacity: .7; } }
+@media (prefers-reduced-motion: reduce) {
+  .plex-stat.loading .v { animation: none; opacity: .5; }
+}
 
 /* Pipeline footer */
 .pipeline {

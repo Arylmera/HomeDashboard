@@ -39,9 +39,21 @@
   height: 68px;
   box-shadow: var(--shadow-card);
 }
-.qlinks-card:hover { transform: translateY(-2px); border-color: var(--line); background: var(--bg-card-hi); box-shadow: 0 1px 0 oklch(1 0 0 / .06) inset, 0 14px 36px oklch(0 0 0 / .38), 0 0 0 1px var(--ember-soft); }
-.qlinks-card:hover .qlinks-card-title { color: var(--ember-hi); }
-.qlinks-card:hover .qlinks-card-arrow { opacity: 1; transform: translate(2px, -2px); }
+.qlinks-card:hover,
+.qlinks-card:focus-visible { transform: translateY(-2px); border-color: var(--line); background: var(--bg-card-hi); box-shadow: 0 1px 0 oklch(1 0 0 / .06) inset, 0 14px 36px oklch(0 0 0 / .38), 0 0 0 1px var(--ember-soft); outline: none; }
+.qlinks-card:focus-visible { box-shadow: 0 1px 0 oklch(1 0 0 / .06) inset, 0 14px 36px oklch(0 0 0 / .38), 0 0 0 2px var(--ember); }
+.qlinks-card:hover .qlinks-card-title,
+.qlinks-card:focus-visible .qlinks-card-title { color: var(--ember-hi); }
+.qlinks-card:hover .qlinks-card-arrow,
+.qlinks-card:focus-visible .qlinks-card-arrow { opacity: 1; transform: translate(2px, -2px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .qlinks-card { transition: background 180ms ease, border-color 180ms ease, box-shadow 180ms ease; }
+  .qlinks-card:hover,
+  .qlinks-card:focus-visible { transform: none; }
+  .qlinks-card:hover .qlinks-card-arrow,
+  .qlinks-card:focus-visible .qlinks-card-arrow { transform: none; }
+}
 
 .qlinks-card-ico {
   width: 38px; height: 38px; border-radius: 8px;
@@ -56,17 +68,16 @@
 .qlinks-card-title {
   font-weight: 600; font-size: 13.5px; letter-spacing: -0.005em;
   display: flex; align-items: center; gap: 8px; transition: color 160ms;
+  min-width: 0;
 }
+/* keep service name on one line; ellipsis if it overflows */
+.qlinks-card-title > .qlinks-name { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .qlinks-card-desc {
   color: var(--ink-faint); font-size: 11.5px; font-family: var(--font-mono); letter-spacing: 0.01em;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;
 }
 
-.status-dot { width: 7px; height: 7px; border-radius: 50%; flex: 0 0 auto; position: relative; }
-.status-dot.up { background: var(--status-up); box-shadow: 0 0 0 0 color-mix(in oklch, var(--status-up) 60%, transparent); animation: pulse 2.6s ease-out infinite; }
-.status-dot.warn { background: var(--status-warn); }
-.status-dot.down { background: var(--status-down); }
-.status-dot.off { background: var(--ink-faint); opacity: 0.5; }
+/* Status dot — definitions live in forge.css (universal). */
 
 .qlinks-card-arrow { position: absolute; top: 10px; right: 10px; color: var(--ink-faint); opacity: 0; transition: 180ms ease; }
 .qlinks-card-arrow svg { width: 12px; height: 12px; }
@@ -79,7 +90,8 @@
   min-width: 20px; height: 20px;
   padding: 0 6px;
   display: inline-flex; align-items: center; justify-content: center;
-  border-radius: 999px;
+  /* square pill for visibility toggle; pin pill stays round to keep the two distinguishable */
+  border-radius: 4px;
   color: var(--ember-hi);
   background: color-mix(in oklch, var(--ember) 18%, transparent);
   border: 1px solid color-mix(in oklch, var(--ember) 50%, var(--line-soft));
@@ -91,11 +103,84 @@
 }
 .qlinks-card.editing:hover .qlinks-card-arrow { transform: none; }
 
+.qlinks-card-edit-actions {
+  position: absolute; top: 8px; right: 8px;
+  display: inline-flex; gap: 6px; align-items: center;
+}
+.qlinks-card.editing .qlinks-card-edit-actions .qlinks-card-arrow {
+  position: static;
+}
+.qlinks-card-pin {
+  font-size: 13px; line-height: 1; font-weight: 700;
+  min-width: 20px; height: 20px; padding: 0 6px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 999px; cursor: pointer;
+  color: var(--ink-faint);
+  background: transparent;
+  border: 1px solid var(--line-soft);
+  transition: 140ms ease;
+}
+.qlinks-card-pin.on {
+  color: var(--ember-hi);
+  background: color-mix(in oklch, var(--ember) 18%, transparent);
+  border-color: color-mix(in oklch, var(--ember) 50%, var(--line-soft));
+}
+.qlinks-card.pinned { border-color: color-mix(in oklch, var(--ember) 35%, var(--line-soft)); }
+
 .qlinks-card.featured { border-color: color-mix(in oklch, var(--ember) 35%, var(--line-soft)); }
+/* warmth, not halo: a soft corner glow at ~60% of the card. Stronger on hover only. */
 .qlinks-card.featured::before {
   content: ""; position: absolute; inset: 0; border-radius: var(--radius);
-  background: radial-gradient(120% 80% at 0% 0%, var(--ember-soft) 0%, transparent 55%);
+  background: radial-gradient(90% 60% at 0% 0%, color-mix(in oklch, var(--ember-soft) 70%, transparent) 0%, transparent 50%);
   pointer-events: none;
+  transition: opacity 180ms ease;
+}
+.qlinks-card.featured:hover::before {
+  background: radial-gradient(110% 75% at 0% 0%, var(--ember-soft) 0%, transparent 55%);
+}
+
+/* Empty state when every service is hidden */
+.qlinks-empty {
+  margin: 32px 0;
+  padding: 28px 24px;
+  background: var(--bg-card);
+  border: 1px dashed var(--line-soft);
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+.qlinks-empty-title { font-weight: 600; font-size: 15px; color: var(--ink); letter-spacing: -0.01em; }
+.qlinks-empty-sub { margin-top: 6px; font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); letter-spacing: 0.04em; }
+.qlinks-empty-sub b { color: var(--ember-hi); font-weight: 600; }
+
+/* Undo toast — quietly anchors to the bottom of the page, mono voice */
+.qlinks-undo {
+  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+  display: inline-flex; align-items: center; gap: 12px;
+  padding: 10px 12px 10px 14px;
+  background: var(--bg-raised); border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: 0 14px 36px oklch(0 0 0 / .42), 0 1px 0 oklch(1 0 0 / .06) inset;
+  font-family: var(--font-mono); font-size: 12px; color: var(--ink-dim);
+  letter-spacing: 0.02em;
+  z-index: 50;
+  animation: qlinks-undo-in 220ms cubic-bezier(.2,.7,.2,1);
+}
+.qlinks-undo b { color: var(--ink); font-weight: 600; }
+.qlinks-undo button {
+  font: inherit; font-family: var(--font-mono);
+  text-transform: uppercase; letter-spacing: 0.1em;
+  background: transparent; border: 1px solid var(--line-soft);
+  color: var(--ember-hi); padding: 5px 10px; border-radius: 6px;
+  cursor: pointer; transition: 140ms ease;
+}
+.qlinks-undo button:hover { color: var(--ember); border-color: color-mix(in oklch, var(--ember) 50%, var(--line-soft)); background: color-mix(in oklch, var(--ember) 12%, transparent); }
+.qlinks-undo button:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
+@keyframes qlinks-undo-in {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .qlinks-undo { animation: none; }
 }
 
 /* Footer strip */
@@ -114,3 +199,75 @@ html[data-density="dense"] body .qlinks-card { padding: 9px 11px; height: 54px; 
 html[data-density="dense"] body .qlinks-card-ico { width: 30px; height: 30px; padding: 4px; border-radius: 6px; }
 html[data-density="dense"] body .qlinks-card-title { font-size: 12.5px; }
 html[data-density="dense"] body .qlinks-card-desc { font-size: 10.5px; }
+
+/* ---------- Responsive ---------- */
+
+/* Tablet and below: search row gets breathing room, footer wraps cleanly. */
+@media (max-width: 720px) {
+  .qlinks-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
+  .footbar { padding: 14px 0; gap: 12px; }
+  .footbar .stats { gap: 14px; }
+}
+
+/* Hero code chunks (operator IP / proxy host) — quiet mono inline tokens. */
+.greeting-sub code {
+  font-family: var(--font-mono); font-size: 12px;
+  padding: 1px 6px;
+  background: var(--bg-card); border: 1px solid var(--line-soft); border-radius: 4px;
+  color: var(--ink);
+  word-break: break-all; overflow-wrap: anywhere;
+}
+/* Distilled hero subtitle: one mono line, terse, scannable. */
+.qlinks-hero-status {
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: 8px 12px;
+  font-family: var(--font-mono); font-size: 11.5px;
+  color: var(--ink-faint); letter-spacing: 0.04em;
+  margin: 0;
+}
+.qlinks-hero-status b { color: var(--ink); font-weight: 600; }
+.qlinks-hero-status .sep { color: var(--line); }
+
+/* Phone: drop the kbd hint, stack search scope below the input, full-bleed undo toast. */
+@media (max-width: 480px) {
+  .searchbar { flex-wrap: wrap; padding: 8px 12px; gap: 8px; }
+  .searchbar input { order: 1; flex: 1 1 100%; min-width: 0; font-size: 16px; /* prevents iOS zoom on focus */ padding: 6px 0; }
+  .searchbar .q { order: 0; }
+  .searchbar .search-scope { order: 2; flex: 0 0 auto; }
+  .searchbar .kbd { display: none; }
+
+  .qlinks-grid { grid-template-columns: 1fr; gap: 8px; }
+
+  .qlinks-empty { margin: 20px 0; padding: 20px 16px; }
+
+  /* Section numerals are decorative; reclaim the line on phone. */
+  .section-title .numeral { display: none; }
+  .section-title h2 { font-size: 16px; }
+
+  /* Hero meta (clock + weather): tighten and let it wrap below the greeting. */
+  .hero-meta { gap: 6px; }
+  .hero-card { padding: 9px 12px; }
+  .hero-card .val { font-size: 16px; }
+
+  /* Undo toast: full-bleed at bottom, never overlaps content edges. */
+  .qlinks-undo {
+    left: 12px; right: 12px; transform: none;
+    bottom: 16px;
+    justify-content: space-between;
+    width: auto;
+  }
+  @keyframes qlinks-undo-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+}
+
+/* Touch / coarse-pointer devices: bump edit-mode pills to a comfortable tap target. */
+@media (pointer: coarse) {
+  .qlinks-card.editing .qlinks-card-pin,
+  .qlinks-card.editing .qlinks-card-arrow {
+    min-width: 28px; height: 28px; padding: 0 8px;
+  }
+  .search-scope button { padding: 8px 12px; }
+  .qlinks-undo button { padding: 8px 12px; }
+}

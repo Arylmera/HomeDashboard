@@ -24,7 +24,7 @@ export default function NetworkPanel({ nas, pi, st }) {
             DNS · Pi-hole
           </div>
           <div className="val">{fmtNum(pi?.queries)}</div>
-          <div className="bar"><i style={{ width: `${pi?.pct ?? 0}%`, background: "var(--steel)" }} /></div>
+          <div className="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={pi?.pct ?? 0} aria-label="DNS queries blocked"><i style={{ width: `${pi?.pct ?? 0}%` }} /></div>
           <div className="sub"><b>{pi?.pct != null ? pi.pct.toFixed(1) : "—"}%</b> blocked · <b>{fmtNum(pi?.clients)}</b> clients</div>
         </div>
         <div className="net-card" style={{ "--accent": "var(--sage)" }}>
@@ -32,7 +32,7 @@ export default function NetworkPanel({ nas, pi, st }) {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z M12 12l4-4 M12 7v0" /></svg>
             ISP · Speedtest
           </div>
-          <div className="val">{st?.down != null ? `↓ ${Math.round(st.down)}` : "—"}<small style={{ marginLeft: 4 }}>Mbps</small></div>
+          <div className="val">{st?.down != null ? `↓ ${Math.round(st.down)}` : "—"}<small className="unit">Mbps</small></div>
           <div className="sub">↑ <b>{st?.up != null ? Math.round(st.up) : "—"}</b> Mbps · <b>{st?.ping != null ? Math.round(st.ping) : "—"}</b> ms</div>
         </div>
       </div>

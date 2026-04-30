@@ -94,6 +94,72 @@ body {
   100% { box-shadow: 0 0 0 0 transparent; }
 }
 
+/* ---------- Status dot (universal: 3-channel signal) ---------- *
+ *  up   = filled circle, pulses               (color + shape + motion)
+ *  warn = hollow ring, no motion              (color + shape)
+ *  down = filled square (1px radius), no motion (color + shape)
+ *  off  = faint, half opacity                 (color + opacity)
+ *  Survives color-blindness without color reliance.
+ * --------------------------------------------------------------- */
+.status-dot { width: 7px; height: 7px; border-radius: 50%; flex: 0 0 auto; position: relative; display: inline-block; vertical-align: middle; }
+.status-dot.up   { background: var(--status-up); box-shadow: 0 0 0 0 color-mix(in oklch, var(--status-up) 60%, transparent); animation: pulse 2.6s ease-out infinite; }
+.status-dot.warn { background: transparent; box-shadow: inset 0 0 0 1.5px var(--status-warn); }
+.status-dot.down { background: var(--status-down); border-radius: 1px; }
+.status-dot.off  { background: var(--ink-faint); opacity: 0.5; }
+
+@media (prefers-reduced-motion: reduce) {
+  .statusbar .dot,
+  .status-dot.up { animation: none; }
+}
+
+/* ---------- Page-level primitives (cross-page) ---------- *
+ *  Used by every full-page surface (Plex, NAS, Homey, Docker, Quicklinks).
+ *  Hero greeting/eyebrow/sub already live above; these complement them.
+ * ------------------------------------------------------------------------- */
+.eyebrow { font-family: var(--font-mono); font-size: 11px; color: var(--ember); letter-spacing: 0.14em; text-transform: uppercase; display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.eyebrow::before { content: ""; width: 18px; height: 1px; background: var(--ember); }
+
+.page-h1 { font-size: clamp(32px, 4.5vw, 44px); font-weight: 600; letter-spacing: -0.03em; line-height: 1.05; margin: 0 0 10px; text-wrap: balance; }
+.page-h1 em { font-style: normal; color: var(--ember); }
+
+.page-lede { color: var(--ink-dim); max-width: 60ch; margin-bottom: 32px; line-height: 1.5; }
+.page-lede b { color: var(--ink); font-weight: 600; }
+.page-lede code,
+.greeting-sub code { font-family: var(--font-mono); font-size: 12px; padding: 2px 6px; background: var(--bg-card); border: 1px solid var(--line-soft); border-radius: 4px; color: var(--ink); word-break: break-all; overflow-wrap: anywhere; }
+
+/* Universal empty-state strip (dashed border, mono ink-faint copy). */
+.empty-state {
+  padding: 18px;
+  text-align: center;
+  color: var(--ink-faint);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  border: 1px dashed var(--line-soft);
+  border-radius: var(--radius);
+  letter-spacing: 0.02em;
+}
+.empty-state code { color: var(--ink); }
+
+/* ---------- Universal focus-visible for card-like links and tiles ---------- *
+ *  Any anchor or button that uses our card chrome gets a clear ember focus ring.
+ *  Hover styles per page already handle pointer focus.
+ * --------------------------------------------------------------------------- */
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--ember);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.page-tile:focus-visible,
+.qlinks-card:focus-visible,
+.quickapp:focus-visible,
+.panel:focus-visible,
+.zone-card:focus-visible,
+.ix-row:focus-visible {
+  outline: none;
+  box-shadow: 0 1px 0 oklch(1 0 0 / .06) inset, 0 14px 36px oklch(0 0 0 / .38), 0 0 0 2px var(--ember);
+}
+
 /* ---------- Hero ---------- */
 .hero { display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: end; margin-bottom: 22px; }
 @media (max-width: 900px) { .hero { grid-template-columns: 1fr; } }

@@ -62,10 +62,8 @@
 .dev-list { display: flex; flex-direction: column; gap: 6px; }
 .dev {
   display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px;
-  background: oklch(0.215 0.011 50); border: 1px solid transparent; transition: 120ms ease;
-  cursor: pointer;
+  background: var(--bg-raised); border: 1px solid transparent; transition: 120ms ease;
 }
-.dev:hover { border-color: var(--line-soft); background: var(--bg-card-hi); }
 .dev .dico { width: 22px; height: 22px; display: grid; place-items: center; color: var(--ink-dim); flex: 0 0 auto; }
 .dev .dico svg { width: 14px; height: 14px; }
 .dev.on .dico { color: var(--glow-on); }
@@ -74,17 +72,8 @@
 .dev.on .ds { color: var(--glow-on); }
 .dev.warn .ds { color: var(--status-warn); }
 .dev.down .ds { color: var(--status-down); }
-
-.toggle {
-  width: 28px; height: 16px; border-radius: 10px; background: oklch(0.3 0.01 240); position: relative;
-  transition: 160ms ease; border: 1px solid var(--line-soft); flex: 0 0 auto;
-}
-.toggle::after {
-  content: ""; position: absolute; top: 1px; left: 1px; width: 12px; height: 12px; border-radius: 50%;
-  background: var(--ink-faint); transition: 160ms ease;
-}
-.dev.on .toggle { background: color-mix(in oklch, var(--glow-on) 40%, transparent); border-color: color-mix(in oklch, var(--glow-on) 60%, transparent); }
-.dev.on .toggle::after { background: var(--glow-on); left: 13px; box-shadow: 0 0 8px color-mix(in oklch, var(--glow-on) 50%, transparent); }
+.dev.on .status-dot.up { background: var(--glow-on); box-shadow: 0 0 0 0 color-mix(in oklch, var(--glow-on) 60%, transparent); }
+/* Legacy `.toggle` switch chrome removed: device control isn't wired, so a switch shape was misleading. */
 
 .flow-groups { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; align-items: start; }
 .flow-group {
@@ -111,9 +100,9 @@
 .flow .fnum { font-family: var(--font-mono); font-size: 10px; color: var(--ember); letter-spacing: 0.12em; text-transform: uppercase; }
 .flow .ft { font-weight: 600; font-size: 14px; letter-spacing: -0.01em; }
 .flow .fd { font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); }
-.flow .fdot { width: 6px; height: 6px; border-radius: 50%; position: absolute; top: 14px; right: 14px; }
-.flow.on  .fdot { background: var(--glow-on); box-shadow: 0 0 6px var(--glow-on); }
-.flow.off .fdot { background: var(--ink-faint); }
+/* Flow status uses universal `.status-dot`, anchored to the row corner. */
+.flow .status-dot { position: absolute; top: 14px; right: 14px; }
+.flow.on .status-dot.up { background: var(--glow-on); box-shadow: 0 0 6px var(--glow-on); }
 
 /* Hint banner — page-wide notice for "Homey API not wired" */
 .hint-banner {

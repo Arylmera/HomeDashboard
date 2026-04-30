@@ -21,10 +21,7 @@ export function PlexHeader() {
       <div className="eyebrow">Entertainment</div>
       <h1 className="page-h1">The <em>library.</em></h1>
       <p className="page-lede">
-        Three columns, one chain. <b style={{ color: 'var(--ink)' }}>Watch</b> what you've already got,
-        <b style={{ color: 'var(--ink)' }}> curate</b> what's missing, and
-        <b style={{ color: 'var(--ink)' }}> acquire</b> the rest. All secrets live in <code>.env</code> — set the
-        relevant <code>VITE_*_URL</code> + key for each tile to wake up.
+        Three columns, one chain. <b>Watch</b> what you've already got, <b>curate</b> what's missing, and <b>acquire</b> the rest. Secrets live in <code>.env</code>. Set the relevant <code>VITE_*_URL</code> and key for each tile to wake it up.
       </p>
     </>
   );

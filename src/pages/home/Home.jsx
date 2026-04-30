@@ -14,14 +14,16 @@ import { ALL_SERVICES } from '../../lib/services.js';
 import { fmtBytes, fmtNum } from '../../lib/format.js';
 import {
   useClock, useGreeting, useWeather, useTrueNAS, useGlances, usePihole, useSpeedtest,
-  usePlexSessions, useArrQueue, useServiceHealth, useNextcloud,
+  usePlexSessions, useArrQueue, useNextcloud,
 } from '../../lib/hooks.js';
+import { useHealth } from '../../lib/useHealth.js';
 import { PAGES, QUICK_APP_IDS } from './pages.jsx';
 import Search from './components/Search.jsx';
 import PageTile from './components/PageTile.jsx';
 import QuickApp from './components/QuickApp.jsx';
 import NetworkPanel from './components/NetworkPanel.jsx';
 import NASPanel from './components/NASPanel.jsx';
+import { usePrefs } from '../../lib/usePrefs.js';
 
 export default function Home() {
   useEffect(() => {
@@ -59,21 +61,23 @@ export default function Home() {
   const radarrN = useArrQueue("radarr");
   const nc = useNextcloud();
 
+  const [pinnedIds] = usePrefs('quicklinks.pinned', QUICK_APP_IDS);
+  const [disabledIds] = usePrefs('quicklinks.disabled', []);
+  const [displayName] = usePrefs('home.displayName', 'Guillaume');
   const quickApps = useMemo(() => {
     const map = Object.fromEntries(ALL_SERVICES.map(s => [s.id, s]));
-    return QUICK_APP_IDS.map(id => map[id]).filter(Boolean);
-  }, []);
-  const healthMap = useServiceHealth(quickApps);
-  const allHealth = useServiceHealth(ALL_SERVICES, 120_000);
+    const ids = (pinnedIds && pinnedIds.length ? pinnedIds : QUICK_APP_IDS);
+    const hidden = new Set(disabledIds || []);
+    return ids.map(id => map[id]).filter(s => s && !hidden.has(s.id));
+  }, [pinnedIds, disabledIds]);
+  const healthMap = useHealth();
 
   const onlineCount = useMemo(() => {
     return ALL_SERVICES.reduce((acc, s) => {
-      const live = allHealth[s.id];
-      if (live === true) return acc + 1;
-      if (live === false) return acc;
-      return s.status === "up" ? acc + 1 : acc;
+      const live = healthMap[s.id] || s.status;
+      return live === "up" ? acc + 1 : acc;
     }, 0);
-  }, [allHealth]);
+  }, [healthMap]);
   const totalServices = ALL_SERVICES.length;
   const statusClass = onlineCount === totalServices ? "" : onlineCount < totalServices * 0.8 ? "down" : "warn";
 
@@ -82,23 +86,23 @@ export default function Home() {
 
   const pageStats = {
     plex: [
-      { label: "streams", value: plexN ?? "—" },
-      { label: "sonarr q", value: sonarrN ?? "—" },
-      { label: "radarr q", value: radarrN ?? "—" },
+      { label: "streams",  value: plexN   ?? "—", title: "Active Plex streams right now." },
+      { label: "sonarr q", value: sonarrN ?? "—", title: "TV episodes Sonarr is currently fetching." },
+      { label: "radarr q", value: radarrN ?? "—", title: "Movies Radarr is currently fetching." },
     ],
     nas: [
-      { label: "cpu", value: nas?.cpuPct != null ? `${nas.cpuPct}%` : "—" },
-      { label: "mem", value: nas?.memUsed != null ? fmtBytes(nas.memUsed) : "—" },
-      { label: "pools", value: nas?.pools?.length ?? "—" },
+      { label: "cpu",   value: nas?.cpuPct != null ? `${nas.cpuPct}%`        : "—", title: "TrueNAS CPU usage." },
+      { label: "mem",   value: nas?.memUsed != null ? fmtBytes(nas.memUsed)  : "—", title: "TrueNAS memory in use." },
+      { label: "pools", value: nas?.pools?.length ?? "—",                          title: "Number of ZFS storage pools." },
     ],
     homey: [
-      { label: "dns q", value: pi.queries != null ? fmtNum(pi.queries) : "—" },
-      { label: "blocked", value: pi.pct != null ? `${pi.pct.toFixed(0)}%` : "—" },
-      { label: "cloud", value: nc.info?.quota?.used != null ? `${(nc.info.quota.used / 1024 ** 3).toFixed(0)} GiB` : "—" },
+      { label: "dns q",   value: pi.queries != null ? fmtNum(pi.queries) : "—", title: "DNS queries handled by Pi-hole today." },
+      { label: "blocked", value: pi.pct != null ? `${pi.pct.toFixed(0)}%` : "—", title: "Percentage of DNS queries Pi-hole blocked today." },
+      { label: "cloud",   value: nc.info?.quota?.used != null ? `${(nc.info.quota.used / 1024 ** 3).toFixed(0)} GiB` : "—", title: "Storage used in Nextcloud." },
     ],
     quicklinks: [
-      { label: "services", value: totalServices },
-      { label: "online", value: onlineCount },
+      { label: "services", value: totalServices, title: "Total services in the directory." },
+      { label: "online",   value: onlineCount,   title: "Services responding to live health checks." },
     ],
   };
 
@@ -133,8 +137,12 @@ export default function Home() {
 
       <div className="hero">
         <div>
-          <h1 className="greeting">{greeting}, <em>Guillaume</em>.</h1>
-          <p className="greeting-sub">{onlineCount} of {totalServices} services online · last refresh just now</p>
+          <h1 className="greeting">{greeting}, <em>{displayName}</em>.</h1>
+          <p className="greeting-sub">
+            <b>{onlineCount}</b> of {totalServices} services online
+            <span className="sep" aria-hidden="true"> · </span>
+            <span title="Live health checks run every 30 seconds in the background.">checked every 30s</span>
+          </p>
         </div>
         <div className="hero-meta">
           <div className="hero-card">
@@ -173,7 +181,7 @@ export default function Home() {
       <div className="section">
         <div className="section-head">
           <div className="section-title"><span className="numeral">// 02</span><h2>Quick apps</h2></div>
-          <div className="section-meta"><a href="quicklinks.html" style={{ color: "var(--ember-hi)", textDecoration: "none" }}>all services →</a></div>
+          <div className="section-meta"><a href="quicklinks.html">all services →</a></div>
         </div>
         <div className="quickapps">
           {quickApps.map(s => <QuickApp key={s.id} svc={s} statusMap={healthMap} statText={qaStat(s.id)} />)}

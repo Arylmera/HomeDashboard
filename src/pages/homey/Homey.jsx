@@ -84,11 +84,11 @@ export default function Homey() {
         {isLive
           ? <>Live from Homey via cloud OAuth · {ZONES.length} zones · {stats.totalDevs} devices · {FLOWS.length} flows. Auto-refresh every 30s.</>
           : !auth.configured
-            ? <>Homey OAuth not configured — set <code>HOMEY_CLIENT_ID</code>, <code>HOMEY_CLIENT_SECRET</code>, <code>HOMEY_REDIRECT_URI</code>, <code>HOMEY_ID</code> in <code>.env</code> and restart the dev server. Showing layout placeholders below.</>
+            ? <>Homey OAuth not configured. Set <code>HOMEY_CLIENT_ID</code>, <code>HOMEY_CLIENT_SECRET</code>, <code>HOMEY_REDIRECT_URI</code>, and <code>HOMEY_ID</code> in <code>.env</code>, then restart the dev server. Showing layout placeholders below.</>
             : !auth.authenticated
-              ? <>Homey OAuth configured but not authorized yet — click "Connect Homey" below to authorize once.</>
+              ? <>Homey OAuth configured but not authorized yet. Click "Connect Homey" below to authorize once.</>
               : homey.state === "error"
-                ? <>Authorized, but Homey API is unreachable — check the cloud-routed URL or token state.</>
+                ? <>Authorized, but Homey API is unreachable. Check the cloud-routed URL or token state.</>
                 : <>Connecting to Homey…</>}
       </p>
 
@@ -98,11 +98,11 @@ export default function Homey() {
             <>
               <b>Connect Homey:</b>{" "}
               <a href="/api/homey/oauth/login">Authorize via Athom</a>
-              {" — opens the Homey login page; you'll be redirected back here."}
+              {". This opens the Homey login page; you'll be redirected back here."}
             </>
           ) : (
             <>
-              <b>Live tiles:</b> Nextcloud · Speedtest. <b>Placeholder:</b> zones &amp; flows — set up an OAuth2 app at <a href="https://tools.developer.homey.app/" target="_blank" rel="noopener noreferrer">tools.developer.homey.app</a> (Apps → New) and fill the <code>HOMEY_*</code> vars in <code>.env</code>.
+              <b>Live tiles:</b> Nextcloud · Speedtest. <b>Placeholder:</b> zones and flows. Set up an OAuth2 app at <a href="https://tools.developer.homey.app/" target="_blank" rel="noopener noreferrer">tools.developer.homey.app</a> (Apps, then New) and fill the <code>HOMEY_*</code> vars in <code>.env</code>.
             </>
           )}
         </div>

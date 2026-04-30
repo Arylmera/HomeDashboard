@@ -14,7 +14,7 @@ export default function PageTile({ page, stats }) {
       </div>
       <div className="page-tile-stats">
         {stats.map(s => (
-          <div className="stat" key={s.label}>
+          <div className="stat" key={s.label} title={s.title || s.label}>
             <b>{s.value}</b>
             <span>{s.label}</span>
           </div>

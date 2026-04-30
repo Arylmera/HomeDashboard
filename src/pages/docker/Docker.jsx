@@ -94,11 +94,11 @@ function ContainerCard({ c, envId, onAction }) {
       <div className="docker-card-actions">
         {running ? (
           <>
-            <button onClick={() => fire("restart")} disabled={busy} title="restart">↻</button>
-            <button onClick={() => fire("stop")} disabled={busy} title="stop">■</button>
+            <button onClick={() => { if (window.confirm(`Restart ${c.name}?`)) fire("restart"); }} disabled={busy} title="restart" aria-label={`restart ${c.name}`}>↻</button>
+            <button onClick={() => { if (window.confirm(`Stop ${c.name}?`)) fire("stop"); }} disabled={busy} title="stop" aria-label={`stop ${c.name}`}>■</button>
           </>
         ) : (
-          <button onClick={() => fire("start")} disabled={busy} title="start">▶</button>
+          <button onClick={() => fire("start")} disabled={busy} title="start" aria-label={`start ${c.name}`}>▶</button>
         )}
       </div>
     </div>
@@ -131,9 +131,12 @@ function Stack({ project, services, idx, envId, onAction, onProjectAction }) {
           <span>{running}/{total} up</span>
           {project?.id && (
             <span className="stack-actions">
-              <button disabled={busy} onClick={() => fire("redeploy")} title="redeploy">redeploy</button>
+              <button disabled={busy}
+                      onClick={() => { if (window.confirm(`Redeploy stack ${project.name}? This recreates every container in the project.`)) fire("redeploy"); }}
+                      title="redeploy">redeploy</button>
               {allUp
-                ? <button disabled={busy} onClick={() => fire("down")}>stop</button>
+                ? <button disabled={busy}
+                          onClick={() => { if (window.confirm(`Stop stack ${project.name}? This brings every container in the project down.`)) fire("down"); }}>stop</button>
                 : <button disabled={busy} onClick={() => fire("up")}>start</button>}
             </span>
           )}
@@ -171,7 +174,7 @@ function FilterBar({ q, setQ, scope, setScope, counts }) {
           ref={inputRef}
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Filter containers — name, image, stack…"
+          placeholder="Filter containers by name, image, or stack…"
         />
         <div className="search-scope">
           {[
@@ -203,17 +206,30 @@ export default function Docker() {
   const dateStr = now.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
   const timeStr = now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
 
+  const [actionErr, setActionErr] = useState(null);
+  useEffect(() => {
+    if (!actionErr) return;
+    const t = setTimeout(() => setActionErr(null), 6000);
+    return () => clearTimeout(t);
+  }, [actionErr]);
+
   const onContainerAction = async (kind, id, action) => {
     try {
       await arcaneAction(arcane.envId, kind, id, action);
       setTimeout(arcane.refresh, 600);
-    } catch (e) { console.warn("[arcane action]", e); }
+    } catch (e) {
+      console.warn("[arcane action]", e);
+      setActionErr(`${action} failed: ${e?.message || "unknown error"}`);
+    }
   };
   const onProjectAction = async (projectId, action) => {
     try {
       await arcaneAction(arcane.envId, "projects", projectId, action);
       setTimeout(arcane.refresh, 1200);
-    } catch (e) { console.warn("[arcane project]", e); }
+    } catch (e) {
+      console.warn("[arcane project]", e);
+      setActionErr(`stack ${action} failed: ${e?.message || "unknown error"}`);
+    }
   };
 
   const filtered = useMemo(() => {
@@ -290,8 +306,9 @@ export default function Docker() {
           <p className="greeting-sub">
             {stateLine}
             {arcane.envName && (
-              <> Host <code style={{ fontFamily: "var(--font-mono)", fontSize: 12, padding: "2px 6px", background: "var(--bg-card)", border: "1px solid var(--line-soft)", borderRadius: 4, color: "var(--ink)" }}>{arcane.envName}</code>{" "}
-                <span className={`status-dot ${arcane.envStatus === "online" ? "up" : "down"}`} />.
+              <> Host <code>{arcane.envName}</code>{" "}
+                <span className={`status-dot ${arcane.envStatus === "online" ? "up" : "down"}`}
+                      role="img" aria-label={`host ${arcane.envStatus === "online" ? "online" : "offline"}`} />.
               </>
             )}
           </p>
@@ -395,15 +412,26 @@ export default function Docker() {
         </section>
       )}
 
-      <div className="footbar">
+      <div className="footbar" role="status" aria-live="polite">
         <div className="stats">
-          <span><b>{counts.up}</b> running</span>
-          <span><b style={{ color: "var(--status-down)" }}>{counts.down}</b> stopped</span>
-          <span><b>{counts.total}</b> total</span>
-          <span><b>{arcane.projects.length}</b> stacks</span>
+          <span aria-label={`${counts.up} containers running`}>
+            <span className="status-dot up" role="img" aria-hidden="true" /><b>{counts.up}</b> running
+          </span>
+          <span aria-label={`${counts.down} containers stopped`}>
+            <span className="status-dot down" role="img" aria-hidden="true" /><b className="stat-down-num">{counts.down}</b> stopped
+          </span>
+          <span aria-label={`${counts.total} total containers`}><b>{counts.total}</b> total</span>
+          <span aria-label={`${arcane.projects.length} compose stacks`}><b>{arcane.projects.length}</b> stacks</span>
         </div>
         <div>arylmera · containers · {now.toISOString().slice(0, 10)}</div>
       </div>
+
+      {actionErr && (
+        <div className="docker-toast" role="alert" aria-live="assertive">
+          <span>{actionErr}</span>
+          <button type="button" onClick={() => setActionErr(null)} aria-label="dismiss error">dismiss</button>
+        </div>
+      )}
     </div>
   );
 }

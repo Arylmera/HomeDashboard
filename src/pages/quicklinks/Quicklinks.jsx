@@ -9,6 +9,10 @@ import { SECTIONS, ALL_SERVICES } from '../../lib/services.js';
 import { useClock, useGreeting, useWeather } from '../../lib/hooks.js';
 import { usePrefs } from '../../lib/usePrefs.js';
 import { useHealth } from '../../lib/useHealth.js';
+import { QUICK_APP_IDS } from '../home/pages.jsx';
+
+const STATUS_LABEL = { up: "online", warn: "degraded", down: "offline", off: "status unknown" };
+const statusText = (s) => STATUS_LABEL[s] || "status unknown";
 
 function Mark({ id }) {
   const def = ICONS[id];
@@ -16,37 +20,53 @@ function Mark({ id }) {
   return def.svg;
 }
 
-function ServiceCard({ s, editing, disabled, onToggle, status }) {
+function ServiceCard({ s, editing, disabled, pinned, onToggle, onTogglePin, status }) {
   const cls = "qlinks-card "
     + (s.featured ? "featured " : "")
     + (editing ? "editing " : "")
+    + (pinned && editing ? "pinned " : "")
     + (disabled ? "disabled" : "");
   const live = status || s.status;
 
   if (editing) {
     return (
-      <button type="button" className={cls} onClick={() => onToggle(s.id)} title={`${disabled ? "hidden" : "visible"} · click to toggle`}>
+      <div className={cls}>
         <div className="qlinks-card-ico"><Mark id={s.icon} /></div>
         <div className="qlinks-card-body">
           <div className="qlinks-card-title">
-            {s.name}
-            <span className={`status-dot ${live}`} title={live} />
+            <span className="qlinks-name">{s.name}</span>
+            <span className={`status-dot ${live}`} role="img" aria-label={`status: ${statusText(live)}`} title={statusText(live)} />
           </div>
           <div className="qlinks-card-desc">{s.desc}</div>
         </div>
-        <span className="qlinks-card-arrow">{disabled ? "○" : "●"}</span>
-      </button>
+        <div className="qlinks-card-edit-actions">
+          <button type="button" className={"qlinks-card-pin" + (pinned ? " on" : "")}
+                  onClick={() => onTogglePin(s.id)}
+                  aria-label={pinned ? `unpin ${s.name} from home` : `pin ${s.name} to home`}
+                  title={pinned ? "pinned to home. click to unpin." : "click to pin to home."}>
+            {pinned ? "★" : "☆"}
+          </button>
+          <button type="button" className="qlinks-card-arrow"
+                  onClick={() => onToggle(s.id)}
+                  aria-label={disabled ? `show ${s.name}` : `hide ${s.name}`}
+                  title={disabled ? "hidden. click to show again." : "showing. click to hide."}>
+            {disabled ? "○" : "●"}
+          </button>
+        </div>
+      </div>
     );
   }
 
   return (
     <a className={cls}
-       href={s.url} target="_blank" rel="noopener noreferrer" title={`${s.name} · ${s.url}`}>
+       href={s.url} target="_blank" rel="noopener noreferrer"
+       aria-label={`${s.name}, ${statusText(live)}, opens ${s.url} in a new tab`}
+       title={`${s.name} · ${statusText(live)} · ${s.url}`}>
       <div className="qlinks-card-ico"><Mark id={s.icon} /></div>
       <div className="qlinks-card-body">
         <div className="qlinks-card-title">
           {s.name}
-          <span className={`status-dot ${live}`} title={live} />
+          <span className={`status-dot ${live}`} role="img" aria-label={`status: ${statusText(live)}`} title={statusText(live)} />
         </div>
         <div className="qlinks-card-desc">{s.desc}</div>
       </div>
@@ -55,7 +75,7 @@ function ServiceCard({ s, editing, disabled, onToggle, status }) {
   );
 }
 
-function Section({ s, editing, disabledSet, onToggle, live }) {
+function Section({ s, editing, disabledSet, pinnedSet, onToggle, onTogglePin, live }) {
   const visible = editing ? s.services : s.services.filter(svc => !disabledSet.has(svc.id));
   if (!visible.length) return null;
   return (
@@ -72,7 +92,9 @@ function Section({ s, editing, disabledSet, onToggle, live }) {
           <ServiceCard key={svc.id} s={svc}
             editing={editing}
             disabled={disabledSet.has(svc.id)}
+            pinned={pinnedSet.has(svc.id)}
             onToggle={onToggle}
+            onTogglePin={onTogglePin}
             status={live[svc.id]} />
         ))}
       </div>
@@ -134,11 +156,14 @@ function SearchBar({ disabledSet }) {
             if (e.key === "ArrowUp")   { e.preventDefault(); setIdx(i => Math.max(i - 1, 0)); }
             if (e.key === "Enter")     submit();
           }}
-          placeholder={scope === "web" ? "Search the web…" : "Jump to a service — try sonarr, pihole, plex…"}
+          placeholder={scope === "web" ? "Search the web…" : "Jump to a service. Try sonarr, pihole, plex…"}
+          aria-label={scope === "web" ? "search the web" : "search services"}
         />
-        <div className="search-scope">
-          <button className={scope === "svc" ? "on" : ""} onClick={() => setScope("svc")}>SVC</button>
-          <button className={scope === "web" ? "on" : ""} onClick={() => setScope("web")}>WEB</button>
+        <div className="search-scope" role="tablist" aria-label="search scope">
+          <button role="tab" aria-selected={scope === "svc"} aria-label="search services" title="search services on this network"
+                  className={scope === "svc" ? "on" : ""} onClick={() => setScope("svc")}>SVC</button>
+          <button role="tab" aria-selected={scope === "web"} aria-label="search the web" title="search the web with Google"
+                  className={scope === "web" ? "on" : ""} onClick={() => setScope("web")}>WEB</button>
         </div>
         <span className="kbd">⌘K</span>
       </div>
@@ -156,7 +181,9 @@ function SearchBar({ disabledSet }) {
             </a>
           ))}
           {scope === "svc" && q.trim() && matches.length === 0 && (
-            <div className="search-empty">No service matches <b style={{ color: "var(--ink)" }}>{q}</b></div>
+            <div className="search-empty">
+              Nothing matched <b style={{ color: "var(--ink)" }}>{q}</b>. Try a shorter name, or switch to <b style={{ color: "var(--ink)" }}>WEB</b> to search the web.
+            </div>
           )}
           <div className="search-google" onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(q || "")}`, "_blank")}>
             <span style={{ width: 18, height: 18, display: "inline-flex" }}>{UI.google}</span>
@@ -176,17 +203,43 @@ export default function Quicklinks() {
 
   const dateStr = now.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
   const timeStr = now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+  const todayISO = useMemo(() => new Date().toISOString().slice(0, 10), [dateStr]);
 
   const [disabled, setDisabled] = usePrefs('quicklinks.disabled', []);
+  const [pinned, setPinned] = usePrefs('quicklinks.pinned', QUICK_APP_IDS);
   const [editing, setEditing] = useState(false);
+  const [recentlyHidden, setRecentlyHidden] = useState(null);
   const disabledSet = useMemo(() => new Set(disabled), [disabled]);
+  const pinnedSet = useMemo(() => new Set(pinned || []), [pinned]);
   const live = useHealth();
 
+  useEffect(() => {
+    if (!recentlyHidden) return;
+    const t = setTimeout(() => setRecentlyHidden(null), 6000);
+    return () => clearTimeout(t);
+  }, [recentlyHidden]);
+
   const onToggle = (id) => {
-    const next = disabledSet.has(id)
-      ? disabled.filter(x => x !== id)
-      : [...disabled, id];
-    setDisabled(next);
+    if (disabledSet.has(id)) {
+      setDisabled(disabled.filter(x => x !== id));
+      setRecentlyHidden(null);
+    } else {
+      const svc = ALL_SERVICES.find(s => s.id === id);
+      setDisabled([...disabled, id]);
+      setRecentlyHidden({ id, name: svc?.name || id });
+    }
+  };
+
+  const undoHide = () => {
+    if (!recentlyHidden) return;
+    setDisabled(disabled.filter(x => x !== recentlyHidden.id));
+    setRecentlyHidden(null);
+  };
+
+  const onTogglePin = (id) => {
+    const list = pinned || [];
+    const next = pinnedSet.has(id) ? list.filter(x => x !== id) : [...list, id];
+    setPinned(next);
   };
 
   const counts = useMemo(() => {
@@ -211,7 +264,10 @@ export default function Quicklinks() {
           <div className="brand-name">arylmera <span className="sub">directory · hera</span></div>
         </div>
         <div className="topbar-right">
-          <button type="button" className={"nav-pill" + (editing ? " on" : "")} onClick={() => setEditing(e => !e)} title="toggle which services to show">
+          <button type="button" className={"nav-pill" + (editing ? " on" : "")}
+                  onClick={() => setEditing(e => !e)}
+                  aria-pressed={editing}
+                  title={editing ? "finish editing." : "edit which services show, and pin favorites to home."}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4Z"/></svg>
             <span>{editing ? "done" : "edit"}</span>
           </button>
@@ -226,9 +282,12 @@ export default function Quicklinks() {
         <div>
           <div className="greeting-eyebrow">{dateStr} · Europe/Brussels</div>
           <h1 className="greeting">{greeting}, <em>Guillaume.</em></h1>
-          <p className="greeting-sub">
-            {counts.up} of {counts.total} services online on <code style={{ fontFamily: "var(--font-mono)", fontSize: 12, padding: "2px 6px", background: "var(--bg-card)", border: "1px solid var(--line-soft)", borderRadius: 4, color: "var(--ink)" }}>192.168.1.100</code>.
-            All reverse-proxied through Nginx at <code style={{ fontFamily: "var(--font-mono)", fontSize: 12, padding: "2px 6px", background: "var(--bg-card)", border: "1px solid var(--line-soft)", borderRadius: 4, color: "var(--ink)" }}>*.arylmera.duckdns.org</code>.
+          <p className="greeting-sub qlinks-hero-status">
+            <span><b>{counts.up}</b> of <b>{counts.total}</b> online</span>
+            <span className="sep">·</span>
+            <code>192.168.1.100</code>
+            <span className="sep">·</span>
+            <code>*.arylmera.duckdns.org</code>
           </p>
         </div>
         <div className="hero-meta">
@@ -251,18 +310,47 @@ export default function Quicklinks() {
 
       <SearchBar disabledSet={disabledSet} />
 
+      {!editing && counts.total === 0 && (
+        <div className="qlinks-empty" role="status">
+          <div className="qlinks-empty-title">Nothing to show.</div>
+          <div className="qlinks-empty-sub">
+            All {ALL_SERVICES.length} services are hidden. Tap <b>edit</b> above to bring some back.
+          </div>
+        </div>
+      )}
+
       {SECTIONS.map((s) => (
-        <Section key={s.id} s={s} editing={editing} disabledSet={disabledSet} onToggle={onToggle} live={live} />
+        <Section key={s.id} s={s} editing={editing}
+                 disabledSet={disabledSet} pinnedSet={pinnedSet}
+                 onToggle={onToggle} onTogglePin={onTogglePin} live={live} />
       ))}
 
-      <div className="footbar">
-        <div className="stats">
-          <span><b>{counts.up}</b> up</span>
-          <span><b style={{ color: "var(--status-warn)" }}>{counts.warn}</b> warn</span>
-          <span><b style={{ color: "var(--status-down)" }}>{counts.down}</b> offline</span>
-          <span><b>{counts.total}</b> total services</span>
+      {recentlyHidden && (
+        <div className="qlinks-undo" role="status" aria-live="polite">
+          <span><b>{recentlyHidden.name}</b> hidden.</span>
+          <button type="button" onClick={undoHide} aria-label={`undo. show ${recentlyHidden.name} again`}>
+            undo
+          </button>
         </div>
-        <div>arylmera · directory · {now.toISOString().slice(0, 10)}</div>
+      )}
+
+      <div className="footbar" role="status" aria-live="polite">
+        <div className="stats">
+          <span aria-label={`${counts.up} services online`}>
+            <span className="status-dot up" role="img" aria-hidden="true" style={{ display: "inline-block", marginRight: 6, verticalAlign: "middle" }} />
+            <b>{counts.up}</b> online
+          </span>
+          <span aria-label={`${counts.warn} services degraded`}>
+            <span className="status-dot warn" role="img" aria-hidden="true" style={{ display: "inline-block", marginRight: 6, verticalAlign: "middle" }} />
+            <b style={{ color: "var(--status-warn)" }}>{counts.warn}</b> degraded
+          </span>
+          <span aria-label={`${counts.down} services offline`}>
+            <span className="status-dot down" role="img" aria-hidden="true" style={{ display: "inline-block", marginRight: 6, verticalAlign: "middle" }} />
+            <b style={{ color: "var(--status-down)" }}>{counts.down}</b> offline
+          </span>
+          <span aria-label={`${counts.total} services total`}><b>{counts.total}</b> total</span>
+        </div>
+        <div>arylmera · directory · {todayISO}</div>
       </div>
     </div>
   );

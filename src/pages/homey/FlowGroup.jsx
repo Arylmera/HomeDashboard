@@ -15,10 +15,11 @@ export function FlowGroup({ group, collapsed, onToggle }) {
       {!collapsed && (
         <div className="flows">
           {group.flows.map(f => (
-            <div className={"flow " + (f.enabled ? "on" : "off")} key={f.id}>
+            <div className={"flow " + (f.enabled ? "on" : "off")} key={f.id}
+                 aria-label={`${f.name} flow, ${f.enabled ? "enabled" : "disabled"}`}>
               <span className="ft">{f.name}</span>
               <span className="fd">{f.trigger}</span>
-              <div className="fdot" />
+              <span className={`status-dot ${f.enabled ? "up" : "off"}`} role="img" aria-label={f.enabled ? "enabled" : "disabled"} />
             </div>
           ))}
         </div>

@@ -99,8 +99,32 @@ function send(res, status, obj) {
   res.end(JSON.stringify(obj));
 }
 
+async function readJsonBody(req) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    let size = 0;
+    req.on('data', (c) => {
+      size += c.length;
+      if (size > 64 * 1024) { reject(new Error('body too large')); req.destroy(); return; }
+      chunks.push(c);
+    });
+    req.on('end', () => {
+      const raw = Buffer.concat(chunks).toString('utf8').trim();
+      if (!raw) return resolve({});
+      try { resolve(JSON.parse(raw)); } catch (e) { reject(e); }
+    });
+    req.on('error', reject);
+  });
+}
+
+// Capabilities the dashboard is allowed to write. Anything else is rejected
+// to avoid accidentally writing sensor/measurement values.
+const WRITABLE_CAPS = new Set(['onoff', 'dim', 'target_temperature']);
+
+const VARIABLE_TYPES = new Set(['boolean', 'number', 'string']);
+
 // ─── Snapshot serializer (trim SDK objects to plain JSON) ─────
-function serializeSnapshot({ system, zones, devices, flows, advFlows, folders }) {
+function serializeSnapshot({ system, zones, devices, flows, advFlows, folders, variables }) {
   return {
     system: system && {
       hostname: system.hostname,
@@ -149,6 +173,9 @@ function serializeSnapshot({ system, zones, devices, flows, advFlows, folders })
     ],
     folders: Object.values(folders || {}).map(f => ({
       id: f.id, name: f.name, parent: f.parent ?? null,
+    })),
+    variables: Object.values(variables || {}).map(v => ({
+      id: v.id, name: v.name, type: v.type, value: v.value,
     })),
   };
 }
@@ -214,20 +241,108 @@ export function homeyOAuthMiddleware() {
       return send(res, 200, { ok: true });
     }
 
+    // ─── /api/homey/device/:id/capability/:cap ────────────────
+    {
+      const m = url.match(/^\/api\/homey\/device\/([^/?]+)\/capability\/([^/?]+)(?:\?.*)?$/);
+      if (m) {
+        if (req.method !== 'POST') {
+          res.setHeader('Allow', 'POST');
+          return send(res, 405, { error: 'POST only' });
+        }
+        const deviceId = decodeURIComponent(m[1]);
+        const capabilityId = decodeURIComponent(m[2]);
+        if (!WRITABLE_CAPS.has(capabilityId)) {
+          return send(res, 400, { error: 'capability_not_writable', capability: capabilityId });
+        }
+        let body;
+        try { body = await readJsonBody(req); }
+        catch { return send(res, 400, { error: 'invalid_json' }); }
+        if (!('value' in body)) return send(res, 400, { error: 'missing_value' });
+        try {
+          const homeyApi = await getHomeyApi();
+          if (!homeyApi) return send(res, 401, { error: 'not_authenticated' });
+          await homeyApi.devices.setCapabilityValue({ deviceId, capabilityId, value: body.value });
+          return send(res, 200, { ok: true });
+        } catch (e) {
+          invalidateHomeyApi();
+          return send(res, 502, { error: 'homey_api_error', detail: String(e?.message || e) });
+        }
+      }
+    }
+
+    // ─── /api/homey/flow/:id/trigger ──────────────────────────
+    {
+      const m = url.match(/^\/api\/homey\/flow\/([^/?]+)\/trigger(?:\?.*)?$/);
+      if (m) {
+        if (req.method !== 'POST') {
+          res.setHeader('Allow', 'POST');
+          return send(res, 405, { error: 'POST only' });
+        }
+        const id = decodeURIComponent(m[1]);
+        let body = {};
+        try { body = await readJsonBody(req); }
+        catch { return send(res, 400, { error: 'invalid_json' }); }
+        const type = body.type === 'advancedflow' ? 'advancedflow' : 'flow';
+        try {
+          const homeyApi = await getHomeyApi();
+          if (!homeyApi) return send(res, 401, { error: 'not_authenticated' });
+          if (type === 'advancedflow' && typeof homeyApi.flow.triggerAdvancedFlow === 'function') {
+            await homeyApi.flow.triggerAdvancedFlow({ id });
+          } else {
+            await homeyApi.flow.triggerFlow({ id });
+          }
+          return send(res, 200, { ok: true });
+        } catch (e) {
+          invalidateHomeyApi();
+          return send(res, 502, { error: 'homey_api_error', detail: String(e?.message || e) });
+        }
+      }
+    }
+
+    // ─── /api/homey/variable/:id ──────────────────────────────
+    {
+      const m = url.match(/^\/api\/homey\/variable\/([^/?]+)(?:\?.*)?$/);
+      if (m) {
+        if (req.method !== 'POST') {
+          res.setHeader('Allow', 'POST');
+          return send(res, 405, { error: 'POST only' });
+        }
+        const id = decodeURIComponent(m[1]);
+        let body;
+        try { body = await readJsonBody(req); }
+        catch { return send(res, 400, { error: 'invalid_json' }); }
+        if (!('value' in body)) return send(res, 400, { error: 'missing_value' });
+        const t = typeof body.value;
+        if (!VARIABLE_TYPES.has(t)) {
+          return send(res, 400, { error: 'invalid_value', type: t });
+        }
+        try {
+          const homeyApi = await getHomeyApi();
+          if (!homeyApi) return send(res, 401, { error: 'not_authenticated' });
+          await homeyApi.logic.setVariableValue({ id, variable: { value: body.value } });
+          return send(res, 200, { ok: true });
+        } catch (e) {
+          invalidateHomeyApi();
+          return send(res, 502, { error: 'homey_api_error', detail: String(e?.message || e) });
+        }
+      }
+    }
+
     // ─── /api/homey/snapshot ──────────────────────────────────
     if (url.startsWith('/api/homey/snapshot')) {
       try {
         const homeyApi = await getHomeyApi();
         if (!homeyApi) return send(res, 401, { error: 'not_authenticated' });
-        const [system, zones, devices, flows, advFlows, folders] = await Promise.all([
+        const [system, zones, devices, flows, advFlows, folders, variables] = await Promise.all([
           homeyApi.system?.getInfo?.()  .catch(() => null),
           homeyApi.zones.getZones()     .catch(() => ({})),
           homeyApi.devices.getDevices() .catch(() => ({})),
           homeyApi.flow?.getFlows?.()   .catch(() => ({})),
           homeyApi.flow?.getAdvancedFlows?.().catch(() => ({})),
           homeyApi.flow?.getFlowFolders?.().catch(() => ({})),
+          homeyApi.logic?.getVariables?.().catch(() => ({})),
         ]);
-        return send(res, 200, serializeSnapshot({ system, zones, devices, flows, advFlows, folders }));
+        return send(res, 200, serializeSnapshot({ system, zones, devices, flows, advFlows, folders, variables }));
       } catch (e) {
         invalidateHomeyApi();
         return send(res, 502, { error: 'homey_api_error', detail: String(e?.message || e) });

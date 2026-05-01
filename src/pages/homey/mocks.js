@@ -43,3 +43,10 @@ export const MOCK_FLOWS = [
   { id: "f7", name: "Guest Mode",        trigger: "manual",            enabled: false },
   { id: "f8", name: "Vacation Lights",   trigger: "when away · random",enabled: false },
 ];
+
+export const MOCK_VARIABLES = [
+  { id: "v1", name: "Presence",         type: "boolean", value: true },
+  { id: "v2", name: "Guest mode",       type: "boolean", value: false },
+  { id: "v3", name: "Heating setpoint", type: "number",  value: 21 },
+  { id: "v4", name: "Mood",             type: "string",  value: "evening" },
+];

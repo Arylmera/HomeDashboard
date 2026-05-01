@@ -20,6 +20,9 @@ Conclusion: just use the SDK on the server, expose a single snapshot endpoint to
 | `GET  /api/homey/oauth/status` | `{ configured, authenticated }` — drives the UI banner |
 | `POST /api/homey/oauth/logout` | clears state, drops cached cloud client + Homey session |
 | `GET  /api/homey/snapshot` | live `{ system, zones, devices, flows }` (see shape below) |
+| `POST /api/homey/device/:id/capability/:cap` | body `{ value }` → `homeyApi.devices.setCapabilityValue`. Allowed `cap`: `onoff`, `dim`, `target_temperature`. Other capabilities return 400. |
+| `POST /api/homey/flow/:id/trigger` | body `{ type: "flow" \| "advancedflow" }` → `homeyApi.flow.triggerFlow` / `triggerAdvancedFlow`. |
+| `POST /api/homey/variable/:id` | body `{ value }` → `homeyApi.logic.setVariableValue({ id, variable: { value } })`. `value` must be `boolean`, `number`, or `string`; other types return 400 `invalid_value`. |
 
 Used in: [src/lib/hooks.js](../../src/lib/hooks.js) `useHomey()` (calls only `/snapshot`) and [src/pages/homey/Homey.jsx](../../src/pages/homey/Homey.jsx) (`useHomeyAuth()` polls `/oauth/status` for the connect banner).
 
@@ -48,6 +51,11 @@ Used in: [src/lib/hooks.js](../../src/lib/hooks.js) `useHomey()` (calls only `/s
   "flows": [
     { "id": "uuid", "name": "Sunset Lights", "enabled": true, "broken": false, "type": "flow" },
     { "id": "uuid", "name": "Movie Night",   "enabled": true, "broken": false, "type": "advancedflow" }
+  ],
+  "variables": [
+    { "id": "uuid", "name": "Presence",         "type": "boolean", "value": true },
+    { "id": "uuid", "name": "Heating setpoint", "type": "number",  "value": 21 },
+    { "id": "uuid", "name": "Mood",             "type": "string",  "value": "evening" }
   ]
 }
 ```
@@ -133,6 +141,10 @@ When extending the snapshot or adding writes, these are the SDK methods we'd cal
 - `getAdvancedFlows()` — advanced flows (used in snapshot)
 - `triggerFlow({ id })` — run a flow on demand
 - `enableFlow({ id })` / `disableFlow({ id })`
+
+### Logic (variables) — `homeyApi.logic`
+- `getVariables()` → `{ [id]: variable }` (used in snapshot) — `id`, `name`, `type` (`boolean` / `number` / `string`), `value`
+- `setVariableValue({ id, variable: { value } })` — write a new value; type must match the variable's declared `type`
 
 ### Insights (timeseries) — `homeyApi.insights`
 - `getLogs()` — list available logs (`uri`, `id`, `name`, `type`, `units`, `decimals`)

@@ -1,7 +1,7 @@
 import { iconForZone } from './icons.jsx';
 import { Device } from './Device.jsx';
 
-export function ZoneCard({ zone, collapsed, onToggle }) {
+export function ZoneCard({ zone, collapsed, onToggle, onDeviceToggle }) {
   const onCount = zone.devices.filter(d => d.on).length;
   return (
     <div className={"zone" + (collapsed ? " collapsed" : "")}>
@@ -31,7 +31,7 @@ export function ZoneCard({ zone, collapsed, onToggle }) {
             <div className="h"><span>RH</span>{zone.humidity != null ? `${Math.round(zone.humidity)}%` : "—"}</div>
           </div>
           <div className="dev-list">
-            {zone.devices.map(d => <Device d={d} key={d.id} />)}
+            {zone.devices.map(d => <Device d={d} key={d.id} onToggle={onDeviceToggle} />)}
           </div>
         </div>
       )}

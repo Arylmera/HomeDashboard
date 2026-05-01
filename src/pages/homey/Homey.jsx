@@ -4,13 +4,14 @@
  *  Zones + flows fall back to mocks if Homey is unreachable.
  * ============================================================== */
 import { useMemo } from 'react';
-import { useSpeedtest, useNextcloud, useHomey } from '../../lib/hooks.js';
+import { useSpeedtest, useNextcloud, useHomey, homeySetCapability, homeyTriggerFlow, homeySetVariable } from '../../lib/hooks.js';
 import { isHiddenZone } from './icons.jsx';
-import { MOCK_ZONES, MOCK_FLOWS } from './mocks.js';
+import { MOCK_ZONES, MOCK_FLOWS, MOCK_VARIABLES } from './mocks.js';
 import { usePersistedSet } from './usePersistedSet.js';
 import { useHomeyAuth } from './useHomeyAuth.js';
 import { ZoneCard } from './ZoneCard.jsx';
 import { FlowGroup } from './FlowGroup.jsx';
+import { VariableCard } from './VariableCard.jsx';
 
 export default function Homey() {
   const st = useSpeedtest();
@@ -22,11 +23,33 @@ export default function Homey() {
 
   const isLive = homey.state === "live" && homey.zones.length > 0;
 
+  const onDeviceToggle = async (device) => {
+    try {
+      await homeySetCapability(device.id, 'onoff', !device.on);
+      homey.refresh();
+    } catch (e) { console.warn('[homey toggle]', e); }
+  };
+  const onFlowTrigger = async (flow) => {
+    try {
+      await homeyTriggerFlow(flow.id, flow.type);
+    } catch (e) { console.warn('[homey trigger]', e); throw e; }
+  };
+  const onVariableSave = async (id, value) => {
+    try {
+      await homeySetVariable(id, value);
+      homey.refresh();
+    } catch (e) { console.warn('[homey variable]', e); throw e; }
+  };
+
   const ZONES = useMemo(() => isLive
-    ? homey.zones.filter(z => !isHiddenZone(z.name) && (z.devices?.length ?? 0) > 0)
+    ? homey.zones.filter(z => !isHiddenZone(z.name))
     : MOCK_ZONES, [isLive, homey.zones]);
   const FLOWS = isLive ? homey.flows : MOCK_FLOWS;
   const FOLDERS = isLive ? (homey.folders || []) : [];
+  const VARIABLES = useMemo(() => {
+    const list = isLive ? (homey.variables || []) : MOCK_VARIABLES;
+    return [...list].sort((a, b) => a.name.localeCompare(b.name));
+  }, [isLive, homey.variables]);
 
   const flowGroups = useMemo(() => {
     const folderName = (id) => FOLDERS.find(f => f.id === id)?.name || null;
@@ -128,6 +151,7 @@ export default function Homey() {
             zone={z}
             collapsed={!expandedZones.has(z.id)}
             onToggle={toggleZone}
+            onDeviceToggle={isLive ? onDeviceToggle : null}
           />
         ))}
       </div>
@@ -144,6 +168,22 @@ export default function Homey() {
             group={g}
             collapsed={!expandedFolders.has(g.id)}
             onToggle={toggleFolder}
+            onTrigger={isLive ? onFlowTrigger : null}
+          />
+        ))}
+      </div>
+
+      <div className="nas-section-title">
+        <span className="numeral">03 · variables</span>
+        <h2>Logic variables</h2>
+        <span className="meta">{VARIABLES.length} variables</span>
+      </div>
+      <div className="variables">
+        {VARIABLES.map(v => (
+          <VariableCard
+            key={v.id}
+            variable={v}
+            onSave={isLive ? onVariableSave : null}
           />
         ))}
       </div>

@@ -435,7 +435,9 @@ export function useAudiobookshelf({ poll = 5 * 60_000 } = {}) {
 // Maps to the Homey.jsx page shape: zones contain their devices and
 // climate is derived from the first temp/humidity sensor in each zone.
 export function useHomey({ poll = 30_000 } = {}) {
-  const [data, setData] = useState({ state: "loading", system: null, zones: [], devices: [], flows: [], folders: [] });
+  const [data, setData] = useState({ state: "loading", system: null, zones: [], devices: [], flows: [], folders: [], variables: [] });
+  const [tick, setTick] = useState(0);
+  const refresh = () => setTick(t => t + 1);
   useEffect(() => {
     let alive = true;
     const run = async () => {
@@ -452,6 +454,7 @@ export function useHomey({ poll = 30_000 } = {}) {
             return {
               id: d.id, name: d.name, type: devClass(d.class), raw: d.class,
               available: d.available,
+              capabilities: d.capabilities || [],
               on: v.onoff,
               dim: v.dim != null ? Math.round(v.dim * 100) : null,
               power: v.measure_power,
@@ -482,9 +485,11 @@ export function useHomey({ poll = 30_000 } = {}) {
           flows: (snap.flows || []).map(f => ({
             id: f.id, name: f.name, enabled: f.enabled, broken: f.broken,
             folder: f.folder ?? null,
+            type: f.type,
             trigger: f.type === 'advancedflow' ? "advanced" : "—",
           })),
           folders: snap.folders || [],
+          variables: snap.variables || [],
         });
       } catch (e) {
         console.warn("[homey]", e);
@@ -494,8 +499,38 @@ export function useHomey({ poll = 30_000 } = {}) {
     run();
     const id = setInterval(run, poll);
     return () => { alive = false; clearInterval(id); };
-  }, [poll]);
-  return data;
+  }, [poll, tick]);
+  return { ...data, refresh };
+}
+
+export async function homeySetCapability(deviceId, capability, value) {
+  const r = await fetch(`/api/homey/device/${encodeURIComponent(deviceId)}/capability/${encodeURIComponent(capability)}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify({ value }),
+  });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json().catch(() => ({}));
+}
+
+export async function homeySetVariable(id, value) {
+  const r = await fetch(`/api/homey/variable/${encodeURIComponent(id)}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify({ value }),
+  });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json().catch(() => ({}));
+}
+
+export async function homeyTriggerFlow(flowId, type = "flow") {
+  const r = await fetch(`/api/homey/flow/${encodeURIComponent(flowId)}/trigger`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify({ type }),
+  });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json().catch(() => ({}));
 }
 
 function devClass(c) {

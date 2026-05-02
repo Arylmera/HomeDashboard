@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import { prefsPlugin } from './src/server/prefs.js';
 import { homeyOAuthPlugin } from './src/server/homey-oauth.js';
 import { healthPlugin } from './src/server/health.js';
+import { icloudPlugin } from './src/server/icloud.js';
 
 /**
  * Build a proxy entry that:
@@ -119,6 +120,13 @@ export default defineConfig(({ mode }) => {
     rewrite: (p) => p.replace(/^\/api\/qbittorrent/, ''),
   }));
 
+  // Qui (qBit dashboard) — X-API-Key
+  add('/api/qui', proxy({
+    target: env.VITE_QUI_URL,
+    rewrite: (p) => p.replace(/^\/api\/qui/, ''),
+    headers: () => ({ 'X-API-Key': rt('QUI_API_KEY') }),
+  }));
+
   // Glances v4 — no auth
   add('/api/glances', proxy({
     target: env.VITE_GLANCES_URL,
@@ -147,6 +155,13 @@ export default defineConfig(({ mode }) => {
     },
   }));
 
+  // Tugtainer (container update tracker) — uses public API
+  // (set ENABLE_PUBLIC_API=true on the Tugtainer container).
+  add('/api/tugtainer', proxy({
+    target: env.VITE_TUGTAINER_URL,
+    rewrite: (p) => p.replace(/^\/api\/tugtainer/, ''),
+  }));
+
   // Arcane (docker manager) — X-Api-Key
   add('/api/arcane', proxy({
     target: env.VITE_ARCANE_URL,
@@ -160,7 +175,7 @@ export default defineConfig(({ mode }) => {
   // resolution which Vite's static proxy table can't express.
 
   return {
-    plugins: [react(), prefsPlugin(), homeyOAuthPlugin(), healthPlugin()],
+    plugins: [react(), prefsPlugin(), homeyOAuthPlugin(), healthPlugin(), icloudPlugin()],
     server: { proxy: proxies },
     preview: { host: true, port: 4173, proxy: proxies, allowedHosts: true },
     build: {

@@ -14,7 +14,7 @@ import { ALL_SERVICES } from '../../lib/services.js';
 import { fmtBytes, fmtNum } from '../../lib/format.js';
 import {
   useClock, useGreeting, useWeather, useTrueNAS, useGlances, usePihole, useSpeedtest,
-  usePlexSessions, useArrQueue, useNextcloud,
+  usePlexSessions, useArr, useNextcloud, useTugtainer, useArcane,
 } from '../../lib/hooks.js';
 import { useHealth } from '../../lib/useHealth.js';
 import { PAGES, QUICK_APP_IDS } from './pages.jsx';
@@ -23,6 +23,10 @@ import PageTile from './components/PageTile.jsx';
 import QuickApp from './components/QuickApp.jsx';
 import NetworkPanel from './components/NetworkPanel.jsx';
 import NASPanel from './components/NASPanel.jsx';
+import Forecast from './components/Forecast.jsx';
+import CalendarCard from './components/CalendarCard.jsx';
+import TasksCard from './components/TasksCard.jsx';
+import RecentlyAdded from './components/RecentlyAdded.jsx';
 import { usePrefs } from '../../lib/usePrefs.js';
 
 export default function Home() {
@@ -57,9 +61,21 @@ export default function Home() {
   const pi = usePihole();
   const st = useSpeedtest();
   const plexN = usePlexSessions();
-  const sonarrN = useArrQueue("sonarr");
-  const radarrN = useArrQueue("radarr");
+  const sonarr = useArr("sonarr");
+  const radarr = useArr("radarr");
+  const sonarrN = sonarr.queue?.totalRecords ?? null;
+  const radarrN = radarr.queue?.totalRecords ?? null;
+  const seriesN = sonarr.total ?? null;
+  const moviesN = radarr.total ?? null;
   const nc = useNextcloud();
+  const tug = useTugtainer();
+  const arcane = useArcane({ poll: 60_000 });
+  const dockerRunning = useMemo(
+    () => (arcane.containers || []).filter(c => c.state === "running").length,
+    [arcane.containers]
+  );
+  const dockerTotal = arcane.containers?.length ?? null;
+  const dockerStacks = arcane.projects?.length ?? null;
 
   const [pinnedIds] = usePrefs('quicklinks.pinned', QUICK_APP_IDS);
   const [disabledIds] = usePrefs('quicklinks.disabled', []);
@@ -86,9 +102,9 @@ export default function Home() {
 
   const pageStats = {
     plex: [
-      { label: "streams",  value: plexN   ?? "—", title: "Active Plex streams right now." },
-      { label: "sonarr q", value: sonarrN ?? "—", title: "TV episodes Sonarr is currently fetching." },
-      { label: "radarr q", value: radarrN ?? "—", title: "Movies Radarr is currently fetching." },
+      { label: "streams", value: plexN   ?? "—",                title: "Active Plex streams right now." },
+      { label: "series",  value: seriesN != null ? fmtNum(seriesN) : "—", title: "TV series tracked by Sonarr." },
+      { label: "movies",  value: moviesN != null ? fmtNum(moviesN) : "—", title: "Movies tracked by Radarr." },
     ],
     nas: [
       { label: "cpu",   value: nas?.cpuPct != null ? `${nas.cpuPct}%`        : "—", title: "TrueNAS CPU usage." },
@@ -99,6 +115,23 @@ export default function Home() {
       { label: "dns q",   value: pi.queries != null ? fmtNum(pi.queries) : "—", title: "DNS queries handled by Pi-hole today." },
       { label: "blocked", value: pi.pct != null ? `${pi.pct.toFixed(0)}%` : "—", title: "Percentage of DNS queries Pi-hole blocked today." },
       { label: "cloud",   value: nc.info?.quota?.used != null ? `${(nc.info.quota.used / 1024 ** 3).toFixed(0)} GiB` : "—", title: "Storage used in Nextcloud." },
+    ],
+    docker: [
+      {
+        label: "running",
+        value: dockerTotal != null ? `${dockerRunning}/${dockerTotal}` : "—",
+        title: "Containers running vs total known to Arcane.",
+      },
+      {
+        label: "stacks",
+        value: dockerStacks ?? "—",
+        title: "Compose projects (stacks) defined in Arcane.",
+      },
+      {
+        label: "updates",
+        value: tug.pending != null ? tug.pending : "—",
+        title: "Containers with an image update pending (Tugtainer).",
+      },
     ],
     quicklinks: [
       { label: "services", value: totalServices, title: "Total services in the directory." },
@@ -128,6 +161,11 @@ export default function Home() {
           <div className="brand-name">arylmera <span className="sub">home</span></div>
         </div>
         <div className="topbar-right">
+          {tug.pending != null && tug.pending > 0 && (
+            <a className="updates-chip" href="docker.html" title={`${tug.pending} of ${tug.total} containers have an update available`}>
+              <span className="dot" /> {tug.pending} updates
+            </a>
+          )}
           <div className={`statusbar ${statusClass}`}>
             <span className="dot" />
             <b>{onlineCount}</b>/{totalServices} online
@@ -154,14 +192,15 @@ export default function Home() {
               <div className="lab">{dateStr}</div>
             </div>
           </div>
-          <div className="hero-card">
+          <div className="hero-card hero-card-weather">
             <div className="ico">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
             </div>
-            <div>
+            <div className="weather-now">
               <div className="val">{weather.temp}°</div>
               <div className="weather-sub">{weather.desc}</div>
             </div>
+            <Forecast daily={weather.daily} />
           </div>
         </div>
       </div>
@@ -185,6 +224,15 @@ export default function Home() {
         </div>
         <div className="quickapps">
           {quickApps.map(s => <QuickApp key={s.id} svc={s} statusMap={healthMap} statText={qaStat(s.id)} />)}
+        </div>
+      </div>
+
+      <RecentlyAdded />
+
+      <div className="section">
+        <div className="day-row">
+          <CalendarCard />
+          <TasksCard />
         </div>
       </div>
 

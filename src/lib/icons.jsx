@@ -97,7 +97,7 @@ export const ICONS = {
 
   // Management
   arcane:         di("portainer"),
-  qui:            di("qbittorrent"),
+  qui:            di("autobrr"),
   dockdeploy:     di("dockge"),
 
   // Utility / AI

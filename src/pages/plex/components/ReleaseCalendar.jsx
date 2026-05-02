@@ -1,10 +1,44 @@
 import { useMemo, useState } from 'react';
 import { WEEKDAYS, MONTHS, dayKey, buildMonthGrid } from '../calendar.js';
 
+const VIEWS = ['day', 'week', 'month'];
+
+function startOfWeek(d) {
+  const out = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const offset = (out.getDay() + 6) % 7;
+  out.setDate(out.getDate() - offset);
+  return out;
+}
+
+function buildWeek(d) {
+  const start = startOfWeek(d);
+  return Array.from({ length: 7 }, (_, i) => {
+    const x = new Date(start);
+    x.setDate(start.getDate() + i);
+    return x;
+  });
+}
+
+function fmtRange(view, cursor) {
+  if (view === 'day') {
+    return cursor.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  }
+  if (view === 'week') {
+    const week = buildWeek(cursor);
+    const a = week[0], b = week[6];
+    const sameMonth = a.getMonth() === b.getMonth();
+    const left = a.toLocaleDateString(undefined, { day: 'numeric', month: sameMonth ? undefined : 'short' });
+    const right = b.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+    return `${left} – ${right}`;
+  }
+  return `${MONTHS[cursor.getMonth()]} ${cursor.getFullYear()}`;
+}
+
 export function ReleaseCalendar({ upcoming }) {
   const today = useMemo(() => new Date(), []);
-  const [cursor, setCursor] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
-  const grid = useMemo(() => buildMonthGrid(cursor.getFullYear(), cursor.getMonth()), [cursor]);
+  const [view, setView] = useState('week');
+  const [cursor, setCursor] = useState(() => new Date(today.getFullYear(), today.getMonth(), today.getDate()));
+
   const byDay = useMemo(() => {
     const m = new Map();
     for (const u of upcoming) {
@@ -15,8 +49,15 @@ export function ReleaseCalendar({ upcoming }) {
     return m;
   }, [upcoming]);
   const todayKey = dayKey(today);
-  const monthLabel = `${MONTHS[cursor.getMonth()]} ${cursor.getFullYear()}`;
-  const shiftMonth = (n) => setCursor(c => new Date(c.getFullYear(), c.getMonth() + n, 1));
+
+  const shift = (n) => setCursor(c => {
+    const out = new Date(c);
+    if (view === 'day') out.setDate(out.getDate() + n);
+    else if (view === 'week') out.setDate(out.getDate() + n * 7);
+    else out.setMonth(out.getMonth() + n);
+    return out;
+  });
+  const goToday = () => setCursor(new Date(today.getFullYear(), today.getMonth(), today.getDate()));
 
   if (upcoming.length === 0) {
     return (
@@ -34,45 +75,123 @@ export function ReleaseCalendar({ upcoming }) {
       <SectionTitle count={upcoming.length} />
       <div className="cal-month">
         <div className="cal-toolbar">
-          <button className="cal-nav" onClick={() => shiftMonth(-1)} aria-label="previous month">‹</button>
-          <div className="cal-label">{monthLabel}</div>
-          <button className="cal-nav" onClick={() => shiftMonth(1)} aria-label="next month">›</button>
-          <button className="cal-today" onClick={() => setCursor(new Date(today.getFullYear(), today.getMonth(), 1))}>today</button>
+          <button className="cal-nav" onClick={() => shift(-1)} aria-label={`previous ${view}`}>‹</button>
+          <div className="cal-label">{fmtRange(view, cursor)}</div>
+          <button className="cal-nav" onClick={() => shift(1)} aria-label={`next ${view}`}>›</button>
+          <div className="cal-views" role="tablist" aria-label="calendar view">
+            {VIEWS.map(v => (
+              <button
+                key={v}
+                role="tab"
+                aria-selected={view === v}
+                className={`cal-view${view === v ? ' active' : ''}`}
+                onClick={() => setView(v)}
+              >
+                {v}
+              </button>
+            ))}
+          </div>
+          <button className="cal-today" onClick={goToday}>today</button>
         </div>
-        <div className="cal-weekdays">
-          {WEEKDAYS.map(w => <div key={w} className="cal-wd">{w}</div>)}
-        </div>
-        <div className="cal-grid">
-          {grid.map((d) => {
-            const k = dayKey(d);
-            const items = byDay.get(k) || [];
-            const otherMonth = d.getMonth() !== cursor.getMonth();
-            const isToday = k === todayKey;
-            return (
-              <div key={k} className={`cal-cell${otherMonth ? ' muted' : ''}${isToday ? ' today' : ''}`}>
-                <div className="cal-cell-date">{d.getDate()}</div>
-                <div className="cal-cell-items">
-                  {items.map((u, i) => {
-                    const rawEp = u.kind === 'sonarr' ? u.sub.split(' · ').slice(1).join(' · ') : null;
-                    const epTitle = rawEp && rawEp.toUpperCase() !== 'TBA' ? rawEp : null;
-                    return (
-                      <div key={`${u.kind}-${i}`} className={`cal-pill ${u.kind}`} title={`${u.title} — ${u.sub}`}>
-                        <span className="dot" />
-                        <span className="body">
-                          <span className="t">{u.title}</span>
-                          {epTitle && <span className="ep">{epTitle}</span>}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        {view === 'month' && <MonthView cursor={cursor} byDay={byDay} todayKey={todayKey} />}
+        {view === 'week' && <WeekView cursor={cursor} byDay={byDay} todayKey={todayKey} />}
+        {view === 'day' && <DayView cursor={cursor} byDay={byDay} todayKey={todayKey} />}
       </div>
     </>
   );
+}
+
+function MonthView({ cursor, byDay, todayKey }) {
+  const grid = useMemo(() => buildMonthGrid(cursor.getFullYear(), cursor.getMonth()), [cursor]);
+  return (
+    <>
+      <div className="cal-weekdays">
+        {WEEKDAYS.map(w => <div key={w} className="cal-wd">{w}</div>)}
+      </div>
+      <div className="cal-grid">
+        {grid.map((d) => {
+          const k = dayKey(d);
+          const items = byDay.get(k) || [];
+          const otherMonth = d.getMonth() !== cursor.getMonth();
+          const isToday = k === todayKey;
+          return (
+            <div key={k} className={`cal-cell${otherMonth ? ' muted' : ''}${isToday ? ' today' : ''}`}>
+              <div className="cal-cell-date">{d.getDate()}</div>
+              <div className="cal-cell-items">
+                {items.map((u, i) => <Pill key={`${u.kind}-${i}`} u={u} />)}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </>
+  );
+}
+
+function WeekView({ cursor, byDay, todayKey }) {
+  const week = useMemo(() => buildWeek(cursor), [cursor]);
+  return (
+    <>
+      <div className="cal-weekdays">
+        {WEEKDAYS.map(w => <div key={w} className="cal-wd">{w}</div>)}
+      </div>
+      <div className="cal-grid cal-grid-week">
+        {week.map(d => {
+          const k = dayKey(d);
+          const items = byDay.get(k) || [];
+          const isToday = k === todayKey;
+          return (
+            <div key={k} className={`cal-cell${isToday ? ' today' : ''}`}>
+              <div className="cal-cell-date">{d.getDate()}</div>
+              <div className="cal-cell-items">
+                {items.map((u, i) => <Pill key={`${u.kind}-${i}`} u={u} />)}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </>
+  );
+}
+
+function DayView({ cursor, byDay, todayKey }) {
+  const k = dayKey(cursor);
+  const items = byDay.get(k) || [];
+  const isToday = k === todayKey;
+  return (
+    <div className={`cal-day${isToday ? ' today' : ''}`}>
+      {items.length === 0 ? (
+        <div className="cal-day-empty">Nothing scheduled for this day.</div>
+      ) : (
+        <div className="cal-day-items">
+          {items.map((u, i) => <Pill key={`${u.kind}-${i}`} u={u} large />)}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Pill({ u, large = false }) {
+  const epTitle = u.kind === 'sonarr' ? u.sub.split(' · ').slice(1).join(' · ') : null;
+  const className = `cal-pill ${u.kind}${large ? ' large' : ''}${u.href ? ' linked' : ''}`;
+  const title = `${u.title} — ${u.sub}${u.href ? ` · open in ${u.kind}` : ''}`;
+  const inner = (
+    <>
+      <span className="dot" />
+      <span className="body">
+        <span className="t">{epTitle || u.title}</span>
+        {epTitle && <span className="ep">{u.title}</span>}
+      </span>
+    </>
+  );
+  if (u.href) {
+    return (
+      <a className={className} title={title} href={u.href} target="_blank" rel="noreferrer noopener">
+        {inner}
+      </a>
+    );
+  }
+  return <div className={className} title={title}>{inner}</div>;
 }
 
 function SectionTitle({ count }) {

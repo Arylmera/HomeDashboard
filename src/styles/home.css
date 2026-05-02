@@ -264,3 +264,77 @@ html[data-density="dense"] body .pool-row { padding: 7px 10px; }
 .tw-segment button { font: inherit; font-size: 11px; padding: 4px 8px; border-radius: 6px; background: transparent; border: 0; color: var(--ink-dim); cursor: pointer; font-family: var(--font-mono); letter-spacing: 0.04em; }
 .tw-segment button.on { background: var(--bg-card-hi); color: var(--ember-hi); box-shadow: inset 0 0 0 1px var(--line); }
 .tw-close { position: absolute; top: 8px; right: 8px; background: transparent; border: 0; color: var(--ink-faint); cursor: pointer; padding: 4px; }
+
+/* ---------- Forecast strip (in hero weather card) ---------- */
+.hero-card-weather { gap: 14px; }
+.weather-now { min-width: 64px; }
+.forecast { display: flex; gap: 10px; padding-left: 4px; border-left: 1px solid var(--line-soft); }
+.forecast-day { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 0 6px; min-width: 36px; }
+.forecast-dow { font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); letter-spacing: 0.08em; text-transform: uppercase; }
+.forecast-temp { font-family: var(--font-mono); font-size: 13px; color: var(--ink); font-weight: 600; }
+.forecast-min { font-family: var(--font-mono); font-size: 10px; color: var(--ink-dim); }
+
+@media (max-width: 540px) {
+  .forecast { display: none; }
+}
+
+/* ---------- Updates chip (topbar) ---------- */
+.updates-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-right: 8px; padding: 4px 10px;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.04em;
+  color: var(--ember-hi); text-decoration: none;
+  background: var(--bg-card); border: 1px solid var(--line); border-radius: 999px;
+}
+.updates-chip:hover { background: var(--bg-card-hi); }
+.updates-chip .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ember); }
+
+/* ---------- Day row (Calendar + Tasks side-by-side) ---------- */
+.day-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 760px) {
+  .day-row { grid-template-columns: 1fr; }
+}
+
+.cal-empty { font-size: 12px; color: var(--ink-faint); margin: 4px 0 0; }
+.cal-empty code { font-family: var(--font-mono); font-size: 11px; color: var(--ember-hi); background: var(--bg); padding: 1px 5px; border-radius: 4px; }
+
+.cal-group { margin-top: 10px; }
+.cal-group:first-of-type { margin-top: 0; }
+.cal-group-label { font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+
+.cal-list { list-style: none; margin: 0; padding: 0; }
+.cal-item { display: grid; grid-template-columns: 64px 1fr; gap: 10px; padding: 4px 0; align-items: baseline; }
+.cal-item + .cal-item { border-top: 1px dashed var(--line-soft); }
+.cal-when { font-family: var(--font-mono); font-size: 11px; color: var(--ember-hi); letter-spacing: 0.04em; }
+.cal-title { font-size: 13px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---------- Tasks list ---------- */
+.tasks-list { list-style: none; margin: 0; padding: 0; }
+.tasks-item { display: flex; gap: 8px; align-items: baseline; padding: 6px 0; justify-content: space-between; }
+.tasks-item + .tasks-item { border-top: 1px dashed var(--line-soft); }
+.tasks-title { font-size: 13px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tasks-due { font-family: var(--font-mono); font-size: 10px; color: var(--ink-dim); letter-spacing: 0.04em; padding: 1px 6px; border-radius: 4px; background: var(--bg); }
+.tasks-due.late { color: var(--status-down); }
+
+/* ---------- Recently added strip ---------- */
+.recent-strip {
+  display: grid; grid-auto-flow: column; grid-auto-columns: 120px;
+  gap: 12px; overflow-x: auto; padding-bottom: 6px;
+  scroll-snap-type: x mandatory;
+}
+.recent-strip::-webkit-scrollbar { height: 6px; }
+.recent-strip::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+
+.recent-tile {
+  display: flex; flex-direction: column; gap: 6px;
+  text-decoration: none; color: inherit; scroll-snap-align: start;
+}
+.recent-thumb {
+  width: 120px; aspect-ratio: 2 / 3; object-fit: cover;
+  background: var(--bg-card); border: 1px solid var(--line); border-radius: 8px;
+}
+.recent-thumb-fallback { display: block; }
+.recent-meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.recent-title { font-size: 12px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.recent-sub { font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); letter-spacing: 0.04em; }
+

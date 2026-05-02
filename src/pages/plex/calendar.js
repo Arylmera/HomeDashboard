@@ -27,16 +27,23 @@ export function buildMonthGrid(year, month) {
   return days;
 }
 
+const SONARR_BASE = (import.meta.env.VITE_SONARR_URL || '').replace(/\/$/, '');
+const RADARR_BASE = (import.meta.env.VITE_RADARR_URL || '').replace(/\/$/, '');
+
 export function useUpcoming(sonarr, radarr) {
   return useMemo(() => {
     const items = [];
     if (sonarr.calendar) {
       for (const ep of sonarr.calendar) {
+        const code = `S${String(ep.seasonNumber).padStart(2, '0')}E${String(ep.episodeNumber).padStart(2, '0')}`;
+        const epTitle = ep.title || 'TBA';
+        const slug = ep.series?.titleSlug;
         items.push({
           when: ep.airDateUtc,
-          title: ep.series?.title || ep.seriesTitle || 'Episode',
-          sub: `S${String(ep.seasonNumber).padStart(2, '0')}E${String(ep.episodeNumber).padStart(2, '0')} · ${ep.title}`,
+          title: ep.series?.title || ep.seriesTitle || 'Unknown series',
+          sub: `${code} · ${epTitle}`,
           kind: 'sonarr',
+          href: SONARR_BASE && slug ? `${SONARR_BASE}/series/${slug}` : null,
         });
       }
     }
@@ -47,6 +54,7 @@ export function useUpcoming(sonarr, radarr) {
           title: m.title,
           sub: `${m.year} · ${m.studio || 'release'}`,
           kind: 'radarr',
+          href: RADARR_BASE && m.titleSlug ? `${RADARR_BASE}/movie/${m.titleSlug}` : null,
         });
       }
     }

@@ -17,6 +17,7 @@ Consult before adding new fetches; update when you discover a new endpoint or a 
 | Pi-hole v6 | `/api/pihole` | [pihole.md](pihole.md) |
 | Speedtest Tracker | `/api/speedtest` | [speedtest-tracker.md](speedtest-tracker.md) |
 | Nextcloud | `/api/nextcloud` | [nextcloud.md](nextcloud.md) |
+| iCloud (CalDAV) | `/api/icloud` | [icloud.md](icloud.md) |
 | Audiobookshelf | `/api/audiobookshelf` | [audiobookshelf.md](audiobookshelf.md) |
 | Open-Meteo | direct (no proxy) | [open-meteo.md](open-meteo.md) |
 | Homey Pro | `/api/homey` (planned) | [homey.md](homey.md) |

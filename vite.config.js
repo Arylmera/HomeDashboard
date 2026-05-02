@@ -5,6 +5,9 @@ import { prefsPlugin } from './src/server/prefs.js';
 import { homeyOAuthPlugin } from './src/server/homey-oauth.js';
 import { healthPlugin } from './src/server/health.js';
 import { icloudPlugin } from './src/server/icloud.js';
+import { npmPlugin } from './src/server/npm.js';
+import { metricsPlugin } from './src/server/metrics.js';
+import { asusPlugin } from './src/server/asus.js';
 
 /**
  * Build a proxy entry that:
@@ -38,8 +41,11 @@ export default defineConfig(({ mode }) => {
   // Server-side middleware (homeyOAuthPlugin, prefs.js) reads its config
   // via process.env. Copy non-VITE_ keys over so .env values reach them
   // in dev. (In containers, process.env is already populated by Docker.)
+  // Copy every .env value to process.env (including VITE_* — middleware
+  // sometimes needs the public host URL too, e.g. NPM). In containers
+  // process.env is already populated by Docker.
   for (const [k, v] of Object.entries(env)) {
-    if (!k.startsWith('VITE_') && process.env[k] === undefined) process.env[k] = v;
+    if (process.env[k] === undefined) process.env[k] = v;
   }
 
   const proxies = {};
@@ -175,7 +181,7 @@ export default defineConfig(({ mode }) => {
   // resolution which Vite's static proxy table can't express.
 
   return {
-    plugins: [react(), prefsPlugin(), homeyOAuthPlugin(), healthPlugin(), icloudPlugin()],
+    plugins: [react(), prefsPlugin(), homeyOAuthPlugin(), healthPlugin(), icloudPlugin(), npmPlugin(), asusPlugin(), metricsPlugin()],
     server: { proxy: proxies },
     preview: { host: true, port: 4173, proxy: proxies, allowedHosts: true },
     build: {
@@ -187,6 +193,7 @@ export default defineConfig(({ mode }) => {
           homey: resolve(__dirname, 'homey.html'),
           quicklinks: resolve(__dirname, 'quicklinks.html'),
           docker: resolve(__dirname, 'docker.html'),
+          network: resolve(__dirname, 'network.html'),
         },
       },
     },

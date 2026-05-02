@@ -55,6 +55,7 @@ build:image:
         --build-arg VITE_GLANCES_URL="$VITE_GLANCES_URL" \
         --build-arg VITE_BESZEL_URL="$VITE_BESZEL_URL" \
         --build-arg VITE_NEXTCLOUD_URL="$VITE_NEXTCLOUD_URL" \
+        --build-arg VITE_NPM_URL="$VITE_NPM_URL" \
         --build-arg HOMEY_ID="$HOMEY_ID" \
         -t "$TAG_SHA" -t "$TAG_REF" $EXTRA_TAG \
         -f docker/Dockerfile \

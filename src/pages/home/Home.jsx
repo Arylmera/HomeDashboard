@@ -14,7 +14,7 @@ import { ALL_SERVICES } from '../../lib/services.js';
 import { fmtBytes, fmtNum } from '../../lib/format.js';
 import {
   useClock, useGreeting, useWeather, useTrueNAS, useGlances, usePihole, useSpeedtest,
-  usePlexSessions, useArr, useNextcloud, useTugtainer, useArcane,
+  usePlexSessions, useArr, useNextcloud, useTugtainer, useArcane, useNpm,
 } from '../../lib/hooks.js';
 import { useHealth } from '../../lib/useHealth.js';
 import { PAGES, QUICK_APP_IDS } from './pages.jsx';
@@ -76,6 +76,8 @@ export default function Home() {
   );
   const dockerTotal = arcane.containers?.length ?? null;
   const dockerStacks = arcane.projects?.length ?? null;
+  const npm = useNpm();
+  const npmProxies = npm.proxyHosts?.length ?? null;
 
   const [pinnedIds] = usePrefs('quicklinks.pinned', QUICK_APP_IDS);
   const [disabledIds] = usePrefs('quicklinks.disabled', []);
@@ -132,6 +134,11 @@ export default function Home() {
         value: tug.pending != null ? tug.pending : "—",
         title: "Containers with an image update pending (Tugtainer).",
       },
+    ],
+    network: [
+      { label: "proxies", value: npmProxies ?? "—",                                title: "Proxy hosts configured in Nginx Proxy Manager." },
+      { label: "down",    value: st.down != null ? `${Math.round(st.down)} Mbps` : "—", title: "Latest Speedtest download." },
+      { label: "up",      value: st.up   != null ? `${Math.round(st.up)} Mbps`   : "—", title: "Latest Speedtest upload." },
     ],
     quicklinks: [
       { label: "services", value: totalServices, title: "Total services in the directory." },

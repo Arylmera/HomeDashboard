@@ -1,0 +1,277 @@
+/* ============================================================== *
+ *  Network — extends Quicklinks/Docker tokens.
+ * ============================================================== */
+
+/* banner — mirrors docker.css so the page works without docker.css */
+.docker-banner {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin: 14px 0 18px;
+}
+.docker-banner .sum {
+  padding: 14px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  display: flex; flex-direction: column; gap: 4px;
+  box-shadow: var(--shadow-card);
+  transition: 160ms ease;
+}
+.docker-banner .sum:hover { border-color: var(--line); background: var(--bg-card-hi); }
+.docker-banner .sum .l {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink-faint);
+}
+.docker-banner .sum .v {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ink);
+  display: flex; align-items: baseline; gap: 6px;
+}
+.docker-banner .sum .v.on { color: var(--ember-hi); }
+.docker-banner .sum .v .unit {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-faint);
+  letter-spacing: 0.04em;
+}
+
+.net-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 10px;
+}
+
+.net-card {
+  position: relative;
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 12px 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  transition: transform 180ms cubic-bezier(.2,.7,.2,1), border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+  box-shadow: var(--shadow-card);
+  min-height: 92px;
+}
+.net-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--line);
+  background: var(--bg-card-hi);
+  box-shadow: 0 1px 0 oklch(1 0 0 / .06) inset, 0 14px 36px oklch(0 0 0 / .38), 0 0 0 1px var(--ember-soft);
+}
+.net-card.is-down { opacity: 0.55; }
+
+.net-card-head {
+  display: flex; align-items: center; gap: 8px; min-width: 0;
+}
+.net-card-name {
+  font-weight: 600; font-size: 13.5px; letter-spacing: -0.005em;
+  color: var(--ink);
+  flex: 1; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.net-card-more { color: var(--ink-faint); font-weight: 500; }
+
+a.net-card-link {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+a.net-card-link:hover {
+  color: var(--ember-hi);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--ember-soft);
+}
+a.net-card-link:hover .host { color: var(--ember-hi); }
+
+.net-card-target {
+  font-family: var(--font-mono);
+  font-size: 11.5px; color: var(--ink-dim);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.net-card-target .scheme { color: var(--ink-faint); }
+.net-card-target .colon  { color: var(--ink-faint); margin: 0 1px; }
+.net-card-target .host   { color: var(--ink); }
+.net-card-target .port   { color: var(--ember); }
+
+.net-card-flags {
+  display: flex; flex-wrap: wrap; gap: 4px;
+}
+.flag-chip {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 2px 6px;
+  background: var(--bg);
+  border: 1px solid var(--line-soft);
+  border-radius: 4px;
+  color: var(--ink-dim);
+}
+
+.net-card-acl {
+  font-size: 11px; color: var(--ink-dim);
+}
+
+.net-card-meta {
+  display: flex; gap: 6px; flex-wrap: wrap;
+  font-family: var(--font-mono);
+  font-size: 11px; color: var(--ink-dim);
+}
+.net-card-meta .warn { color: var(--ember); }
+
+.cert-chip {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 2px 6px;
+  background: oklch(0.78 0.10 150 / .12);
+  border: 1px solid oklch(0.78 0.10 150 / .35);
+  border-radius: 4px;
+  color: oklch(0.85 0.10 150);
+  display: inline-flex; align-items: center; gap: 4px;
+  white-space: nowrap;
+}
+.cert-chip.is-warn {
+  background: oklch(0.78 0.15 60 / .14);
+  border-color: oklch(0.78 0.15 60 / .45);
+  color: oklch(0.88 0.15 60);
+}
+.cert-days {
+  opacity: 0.7;
+  padding-left: 4px;
+  border-left: 1px solid currentColor;
+}
+
+.redir-code {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 2px 6px;
+  background: var(--bg);
+  border: 1px solid var(--line-soft);
+  border-radius: 4px;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+.net-empty {
+  font-size: 13px;
+  color: var(--ink-dim);
+  padding: 14px 16px;
+  background: var(--bg-card);
+  border: 1px dashed var(--line-soft);
+  border-radius: var(--radius);
+}
+
+.net-future { opacity: 0.7; }
+
+/* ── speedtest panel ───────────────────────────────────────── */
+.speed-panel {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+}
+@media (max-width: 900px) {
+  .speed-panel { grid-template-columns: 1fr; }
+}
+
+.speed-metric {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 12px 14px;
+  background: var(--bg);
+  border: 1px solid var(--line-soft);
+  border-radius: 10px;
+  min-width: 0;
+}
+.speed-metric-head {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+}
+.speed-metric-label {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink-faint);
+}
+.speed-metric-sub {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--ink-dim);
+}
+.speed-metric-value {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--ink);
+  display: flex; align-items: baseline; gap: 6px;
+  line-height: 1.1;
+}
+.speed-metric-value .unit {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-faint);
+  letter-spacing: 0.04em;
+}
+.speed-metric-value .dim { color: var(--ink-faint); }
+.speed-metric-spark {
+  margin-top: 4px;
+}
+.speed-metric-spark .spark,
+.speed-metric-spark .nas-spark {
+  width: 100%; height: 64px; display: block;
+  color: var(--ink-faint);
+}
+
+.speed-meta {
+  grid-column: 1 / -1;
+  display: flex; flex-wrap: wrap; gap: 14px;
+  align-items: center;
+  padding: 10px 4px 0;
+  border-top: 1px dashed var(--line-soft);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--ink-dim);
+}
+.speed-meta .k {
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 10px;
+  margin-right: 6px;
+}
+.speed-meta .v { color: var(--ink); }
+.speed-meta .speed-open {
+  margin-left: auto;
+  color: var(--ember);
+  text-decoration: none;
+  font-size: 11px;
+}
+.speed-meta .speed-open:hover { color: var(--ember-hi); }
+
+/* ── router panel ───────────────────────────────────────────── */
+.router-panel .router-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.router-bar {
+  margin-top: 6px;
+  height: 6px;
+  background: var(--line-soft);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.router-bar-fill {
+  height: 100%;
+  background: var(--ember);
+  transition: width 0.4s ease;
+}
+

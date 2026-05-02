@@ -160,6 +160,35 @@ export default function NAS() {
   const [tempHistory, setTempHistory] = useState({});
   const [avgTempHistory, setAvgTempHistory] = useState([]);
   const lastTempStampRef = useRef(0);
+
+  // Seed all history buffers from server-persisted samples on mount so
+  // graphs render instantly instead of after several live ticks.
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const r = await fetch('/api/metrics');
+        if (!r.ok) return;
+        const data = await r.json();
+        if (!alive) return;
+        const tail = (s) => (data[s] || []).slice(-HISTORY_MAX).map(([, v]) => v);
+        const mem = tail('mem.used'), rx = tail('net.rx'), tx = tail('net.tx');
+        const avg = tail('cpu.temp.avg');
+        if (mem.length) setMemHistory(mem);
+        if (rx.length)  setRxHistory(rx);
+        if (tx.length)  setTxHistory(tx);
+        if (avg.length) setAvgTempHistory(avg);
+        const perCore = {};
+        for (const k of Object.keys(data)) {
+          const m = k.match(/^cpu\.temp\.(\d+)$/);
+          if (m) perCore[+m[1]] = tail(k);
+        }
+        if (Object.keys(perCore).length) setTempHistory(perCore);
+        // Don't suppress the next live tick — let it append normally.
+      } catch {}
+    })();
+    return () => { alive = false; };
+  }, []);
   useEffect(() => {
     if (!cores.length) return;
     const now = Date.now();

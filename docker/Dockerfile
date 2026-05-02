@@ -29,6 +29,7 @@ ARG VITE_QBITTORRENT_URL
 ARG VITE_GLANCES_URL
 ARG VITE_BESZEL_URL
 ARG VITE_NEXTCLOUD_URL
+ARG VITE_NPM_URL
 ARG HOMEY_ID
 
 ENV VITE_TRUENAS_URL=$VITE_TRUENAS_URL \
@@ -47,6 +48,7 @@ ENV VITE_TRUENAS_URL=$VITE_TRUENAS_URL \
     VITE_GLANCES_URL=$VITE_GLANCES_URL \
     VITE_BESZEL_URL=$VITE_BESZEL_URL \
     VITE_NEXTCLOUD_URL=$VITE_NEXTCLOUD_URL \
+    VITE_NPM_URL=$VITE_NPM_URL \
     HOMEY_ID=$HOMEY_ID
 
 COPY . .
@@ -68,7 +70,7 @@ COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/vite.config.js ./vite.config.js
 COPY --from=build /app/src/server ./src/server
-COPY --from=build /app/index.html /app/nas.html /app/plex.html /app/homey.html /app/quicklinks.html ./
+COPY --from=build /app/index.html /app/nas.html /app/plex.html /app/homey.html /app/quicklinks.html /app/docker.html /app/network.html ./
 
 # Persistent SQLite store (mount a volume here in compose).
 RUN mkdir -p /data

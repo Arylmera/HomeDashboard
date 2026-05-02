@@ -43,6 +43,15 @@ const PageGlyphs = {
       <path d="M3 19 c1.5 4 6 6 11 6 c8 0 13-4 14-9 c-1.5 1-3.5 1-5 0" />
     </svg>
   ),
+  network: (
+    <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="16" cy="16" r="11" />
+      <ellipse cx="16" cy="16" rx="5" ry="11" />
+      <path d="M5 16 H27" />
+      <path d="M16 5 V27" opacity="0.5" />
+      <circle cx="16" cy="16" r="2" fill="currentColor" stroke="none" />
+    </svg>
+  ),
 };
 
 export const PAGES = [
@@ -73,6 +82,13 @@ export const PAGES = [
     accent: "oklch(0.78 0.12 250)",
     accentSoft: "oklch(0.78 0.12 250 / .14)",
     pattern: "grid",
+  },
+  {
+    id: "network", name: "Network", desc: "npm · router · traffic",
+    href: "network.html", glyph: PageGlyphs.network,
+    accent: "oklch(0.80 0.13 200)",
+    accentSoft: "oklch(0.80 0.13 200 / .14)",
+    pattern: "rings",
   },
   {
     id: "quicklinks", name: "Directory", desc: "every service · search",

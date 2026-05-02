@@ -1,72 +1,119 @@
 # Arylmera Home Dashboard
 
-Personal homelab dashboard. Vite + React multi-page app.
+Personal homelab dashboard. Vite + React multi-page app with a thin Node
+middleware layer that proxies upstream services and keeps every secret
+server-side.
 
 ## Quickstart
 
 ```bash
-cp .env.example .env   # fill in TrueNAS host + API key
+cp .env.example .env   # fill in only the services you actually run
 npm install
 npm run dev
 ```
 
-Open http://localhost:5173/ for **Home**. Sibling pages live at `/nas.html`, `/plex.html`, `/homey.html`, `/quicklinks.html`.
+Open http://localhost:5173/ for **Home**. Sibling pages:
+
+| Page | Path | What it shows |
+|------|------|---------------|
+| Home        | `/`               | Calendar, reminders, quick stats, container updates, weather |
+| NAS         | `/nas.html`       | TrueNAS pools, datasets, apps, alerts |
+| Plex        | `/plex.html`      | Library counts, now-playing, Tautulli history, *arr queues |
+| Homey       | `/homey.html`     | Live zones, devices, flows, moods, logic variables |
+| Network     | `/network.html`   | Pi-hole, Speedtest, ASUS router, Nginx Proxy Manager |
+| Docker      | `/docker.html`    | Arcane container list, Tugtainer update digest |
+| Quicklinks  | `/quicklinks.html`| Editable launcher grid with live health probes |
 
 ## Build & preview
 
 ```bash
 npm run build      # outputs to dist/
-npm run preview    # serves dist/ locally
+npm run preview    # serves dist/ on :4173 with the same proxies
 ```
 
-## TrueNAS integration
+## How the proxy layer works
 
-The NAS panel calls `/api/truenas/api/v2.0/...` from the browser. The Vite dev
-server proxies `/api/truenas/*` to `VITE_TRUENAS_URL` and injects the
-`Authorization: Bearer ${TRUENAS_API_KEY}` header server-side, so the API key
-never reaches the browser.
+The browser only ever calls `/api/<service>/...`. Vite's middleware (in
+`src/server/*` + the proxy table in `vite.config.js`) rewrites those paths
+to the real upstream and injects the right auth — Bearer, `X-Api-Key`,
+`X-Plex-Token`, Basic auth, or query-string keys depending on the service.
 
-If `.env` is empty, the NAS panel renders an "offline / cors" hint and falls
-back to placeholder values — the rest of the page still works.
+Secrets are read from `process.env` at request time, so:
+
+- **`VITE_*` vars** end up in the browser bundle — only base URLs.
+- **Bare vars** (`TRUENAS_API_KEY`, `PLEX_TOKEN`, …) stay on the server.
+
+Leave any service blank in `.env` and its panel hides or greys-out — the
+rest of the dashboard keeps working.
+
+## Server-side middleware
+
+A few integrations are too stateful for a static proxy table and live in
+`src/server/`:
+
+- **`prefs.js`** — SQLite (better-sqlite3) at `/data/prefs.db` for
+  per-user UI prefs (collapsed zones, quicklinks layout, etc.).
+- **`homey-oauth.js`** — full OAuth2 dance with Homey Cloud, token
+  storage + refresh, and an authenticated proxy.
+- **`icloud.js`** — CalDAV against iCloud using an app-specific password,
+  surfaces calendar events + Reminders on Home.
+- **`npm.js`** — Nginx Proxy Manager identity → bearer token exchange,
+  cached in memory.
+- **`asus.js`** — Asuswrt over SSH (ssh2) for live router stats.
+- **`health.js`** — backend health probes that drive the quicklinks
+  status dots (no CORS dance in the browser).
+- **`metrics.js`** — lightweight aggregator endpoints for Home cards.
+
+## Supported services
+
+Configurable via `.env` (see [.env.example](.env.example) for the full
+list and notes per service):
+
+TrueNAS Scale · Plex · Tautulli · Sonarr · Radarr · Lidarr · Prowlarr ·
+Overseerr · Pi-hole v6 · Speedtest Tracker · Audiobookshelf ·
+qBittorrent · Qui · Glances · Beszel · NextCloud · Arcane · Tugtainer ·
+Homey Pro (cloud OAuth2) · iCloud (CalDAV) · Nginx Proxy Manager ·
+ASUS router (SSH).
 
 ## Production deploy
 
-`npm run build` produces a static `dist/` directory with five HTML entries.
-Serve it from any static host (nginx, Caddy, GitHub Pages, S3 + CloudFront).
+`npm run build` produces a static `dist/` with seven HTML entries, but the
+**proxy + middleware layer is required at runtime** — secrets must not
+move to the browser. Two supported paths:
 
-The static host **must** also reverse-proxy `/api/truenas/*` to your TrueNAS
-host with the Bearer token injected, mirroring the dev setup. Example nginx:
+1. **Run the Node server** (`npm run preview` or the provided
+   `docker/Dockerfile`). The container exposes :4173 and reads every
+   `.env` value from the runtime environment.
+2. **Front it with your own reverse proxy** (nginx, Caddy) that
+   replicates every `/api/<svc>/*` rewrite + header injection from
+   `vite.config.js`. This is more work; the container path is preferred.
 
-```nginx
-location /api/truenas/ {
-  proxy_pass https://truenas.local/;
-  proxy_set_header Authorization "Bearer YOUR_KEY";
-}
-```
-
-## Other services (Pi-hole, Plex, Speedtest, *arr)
-
-The Network panel has placeholders for Pi-hole + Speedtest, and per-service
-quick-app stats for Plex/Sonarr/Radarr. Those still hit the upstream services
-directly from the browser; configure CORS on each or proxy them similarly.
-Per-service URLs + tokens are read from `localStorage` keys in the
-`arylmera.*` namespace (see `src/pages/home/Home.jsx` for the schema).
+See [docs/docker.md](docs/docker.md) and
+[docs/docker-compose.md](docs/docker-compose.md) for the container setup
+(including the `/data` volume for the SQLite prefs DB).
 
 ## Layout
 
 ```
 .
-├── index.html                  # Home page
-├── nas.html plex.html …        # sibling page entries
-├── vite.config.js              # multi-page input + /api/truenas proxy
+├── index.html  nas.html  plex.html  homey.html
+├── network.html  docker.html  quicklinks.html
+├── vite.config.js                  # multi-page input + per-service proxies
 └── src/
-    ├── styles/                 # forge.css, space-bg.css, per-page CSS
-    ├── lib/                    # icons, services, hooks, arylmera-menu
-    └── pages/{home,nas,plex,homey,quicklinks}/main.jsx
+    ├── server/                     # prefs, homey-oauth, icloud, npm, asus, health, metrics
+    ├── styles/                     # forge.css, space-bg.css, per-page CSS
+    ├── lib/                        # icons, services, hooks, arylmera-menu
+    └── pages/{home,nas,plex,homey,network,docker,quicklinks}/main.jsx
 ```
+
+## Docs
+
+Project conventions, per-tech rules, and per-API integration notes live
+in [docs/](docs/). Read the relevant file before editing code in that
+area — the table in [CLAUDE.md](CLAUDE.md) maps each subsystem to its doc.
 
 ## Out of scope
 
 - TypeScript.
-- Auth in front of the dashboard.
+- Auth in front of the dashboard (assume LAN-only or fronted by NPM/SSO).
 - Tests.

@@ -99,4 +99,5 @@ jobs:
         run: |
           set -euo pipefail
           : "${ARCANE_WEBHOOK_URL:?missing}"
-          curl --fail --show-error --silent -X POST "$ARCANE_WEBHOOK_URL"
+          # Fire and forget: Arcane may return 500 even when redeploy succeeds (#1943)
+          curl --silent --output /dev/null -X POST "$ARCANE_WEBHOOK_URL" || true

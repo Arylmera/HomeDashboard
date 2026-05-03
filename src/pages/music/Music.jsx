@@ -12,7 +12,7 @@ import {
   useSonosAuth, useSonosHouseholds, useSonosGroups, useSonosGroupPlayback, sonos,
 } from '../../lib/hooks.js';
 import { AuthCards } from './components/AuthCards.jsx';
-import { NowPlaying } from './components/NowPlaying.jsx';
+import { VinylHero } from './components/VinylHero.jsx';
 import { RoomGroups } from './components/RoomGroups.jsx';
 import { PlaylistsPanel } from './components/PlaylistsPanel.jsx';
 import { DevicePicker } from './components/DevicePicker.jsx';
@@ -64,17 +64,6 @@ export default function Music() {
 
   const groupPb = useSonosGroupPlayback(selectedGroupId, { enabled: soReady && !!selectedGroupId });
 
-  // Map Sonos rooms (players) to Spotify Connect device IDs by name.
-  // Sonos players are each their own Spotify Connect endpoint.
-  const playerToSpotifyDevice = useMemo(() => {
-    const m = new Map();
-    for (const p of groups.players) {
-      const match = devices.devices.find(d => d.name && p.name && d.name.toLowerCase() === p.name.toLowerCase());
-      if (match) m.set(p.id, match.id);
-    }
-    return m;
-  }, [groups.players, devices.devices]);
-
   // Display-only aliasing (e.g. "Dining Room Front" + "Dining Room Back" → "Dining Room").
   const aliasedPlayers = useMemo(() => aliasPlayers(groups.players), [groups.players]);
   const aliasedGroups  = useMemo(() => aliasGroups(groups.groups, aliasedPlayers), [groups.groups, aliasedPlayers]);
@@ -122,22 +111,22 @@ export default function Music() {
 
       {spReady && soReady && (
         <>
-          <NowPlaying
-            spotify={playback.playback ? { ...playback.playback, device: effectiveDevice || playback.playback.device } : null}
-            sonos={groupPb}
-            group={aliasedGroups.find(g => g.id === selectedGroupId)}
-            spotifyDeviceId={
-              groups.groups.find(g => g.id === selectedGroupId)?.coordinatorId
-                ? playerToSpotifyDevice.get(groups.groups.find(g => g.id === selectedGroupId).coordinatorId)
-                : null
-            }
-            onSpotify={spotify}
-            onSonos={sonos}
-            onRefresh={() => { playback.refresh(); groupPb.refresh(); }}
-          />
+          <div className="bento">
+            <div className="bento-bg" aria-hidden />
 
-          <div className="music-grid">
-            <RoomGroups
+            <div className="bento-tile bento-hero">
+              <VinylHero
+                spotify={playback.playback ? { ...playback.playback, device: effectiveDevice || playback.playback.device } : null}
+                sonos={groupPb}
+                group={aliasedGroups.find(g => g.id === selectedGroupId)}
+                onSpotify={spotify}
+                onSonos={sonos}
+                onRefresh={() => { playback.refresh(); groupPb.refresh(); }}
+              />
+            </div>
+
+            <div className="bento-tile bento-rooms">
+              <RoomGroups
               householdId={householdId}
               groups={aliasedGroups}
               players={aliasedPlayers}
@@ -172,11 +161,13 @@ export default function Music() {
                   ladder();
                 }
               }}
-              onSonos={sonosForUI}
-              onRefresh={groups.refresh}
-            />
+                onSonos={sonosForUI}
+                onRefresh={groups.refresh}
+              />
+            </div>
 
-            <DevicePicker
+            <div className="bento-tile bento-devices">
+              <DevicePicker
               devices={devices.devices}
               currentDeviceId={effectiveDevice?.id}
               onTransfer={async (id) => {
@@ -194,9 +185,11 @@ export default function Music() {
                   setTimeout(() => setPendingDeviceId(null), 2500);
                 }
               }}
-            />
+              />
+            </div>
 
-            <PlaylistsPanel
+            <div className="bento-tile bento-playlists">
+              <PlaylistsPanel
               onPlay={async (uri) => {
                 const groupId = selectedGroupId;
                 try {
@@ -224,7 +217,8 @@ export default function Music() {
                         `Set SONOS_SPOTIFY_SN in .env to override (default tries to discover from existing Sonos favorites).`);
                 }
               }}
-            />
+              />
+            </div>
           </div>
 
           <div className="footnote">

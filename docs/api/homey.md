@@ -91,7 +91,7 @@ browser  ──GET /api/homey/snapshot──>  Vite dev server
 1. Create OAuth2 app at <https://tools.developer.homey.app/> → "Apps" → "New OAuth2 Client".
 2. Set the **Callback URL** on the Homey side to exactly:
    - `http://localhost:5173/api/homey/oauth/callback` (dev)
-   - `https://dashboard.arylmera.duckdns.org/api/homey/oauth/callback` (prod, if hosted)
+   - `https://home.arylmera.duckdns.org/api/homey/oauth/callback` (prod, if hosted)
 3. Fill `.env`:
    ```
    HOMEY_ID=<your-homey-id>

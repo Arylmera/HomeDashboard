@@ -3,6 +3,7 @@
  *  Page shell. Data + derivations live in ./useHomeyData.js,
  *  cards in ./components, helpers in ./icons.jsx, mocks.js.
  * ============================================================== */
+import { useState, useEffect } from 'react';
 import { usePersistedSet } from './usePersistedSet.js';
 import { useHomeyAuth } from './useHomeyAuth.js';
 import useHomeyData from './useHomeyData.js';
@@ -10,6 +11,13 @@ import { ZoneCard } from './components/ZoneCard.jsx';
 import { FlowGroup } from './components/FlowGroup.jsx';
 import { VariableCard } from './components/VariableCard.jsx';
 import SensorDigest from './components/SensorDigest.jsx';
+
+const TAB_KEY = 'homey:activeTab';
+const TABS = [
+  { id: 'rooms', num: '02', label: 'Rooms' },
+  { id: 'flows', num: '03', label: 'Automations' },
+  { id: 'vars',  num: '04', label: 'Variables' },
+];
 
 export default function Homey() {
   const auth = useHomeyAuth();
@@ -20,6 +28,11 @@ export default function Homey() {
   } = useHomeyData();
   const [expandedZones, toggleZone] = usePersistedSet('homey:expandedZones');
   const [expandedFolders, toggleFolder] = usePersistedSet('homey:expandedFolders');
+  const visibleZones = zones.filter(z => z.devices.length > 0);
+  const [tab, setTab] = useState(() => {
+    try { return localStorage.getItem(TAB_KEY) || 'rooms'; } catch { return 'rooms'; }
+  });
+  useEffect(() => { try { localStorage.setItem(TAB_KEY, tab); } catch {} }, [tab]);
 
   return (
     <div className="shell">
@@ -78,54 +91,94 @@ export default function Homey() {
 
       <SensorDigest zones={zones} />
 
-      <div className="nas-section-title">
-        <span className="numeral">02 · zones</span>
-        <h2>Rooms &amp; devices</h2>
-        <span className="meta">{zones.length} zones · {stats.totalDevs} devices · {stats.lightsOn} on · {stats.totalPower} W</span>
-      </div>
-      <div className="zones">
-        {zones.map(z => (
-          <ZoneCard
-            key={z.id}
-            zone={z}
-            collapsed={!expandedZones.has(z.id)}
-            onToggle={toggleZone}
-            onDeviceToggle={isLive ? onDeviceToggle : null}
-          />
-        ))}
-      </div>
+      <nav className="homey-tabs" role="tablist" aria-label="Homey sections">
+        {TABS.map(t => {
+          const count =
+            t.id === 'rooms' ? visibleZones.length :
+            t.id === 'flows' ? flows.length :
+            variables.length;
+          const meta =
+            t.id === 'rooms' ? `${stats.lightsOn} on` :
+            t.id === 'flows' ? `${stats.flowsOn} active` :
+            null;
+          return (
+            <button
+              key={t.id}
+              role="tab"
+              type="button"
+              aria-selected={tab === t.id}
+              className={"homey-tab" + (tab === t.id ? ' active' : '')}
+              onClick={() => setTab(t.id)}
+            >
+              <span className="num">{t.num}</span>
+              <span className="lbl">{t.label}</span>
+              <span className="cnt">{count}</span>
+              {meta && <span className="meta">{meta}</span>}
+            </button>
+          );
+        })}
+      </nav>
 
-      <div className="nas-section-title">
-        <span className="numeral">03 · flows</span>
-        <h2>Automations</h2>
-        <span className="meta">{stats.flowsOn}/{flows.length} active</span>
-      </div>
-      <div className="flow-groups">
-        {flowGroups.map(g => (
-          <FlowGroup
-            key={g.id}
-            group={g}
-            collapsed={!expandedFolders.has(g.id)}
-            onToggle={toggleFolder}
-            onTrigger={isLive ? onFlowTrigger : null}
-          />
-        ))}
-      </div>
+      {tab === 'rooms' && (
+        <section role="tabpanel">
+          <div className="nas-section-title">
+            <span className="numeral">02 · zones</span>
+            <h2>Rooms &amp; devices</h2>
+            <span className="meta">{visibleZones.length} zones · {stats.totalDevs} devices · {stats.lightsOn} on · {stats.totalPower} W</span>
+          </div>
+          <div className="zones">
+            {visibleZones.map(z => (
+              <ZoneCard
+                key={z.id}
+                zone={z}
+                collapsed={!expandedZones.has(z.id)}
+                onToggle={toggleZone}
+                onDeviceToggle={isLive ? onDeviceToggle : null}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
-      <div className="nas-section-title">
-        <span className="numeral">04 · variables</span>
-        <h2>Logic variables</h2>
-        <span className="meta">{variables.length} variables</span>
-      </div>
-      <div className="variables">
-        {variables.map(v => (
-          <VariableCard
-            key={v.id}
-            variable={v}
-            onSave={isLive ? onVariableSave : null}
-          />
-        ))}
-      </div>
+      {tab === 'flows' && (
+        <section role="tabpanel">
+          <div className="nas-section-title">
+            <span className="numeral">03 · flows</span>
+            <h2>Automations</h2>
+            <span className="meta">{stats.flowsOn}/{flows.length} active</span>
+          </div>
+          <div className="flow-groups">
+            {flowGroups.map(g => (
+              <FlowGroup
+                key={g.id}
+                group={g}
+                collapsed={!expandedFolders.has(g.id)}
+                onToggle={toggleFolder}
+                onTrigger={isLive ? onFlowTrigger : null}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {tab === 'vars' && (
+        <section role="tabpanel">
+          <div className="nas-section-title">
+            <span className="numeral">04 · variables</span>
+            <h2>Logic variables</h2>
+            <span className="meta">{variables.length} variables</span>
+          </div>
+          <div className="variables">
+            {variables.map(v => (
+              <VariableCard
+                key={v.id}
+                variable={v}
+                onSave={isLive ? onVariableSave : null}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="footnote">
         Homey via cloud OAuth · {isLive ? 'live · 30s' : auth.authenticated ? 'authorized · waiting for data' : auth.configured ? <a href="/api/homey/oauth/login">connect</a> : <span className="status-down">not configured</span>}

@@ -174,34 +174,194 @@ button.flow:disabled { cursor: progress; }
 .hint-banner b { color: var(--ember-hi); font-weight: 600; }
 .hint-banner a { color: var(--ember-hi); }
 
-/* Sensor digest — compact climate readings per zone */
-.sensor-grid {
+/* ==============================================================
+ * Climate digest — comfort-band bars per zone.
+ * ============================================================== */
+:root {
+  --climate-cool: oklch(0.78 0.12 230);
+  --climate-warm: oklch(0.78 0.16 50);
+  --climate-ok:   oklch(0.82 0.13 145);
+}
+
+.climate-extremes {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
+  background: var(--line-soft); border: 1px solid var(--line-soft);
+  border-radius: 12px; overflow: hidden; margin-bottom: 14px;
+}
+@media (max-width: 720px) { .climate-extremes { grid-template-columns: 1fr; } }
+.extreme {
+  background: var(--bg-card); padding: 12px 14px;
+  display: grid; grid-template-columns: auto 1fr auto; align-items: baseline; gap: 10px;
+}
+.extreme .lbl {
+  font-family: var(--font-mono); font-size: 10px; text-transform: uppercase;
+  letter-spacing: 0.12em; color: var(--ink-faint);
+}
+.extreme .name {
+  font-size: 13px; font-weight: 600; color: var(--ink);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.extreme .val {
+  font-family: var(--font-mono); font-size: 18px; font-weight: 600; letter-spacing: -0.02em;
+}
+.extreme.cool .val { color: var(--climate-cool); }
+.extreme.warm .val { color: var(--climate-warm); }
+.extreme.avg  .val { color: var(--ink); }
+.extreme.cool .lbl { color: var(--climate-cool); }
+.extreme.warm .lbl { color: var(--climate-warm); }
+
+.climate-bars {
+  background: var(--bg-card); border: 1px solid var(--line-soft); border-radius: 12px;
+  padding: 8px 0; margin-bottom: 28px;
+  display: flex; flex-direction: column;
+}
+.climate-row {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 12px;
-  margin-bottom: 24px;
+  grid-template-columns: 140px 1fr 90px;
+  align-items: center; gap: 14px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--line-soft);
 }
-.sensor-zone {
-  background: var(--panel, rgba(255,255,255,0.03));
-  border: 1px solid var(--line, rgba(255,255,255,0.06));
-  border-radius: 10px;
-  padding: 10px 12px;
+.climate-row:first-child { border-top: 0; }
+@media (max-width: 720px) {
+  .climate-row { grid-template-columns: 1fr 70px; grid-template-areas: "name vals" "track track"; row-gap: 6px; }
+  .cr-name { grid-area: name; }
+  .cr-vals { grid-area: vals; justify-self: end; }
+  .cr-track { grid-area: track; }
 }
-.sensor-zone-name {
-  font-family: var(--font-mono);
-  font-size: 11px;
+.cr-name {
+  font-size: 13px; font-weight: 600;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.cr-track {
+  position: relative; height: 8px; border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    color-mix(in oklch, var(--climate-cool) 22%, transparent) 0%,
+    color-mix(in oklch, var(--climate-cool) 8%, transparent) 35%,
+    color-mix(in oklch, var(--climate-warm) 8%, transparent) 65%,
+    color-mix(in oklch, var(--climate-warm) 22%, transparent) 100%
+  );
+  border: 1px solid var(--line-soft);
+}
+.cr-band {
+  position: absolute; top: -1px; bottom: -1px;
+  background: color-mix(in oklch, var(--climate-ok) 14%, transparent);
+  border-left: 1px dashed color-mix(in oklch, var(--climate-ok) 40%, transparent);
+  border-right: 1px dashed color-mix(in oklch, var(--climate-ok) 40%, transparent);
+  pointer-events: none;
+}
+.cr-marker {
+  position: absolute; top: 50%; transform: translate(-50%, -50%);
+  width: 12px; height: 12px; border-radius: 50%;
+  border: 2px solid var(--bg-card);
+  box-shadow: 0 0 0 1px var(--line);
+}
+.cr-marker.temp { z-index: 2; }
+.cr-marker.hum {
+  width: 8px; height: 8px;
+  background: color-mix(in oklch, var(--ink-dim) 90%, transparent);
+  z-index: 1;
+}
+.climate-row.cool .cr-marker.temp { background: var(--climate-cool); box-shadow: 0 0 8px color-mix(in oklch, var(--climate-cool) 70%, transparent), 0 0 0 1px var(--line); }
+.climate-row.warm .cr-marker.temp { background: var(--climate-warm); box-shadow: 0 0 8px color-mix(in oklch, var(--climate-warm) 70%, transparent), 0 0 0 1px var(--line); }
+.climate-row.ok   .cr-marker.temp { background: var(--climate-ok); box-shadow: 0 0 6px color-mix(in oklch, var(--climate-ok) 60%, transparent), 0 0 0 1px var(--line); }
+.climate-row.na   .cr-marker.temp { background: var(--ink-faint); }
+.cr-vals {
+  display: grid; grid-template-columns: 46px 1fr;
+  gap: 8px; align-items: baseline;
+  font-family: var(--font-mono); font-size: 12px;
+}
+.cr-vals .t { font-weight: 600; text-align: left; }
+.climate-row.cool .cr-vals .t { color: var(--climate-cool); }
+.climate-row.warm .cr-vals .t { color: var(--climate-warm); }
+.climate-row.ok   .cr-vals .t { color: var(--climate-ok); }
+.cr-vals .h { color: var(--ink-faint); }
+
+/* ==============================================================
+ * Tabs — Rooms / Automations / Variables
+ * ============================================================== */
+.homey-tabs {
+  display: flex; gap: 4px; flex-wrap: wrap;
+  background: var(--bg-card); border: 1px solid var(--line-soft);
+  border-radius: 12px; padding: 4px; margin-bottom: 22px;
+}
+.homey-tab {
+  appearance: none; cursor: pointer;
+  background: transparent; color: inherit;
+  border: 1px solid transparent; border-radius: 8px;
+  padding: 10px 14px;
+  display: inline-flex; align-items: center; gap: 10px;
+  font: inherit; flex: 1 1 180px;
+  transition: 140ms ease;
+}
+.homey-tab:hover { background: var(--bg-card-hi); border-color: var(--line-soft); }
+.homey-tab .num {
+  font-family: var(--font-mono); font-size: 10px; color: var(--ember);
+  letter-spacing: 0.12em; text-transform: uppercase;
+}
+.homey-tab .lbl { font-size: 14px; font-weight: 600; letter-spacing: -0.01em; }
+.homey-tab .cnt {
+  font-family: var(--font-mono); font-size: 11px; font-weight: 600;
   color: var(--ink-dim);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 6px;
+  background: oklch(1 0 0 / .04); border: 1px solid var(--line-soft);
+  border-radius: 999px; padding: 1px 8px;
 }
-.sensor-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
-.sensor-row {
-  display: flex; justify-content: space-between; align-items: baseline;
-  gap: 8px; font-size: 13px;
+.homey-tab .meta {
+  margin-left: auto;
+  font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint);
+  text-transform: uppercase; letter-spacing: 0.1em;
 }
-.sensor-name { color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.sensor-vals { display: inline-flex; gap: 8px; font-family: var(--font-mono); color: var(--ink-dim); flex-shrink: 0; }
-.sensor-vals .t { color: var(--ember-hi, var(--ink)); }
-.sensor-vals .h { color: var(--steel, var(--ink-dim)); }
-.sensor-vals .b { color: var(--ember); }
+.homey-tab.active {
+  background: color-mix(in oklch, var(--ember) 10%, var(--bg-card));
+  border-color: color-mix(in oklch, var(--ember) 45%, var(--line-soft));
+  box-shadow: 0 0 0 1px color-mix(in oklch, var(--ember) 25%, transparent),
+              inset 0 1px 0 oklch(1 0 0 / .04);
+}
+.homey-tab.active .num { color: var(--ember-hi); }
+.homey-tab.active .cnt {
+  color: var(--ember-hi);
+  border-color: color-mix(in oklch, var(--ember) 35%, var(--line-soft));
+  background: color-mix(in oklch, var(--ember) 12%, transparent);
+}
+.homey-tab:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
+
+/* ==============================================================
+ * Visual polish — zone hover, climate gauge, toggle glow
+ * ============================================================== */
+.zone {
+  position: relative;
+  transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
+.zone:hover {
+  border-color: color-mix(in oklch, var(--ember) 30%, var(--line));
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px oklch(0 0 0 / .25);
+}
+.zone:not(.collapsed) {
+  border-color: color-mix(in oklch, var(--ember) 22%, var(--line-soft));
+}
+.zone-head:focus-visible { outline: 2px solid var(--ember); outline-offset: 4px; border-radius: 6px; }
+.zone-head .ico {
+  transition: 160ms ease;
+}
+.zone:hover .zone-head .ico {
+  border-color: color-mix(in oklch, var(--ember) 35%, var(--line-soft));
+  color: var(--ember-hi);
+}
+
+/* Climate gauge bar inside expanded zone */
+.zone-climate { position: relative; }
+.zone-climate::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: -1px;
+  height: 2px; border-radius: 2px;
+  background: linear-gradient(to right,
+    color-mix(in oklch, var(--climate-cool) 50%, transparent),
+    color-mix(in oklch, var(--climate-ok) 50%, transparent),
+    color-mix(in oklch, var(--climate-warm) 50%, transparent));
+  opacity: 0.5;
+}
+
+.dev-toggle.on {
+  box-shadow: 0 0 12px color-mix(in oklch, var(--glow-on) 35%, transparent);
+}

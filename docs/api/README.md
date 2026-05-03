@@ -21,6 +21,9 @@ Consult before adding new fetches; update when you discover a new endpoint or a 
 | Audiobookshelf | `/api/audiobookshelf` | [audiobookshelf.md](audiobookshelf.md) |
 | Open-Meteo | direct (no proxy) | [open-meteo.md](open-meteo.md) |
 | Homey Pro | `/api/homey` (planned) | [homey.md](homey.md) |
+| WAN sentinel (synthetic) | `/api/wan` | [wan.md](wan.md) |
+| Spotify Web API | `/api/spotify` | [spotify.md](spotify.md) |
+| Sonos (LAN, UPnP) | `/api/sonos` | [sonos.md](sonos.md) |
 
 ## Conventions
 

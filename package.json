@@ -13,9 +13,11 @@
     "homey-api": "^3.17.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "sonos": "^1.14.3",
     "ssh2": "^1.17.0"
   },
   "devDependencies": {
+    "@vitejs/plugin-basic-ssl": "^2.3.0",
     "@vitejs/plugin-react": "^4.3.4",
     "vite": "^5.4.11"
   },

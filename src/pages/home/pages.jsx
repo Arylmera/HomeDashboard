@@ -52,6 +52,14 @@ const PageGlyphs = {
       <circle cx="16" cy="16" r="2" fill="currentColor" stroke="none" />
     </svg>
   ),
+  music: (
+    <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22 V8 L26 5 V19" />
+      <ellipse cx="9" cy="22" rx="3.2" ry="2.4" fill="currentColor" stroke="none" />
+      <ellipse cx="23" cy="19" rx="3.2" ry="2.4" fill="currentColor" stroke="none" />
+      <path d="M12 11 L26 8" opacity="0.45" />
+    </svg>
+  ),
 };
 
 export const PAGES = [
@@ -89,6 +97,13 @@ export const PAGES = [
     accent: "oklch(0.80 0.13 200)",
     accentSoft: "oklch(0.80 0.13 200 / .14)",
     pattern: "rings",
+  },
+  {
+    id: "music", name: "Music", desc: "spotify · sonos · rooms",
+    href: "music.html", glyph: PageGlyphs.music,
+    accent: "oklch(0.78 0.16 145)",
+    accentSoft: "oklch(0.78 0.16 145 / .14)",
+    pattern: "rays",
   },
   {
     id: "quicklinks", name: "Directory", desc: "every service · search",

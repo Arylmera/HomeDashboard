@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
+import basicSsl from '@vitejs/plugin-basic-ssl';
 import { resolve } from 'node:path';
 import { prefsPlugin } from './src/server/prefs.js';
 import { homeyOAuthPlugin } from './src/server/homey-oauth.js';
@@ -8,6 +9,9 @@ import { icloudPlugin } from './src/server/icloud.js';
 import { npmPlugin } from './src/server/npm.js';
 import { metricsPlugin } from './src/server/metrics.js';
 import { asusPlugin } from './src/server/asus.js';
+import { wanPlugin } from './src/server/wan.js';
+import { spotifyOAuthPlugin } from './src/server/spotify-oauth.js';
+import { sonosLanPlugin } from './src/server/sonos-lan.js';
 
 /**
  * Build a proxy entry that:
@@ -181,8 +185,17 @@ export default defineConfig(({ mode }) => {
   // resolution which Vite's static proxy table can't express.
 
   return {
-    plugins: [react(), prefsPlugin(), homeyOAuthPlugin(), healthPlugin(), icloudPlugin(), npmPlugin(), asusPlugin(), metricsPlugin()],
-    server: { proxy: proxies },
+    plugins: [
+      react(),
+      // HTTPS for dev so Spotify (and any OAuth provider that mandates
+      // https) accepts the redirect URI. Self-signed cert — your browser
+      // will warn once; accept it. Use https://127.0.0.1:5173 (NOT
+      // localhost — Spotify rejects the localhost host).
+      ...(process.env.DEV_HTTPS === 'false' ? [] : [basicSsl()]),
+      prefsPlugin(), homeyOAuthPlugin(), spotifyOAuthPlugin(), sonosLanPlugin(),
+      healthPlugin(), icloudPlugin(), npmPlugin(), asusPlugin(), wanPlugin(), metricsPlugin(),
+    ],
+    server: { proxy: proxies, host: '127.0.0.1', https: process.env.DEV_HTTPS === 'false' ? false : {} },
     preview: { host: true, port: 4173, proxy: proxies, allowedHosts: true },
     build: {
       rollupOptions: {
@@ -194,6 +207,7 @@ export default defineConfig(({ mode }) => {
           quicklinks: resolve(__dirname, 'quicklinks.html'),
           docker: resolve(__dirname, 'docker.html'),
           network: resolve(__dirname, 'network.html'),
+          music: resolve(__dirname, 'music.html'),
         },
       },
     },

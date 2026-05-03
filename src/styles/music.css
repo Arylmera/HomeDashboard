@@ -1,0 +1,183 @@
+/* ============================================================== *
+ *  Music page — Spotify + Sonos. Layout: hero NowPlaying on top,
+ *  three-column grid below (rooms, devices, search).
+ * ============================================================== */
+:root { --music-accent: oklch(0.78 0.16 145); }
+
+.music-shell { padding: 28px 32px 64px; max-width: 1400px; margin: 0 auto; position: relative; z-index: 1; }
+.music-shell .page-h1 + .page-lede { margin-bottom: 26px; }
+
+/* ─── Auth cards ─────────────────────────────────────────────── */
+.auth-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.auth-card {
+  background: var(--bg-card); border: 1px solid var(--line-soft); border-radius: 14px;
+  padding: 18px; display: flex; flex-direction: column; gap: 10px;
+}
+.auth-card-name { font-size: 16px; font-weight: 600; color: var(--ink); }
+.auth-card-state { font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.12em; }
+.auth-card-ok .auth-card-state { color: var(--music-accent); }
+.auth-card-warn .auth-card-state { color: var(--ember-hi); }
+.auth-card-hint { font-size: 12px; color: var(--ink-faint); line-height: 1.5; }
+.auth-card-hint code { font-family: var(--font-mono); font-size: 11px; }
+.auth-card-cta {
+  display: inline-block; align-self: flex-start; margin-top: 4px;
+  background: var(--music-accent); color: oklch(0.15 0.02 240);
+  padding: 8px 14px; border-radius: 8px; text-decoration: none;
+  font-size: 13px; font-weight: 600;
+}
+.auth-card-cta:hover { filter: brightness(1.05); }
+
+/* ─── Now playing hero ───────────────────────────────────────── */
+.now-playing {
+  display: grid; grid-template-columns: 220px 1fr; gap: 24px; align-items: center;
+  background: var(--bg-card); border: 1px solid var(--line-soft); border-radius: 16px;
+  padding: 22px; margin-bottom: 22px;
+}
+@media (max-width: 720px) { .now-playing { grid-template-columns: 1fr; } }
+.np-art { aspect-ratio: 1; border-radius: 12px; overflow: hidden; background: var(--bg-deep); }
+.np-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.np-art-empty {
+  width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+  font-size: 64px; color: var(--ink-faint); opacity: 0.4;
+}
+.np-meta { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.np-room { font-family: var(--font-mono); font-size: 11px; color: var(--music-accent); text-transform: uppercase; letter-spacing: 0.14em; }
+.np-title { font-size: 22px; font-weight: 600; color: var(--ink); letter-spacing: -0.01em; line-height: 1.2; }
+.np-artist { font-size: 14px; color: var(--ink-faint); }
+.np-album { color: var(--ink-faint); opacity: 0.7; }
+
+.np-progress { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; margin-top: 4px; }
+.np-time { font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); }
+.np-bar { height: 4px; background: var(--line-soft); border-radius: 2px; overflow: hidden; }
+.np-bar-fill { height: 100%; background: var(--music-accent); transition: width 1s linear; }
+
+.np-controls { display: flex; gap: 8px; margin-top: 6px; }
+.np-btn {
+  background: transparent; border: 1px solid var(--line-soft); border-radius: 8px;
+  width: 40px; height: 40px; color: var(--ink); font-size: 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.np-btn:hover { border-color: var(--line); }
+.np-btn-primary {
+  background: var(--music-accent); border-color: var(--music-accent);
+  color: oklch(0.15 0.02 240);
+}
+.np-btn-primary:hover { filter: brightness(1.05); }
+
+.np-volume { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+.np-vol-icon { font-size: 14px; }
+.np-volume input[type="range"] { flex: 1; accent-color: var(--music-accent); }
+.np-vol-val { font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); width: 28px; text-align: right; }
+
+/* ─── Three-column grid ──────────────────────────────────────── */
+.music-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.2fr;
+  gap: 14px; align-items: start;
+}
+@media (max-width: 1100px) { .music-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 720px)  { .music-grid { grid-template-columns: 1fr; } }
+
+.panel {
+  background: var(--bg-card); border: 1px solid var(--line-soft); border-radius: 14px;
+  padding: 16px; display: flex; flex-direction: column; gap: 10px;
+}
+.panel-head { display: flex; align-items: center; justify-content: space-between; }
+.panel-head h2 { font-size: 14px; font-weight: 600; color: var(--ink); margin: 0; letter-spacing: -0.01em; }
+.panel-meta { font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.12em; }
+.panel-hint { font-size: 11px; color: var(--ink-faint); line-height: 1.5; }
+.empty { font-size: 12px; color: var(--ink-faint); padding: 12px 0; }
+
+/* ─── Rooms / groups ─────────────────────────────────────────── */
+.rooms-list { display: flex; flex-direction: column; gap: 8px; }
+.room-group {
+  border: 1px solid var(--line-soft); border-radius: 10px; padding: 10px 12px;
+  cursor: pointer; transition: border-color 120ms ease, background 120ms ease;
+}
+.room-group:hover { border-color: var(--line); }
+.room-group.selected { border-color: var(--music-accent); background: oklch(from var(--music-accent) l c h / 0.06); }
+.room-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.room-name { font-size: 13px; font-weight: 600; color: var(--ink); }
+.room-state { font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.12em; }
+.room-state.on { color: var(--music-accent); }
+.room-players { display: flex; flex-wrap: wrap; gap: 6px; }
+.room-pill {
+  font-size: 11px; padding: 4px 8px; border-radius: 6px;
+  background: transparent; border: 1px solid var(--line-soft); color: var(--ink-faint);
+  cursor: pointer; font-family: var(--font-mono);
+  display: inline-flex; flex-direction: column; align-items: flex-start; gap: 2px;
+  line-height: 1.2;
+}
+.room-pill.multi { padding: 4px 10px 5px; }
+.room-pill-name { display: block; }
+.room-pill-sub { font-size: 9px; opacity: 0.65; letter-spacing: 0.06em; }
+.room-pill:hover { color: var(--ink); border-color: var(--line); }
+.room-pill.on { background: oklch(from var(--music-accent) l c h / 0.16); border-color: var(--music-accent); color: var(--ink); }
+.room-pill[disabled] { opacity: 0.5; cursor: wait; }
+
+/* ─── Spotify devices ────────────────────────────────────────── */
+.device-list { display: flex; flex-direction: column; gap: 6px; }
+.device {
+  display: flex; align-items: center; gap: 8px;
+  background: transparent; border: 1px solid var(--line-soft); border-radius: 10px;
+  padding: 8px 10px; cursor: pointer; color: var(--ink); text-align: left;
+  position: relative;
+}
+.device:hover { border-color: var(--line); }
+.device.active { border-color: var(--music-accent); background: oklch(from var(--music-accent) l c h / 0.06); }
+.device.idle { opacity: 0.7; }
+.device-name { flex: 1; font-size: 13px; }
+.device-type { font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.1em; }
+.device-active-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--music-accent);
+  margin-left: 6px;
+}
+
+/* ─── Search / playlists ─────────────────────────────────────── */
+.search-panel { min-width: 0; }
+.search-input {
+  background: var(--bg-deep); border: 1px solid var(--line-soft); border-radius: 8px;
+  padding: 8px 12px; color: var(--ink); font-size: 13px; font-family: inherit;
+}
+.search-input:focus { outline: none; border-color: var(--music-accent); }
+.search-loading { font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); }
+.search-group { margin-top: 8px; }
+.search-group-title {
+  font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint);
+  text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 6px;
+}
+/* Reset the global forge.css `.search-results` (which is absolute-positioned
+ * for the quicklinks dropdown) when used inside the music page panel. */
+.search-panel .search-results {
+  position: static; top: auto; left: auto; right: auto;
+  display: flex; flex-direction: column; gap: 4px;
+  max-height: 520px; overflow-y: auto;
+  background: transparent; box-shadow: none; border: 0; padding: 0;
+  scrollbar-width: thin;
+}
+.search-panel .search-results::-webkit-scrollbar { width: 6px; }
+.search-panel .search-results::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+.search-result {
+  display: flex; gap: 10px; align-items: center;
+  background: transparent; border: 1px solid transparent; border-radius: 8px;
+  padding: 6px 8px; cursor: pointer; text-align: left; color: var(--ink);
+}
+.search-result:hover { background: var(--bg-deep); border-color: var(--line-soft); }
+.sr-art { width: 40px; height: 40px; border-radius: 6px; overflow: hidden; background: var(--bg-deep); flex: 0 0 auto; }
+.sr-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sr-art-empty { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--ink-faint); opacity: 0.5; }
+.sr-meta { min-width: 0; flex: 1; }
+.sr-title { font-size: 13px; font-weight: 500; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sr-sub { font-size: 11px; color: var(--ink-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+
+.bootstrap-hint {
+  background: oklch(from var(--ember-hi) l c h / 0.08);
+  border: 1px solid oklch(from var(--ember-hi) l c h / 0.35);
+  border-radius: 12px; padding: 12px 16px; margin-bottom: 14px;
+  font-size: 13px; color: var(--ink); line-height: 1.5;
+}
+.bootstrap-hint strong { color: var(--ember-hi); }
+.bootstrap-hint em { font-style: normal; color: var(--ink); background: var(--bg-deep); padding: 1px 6px; border-radius: 4px; font-family: var(--font-mono); font-size: 12px; }
+
+.footnote { margin-top: 22px; font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); }
+.footnote code { font-size: 11px; }

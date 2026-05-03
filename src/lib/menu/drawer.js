@@ -7,6 +7,22 @@ import { THEMES, STORAGE_KEY, load, save, apply } from './store.js';
 const ICON_HAMBURGER = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>`;
 const ICON_X = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>`;
 
+const NAV_PAGES = [
+  { name: "Home",       desc: "dashboard",            href: "index.html" },
+  { name: "Media",      desc: "plex · arr · downloads", href: "plex.html" },
+  { name: "NAS",        desc: "truenas · pools · disks", href: "nas.html" },
+  { name: "Smart Home", desc: "homey · ha · automations", href: "homey.html" },
+  { name: "Docker",     desc: "arcane · stacks · live", href: "docker.html" },
+  { name: "Network",    desc: "npm · router · traffic", href: "network.html" },
+  { name: "Music",      desc: "spotify · sonos · rooms", href: "music.html" },
+  { name: "Apps",       desc: "every service · search", href: "apps.html" },
+];
+
+function currentPageFile() {
+  const p = location.pathname.split("/").pop() || "index.html";
+  return p === "" ? "index.html" : p;
+}
+
 const el = (tag, attrs = {}, ...children) => {
   const n = document.createElement(tag);
   for (const [k, v] of Object.entries(attrs)) {
@@ -39,6 +55,24 @@ function buildDrawer(getState, setState) {
   );
 
   const body = el("div", { class: "am-body" });
+
+  const navList = el("div", { class: "am-nav" });
+  const here = currentPageFile();
+  NAV_PAGES.forEach((p) => {
+    const isCurrent = p.href === here;
+    navList.appendChild(el("a", {
+      class: "am-nav-item" + (isCurrent ? " am-on" : ""),
+      href: p.href,
+      ...(isCurrent ? { "aria-current": "page" } : {}),
+    },
+      el("span", { class: "am-nav-name" }, p.name),
+      el("span", { class: "am-nav-desc" }, p.desc),
+    ));
+  });
+  body.appendChild(el("div", { class: "am-section" },
+    el("div", { class: "am-label" }, "Pages"),
+    navList,
+  ));
 
   const themeGrid = el("div", { class: "am-themes" });
   const state0 = getState();

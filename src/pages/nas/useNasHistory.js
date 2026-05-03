@@ -8,6 +8,7 @@ import { HISTORY_MAX } from './utils.js';
  * ============================================================== */
 export default function useNasHistory({ cores, memUsed, netRx, netTx }) {
   const [tempHistory, setTempHistory] = useState({});
+  const [usageHistory, setUsageHistory] = useState({});
   const [avgTempHistory, setAvgTempHistory] = useState([]);
   const [memHistory, setMemHistory] = useState([]);
   const [rxHistory, setRxHistory] = useState([]);
@@ -68,6 +69,17 @@ export default function useNasHistory({ cores, memUsed, netRx, netTx }) {
       if (arr.length > HISTORY_MAX) arr.shift();
       return arr;
     });
+    setUsageHistory(prev => {
+      const next = { ...prev };
+      cores.forEach(c => {
+        if (c.usage == null) return;
+        const arr = next[c.i] ? next[c.i].slice() : [];
+        arr.push(c.usage);
+        if (arr.length > HISTORY_MAX) arr.shift();
+        next[c.i] = arr;
+      });
+      return next;
+    });
   }, [cores]);
 
   // Live tick — memory + network.
@@ -86,5 +98,5 @@ export default function useNasHistory({ cores, memUsed, netRx, netTx }) {
     if (netTx != null) push(setTxHistory, netTx);
   }, [memUsed, netRx, netTx]);
 
-  return { tempHistory, avgTempHistory, memHistory, rxHistory, txHistory };
+  return { tempHistory, usageHistory, avgTempHistory, memHistory, rxHistory, txHistory };
 }

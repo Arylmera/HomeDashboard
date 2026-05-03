@@ -232,6 +232,34 @@ button:focus-visible {
 .section-meta a { color: var(--ember-hi); text-decoration: none; }
 .section-meta a:hover { color: var(--ember); }
 
+/* ---------- Global density (shared primitives) ---------- *
+ *  Toggled via the menu: html[data-density="dense"].
+ *  Per-page CSS layers additional dense rules on top of these. */
+html[data-density="dense"] body { font-size: 13px; }
+html[data-density="dense"] .shell { padding: 18px 24px 60px; max-width: 1500px; }
+html[data-density="dense"] .topbar { margin-bottom: 16px; gap: 12px; }
+html[data-density="dense"] .icon-btn { width: 32px; height: 32px; border-radius: 8px; }
+html[data-density="dense"] .nav-pill { height: 32px; padding: 0 9px; font-size: 12px; }
+html[data-density="dense"] .statusbar { padding: 5px 10px; font-size: 10px; }
+html[data-density="dense"] .hero { gap: 16px; margin-bottom: 14px; }
+html[data-density="dense"] .hero-card { padding: 9px 12px; gap: 10px; }
+html[data-density="dense"] .hero-card .val { font-size: 16px; }
+html[data-density="dense"] .hero-card .ico { width: 28px; height: 28px; }
+html[data-density="dense"] .hero-card .ico svg { width: 14px; height: 14px; }
+html[data-density="dense"] .greeting { font-size: clamp(26px, 3.2vw, 36px); }
+html[data-density="dense"] .greeting-sub { font-size: 12px; }
+html[data-density="dense"] .page-h1 { font-size: clamp(24px, 3vw, 32px); margin-bottom: 6px; }
+html[data-density="dense"] .page-lede { margin-bottom: 18px; font-size: 13px; }
+html[data-density="dense"] .eyebrow,
+html[data-density="dense"] .greeting-eyebrow { font-size: 10px; margin-bottom: 6px; }
+html[data-density="dense"] .searchbar { padding: 8px 12px; margin: 12px 0 16px; }
+html[data-density="dense"] .searchbar input { font-size: 13px; }
+html[data-density="dense"] .section { margin-top: 18px; }
+html[data-density="dense"] .section-head { margin-bottom: 10px; padding-bottom: 8px; }
+html[data-density="dense"] .section-title h2 { font-size: 14px; }
+html[data-density="dense"] .panel { padding: 12px 14px; }
+html[data-density="dense"] .empty-state { padding: 12px; font-size: 11px; }
+
 ::selection { background: var(--ember-soft); color: var(--ink); }
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 10px; border: 2px solid var(--bg); }

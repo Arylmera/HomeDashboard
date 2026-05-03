@@ -22,7 +22,7 @@ export function useCalendar({ poll = 5 * 60_000 } = {}) {
         end: e.end ? new Date(e.end) : null,
       }));
     },
-    { poll }
+    { poll, cacheKey: 'calendar'}
   );
   return { events: data ?? [], state };
 }
@@ -42,7 +42,7 @@ export function useReminders({ poll = 2 * 60_000 } = {}) {
         due: t.due ? new Date(t.due) : null,
       }));
     },
-    { poll }
+    { poll, cacheKey: 'reminders'}
   );
   return { todos: data ?? [], openCount: data?.length ?? 0, state };
 }

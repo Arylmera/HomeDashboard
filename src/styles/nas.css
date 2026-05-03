@@ -49,6 +49,197 @@
 .status-down { color: var(--status-down); }
 .ember-txt   { color: var(--ember-hi); }
 
+/* ============================================================== *
+ *  CPU overlay panel — multi-line chart + modern legend
+ * ============================================================== */
+.nas-overlay {
+  min-height: 0; padding: 16px 18px 14px; gap: 14px;
+  background:
+    radial-gradient(120% 80% at 100% 0%, oklch(1 0 0 / .035), transparent 60%),
+    var(--bg-card);
+}
+
+/* Header: segmented control + KPI cluster */
+.nas-overlay .overlay-head {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+}
+
+.nas-overlay .seg {
+  display: inline-flex; border: 1px solid var(--line-soft); border-radius: 999px;
+  background: oklch(0 0 0 / .25); padding: 3px;
+  backdrop-filter: blur(6px);
+}
+.nas-overlay .seg button {
+  display: inline-flex; align-items: center; gap: 7px;
+  font: 500 12px/1 var(--font-sans, system-ui);
+  padding: 7px 14px; border-radius: 999px;
+  background: transparent; border: 0; color: var(--ink-faint);
+  cursor: pointer; letter-spacing: 0.01em;
+  transition: color 160ms ease, background 160ms ease, transform 120ms ease;
+}
+.nas-overlay .seg button .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: currentColor; opacity: 0.5;
+}
+.nas-overlay .seg button:hover:not(.on) { color: var(--ink); }
+.nas-overlay .seg button.on {
+  background: linear-gradient(180deg, var(--ember-hi, var(--ember)), var(--ember));
+  color: oklch(0.16 0 0);
+  box-shadow: 0 4px 14px oklch(0 0 0 / .35), 0 0 0 1px oklch(1 0 0 / .12) inset;
+}
+.nas-overlay .seg button.on .dot { opacity: 1; }
+
+/* Core gauges grid */
+.core-gauges {
+  display: grid; gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  padding: 18px 4px;
+  border-top: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--line-soft);
+  margin: 0 -18px; width: calc(100% + 36px);
+  background:
+    radial-gradient(120% 100% at 50% 0%, oklch(1 0 0 / .025), transparent 60%),
+    oklch(0 0 0 / .15);
+}
+.core-gauges .gauge {
+  position: relative; display: flex; align-items: center; justify-content: center;
+  aspect-ratio: 1 / 1; max-width: 140px; margin: 0 auto;
+}
+.core-gauges .gauge svg { display: block; }
+.core-gauges .gauge-track {
+  stroke: oklch(1 0 0 / .07);
+}
+.core-gauges .gauge-fill {
+  transition: stroke-dasharray 480ms ease, stroke 240ms ease;
+}
+.core-gauges .gauge-center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.core-gauges .gauge-val {
+  font: 600 22px/1 var(--font-mono); letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  display: inline-flex; align-items: baseline; gap: 1px;
+}
+.core-gauges .gauge-val .gauge-unit {
+  font-size: 12px; color: var(--ink-faint); margin-left: 2px;
+}
+.core-gauges .gauge-lbl {
+  margin-top: 4px;
+  font: 500 9px/1 var(--font-mono); color: var(--ink-faint);
+  text-transform: uppercase; letter-spacing: 0.16em;
+}
+.core-gauges .gauge-crit .gauge-val { animation: gauge-pulse 1.6s ease-in-out infinite; }
+@keyframes gauge-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+.nas-overlay .overlay-kpis {
+  margin-left: auto; display: flex; gap: 18px; align-items: center;
+}
+.nas-overlay .kpi { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; line-height: 1; }
+.nas-overlay .kpi-l {
+  font: 500 9px/1 var(--font-mono); color: var(--ink-faint);
+  text-transform: uppercase; letter-spacing: 0.14em;
+}
+.nas-overlay .kpi-v {
+  font: 600 18px/1 var(--font-mono); letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Chart canvas */
+.nas-overlay .overlay-chart {
+  width: calc(100% + 36px); margin: 0 -18px;
+  border-top: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--line-soft);
+  background:
+    linear-gradient(180deg, oklch(1 0 0 / .015), transparent 30%),
+    oklch(0 0 0 / .15);
+  color: var(--ink-faint);
+}
+.nas-overlay .nas-multichart {
+  display: block; width: 100%; height: 280px;
+}
+.nas-overlay .nas-multichart.empty {
+  display: grid; place-items: center; height: 280px;
+  font-family: var(--font-mono); font-size: 12px; color: var(--ink-faint);
+}
+
+/* Legend table */
+.nas-overlay .overlay-legend {
+  display: grid; gap: 1px;
+  font-size: 12px; margin-top: 4px;
+}
+.nas-overlay .legend-row {
+  display: grid;
+  grid-template-columns: 16px 1fr 64px 64px 64px 100px;
+  align-items: center; gap: 14px;
+  padding: 9px 10px; border-radius: 8px;
+  background: transparent; border: 0; color: var(--ink);
+  text-align: left; cursor: pointer; width: 100%;
+  font: inherit; font-family: var(--font-sans, system-ui);
+  transition: background 140ms ease, opacity 140ms ease, transform 120ms ease;
+}
+.nas-overlay .legend-row:hover {
+  background: oklch(1 0 0 / .04);
+}
+.nas-overlay .legend-row.legend-head {
+  font: 500 10px/1 var(--font-mono); color: var(--ink-faint);
+  text-transform: uppercase; letter-spacing: 0.12em;
+  cursor: default; padding: 6px 10px 8px;
+  border-radius: 0;
+  border-bottom: 1px solid var(--line-soft);
+  margin-bottom: 2px;
+}
+.nas-overlay .legend-row.legend-head:hover { background: transparent; }
+.nas-overlay .legend-row.off { opacity: 0.32; }
+.nas-overlay .legend-row.off .swatch { box-shadow: none !important; opacity: 0.5; }
+
+.nas-overlay .legend-row .swatch {
+  width: 10px; height: 10px; border-radius: 3px; display: inline-block;
+  transition: box-shadow 160ms ease;
+}
+.nas-overlay .legend-row .name {
+  font-weight: 500; letter-spacing: -0.005em; color: var(--ink);
+}
+.nas-overlay .legend-row .val {
+  text-align: right;
+  font: 600 13px/1 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-faint);
+  letter-spacing: -0.01em;
+}
+.nas-overlay .legend-row .val.now {
+  font-size: 14px; color: var(--ink);
+}
+.nas-overlay .legend-row.off .val { color: var(--ink-faint); }
+
+.nas-overlay .legend-row .trend {
+  display: flex; align-items: center; height: 100%;
+}
+.nas-overlay .legend-row .trend-track {
+  flex: 1; height: 4px; border-radius: 999px;
+  background: oklch(1 0 0 / .06); overflow: hidden;
+}
+.nas-overlay .legend-row .trend-fill {
+  display: block; height: 100%; border-radius: 999px;
+  transition: width 360ms cubic-bezier(.2,.7,.3,1);
+  box-shadow: 0 0 6px currentColor;
+}
+
+@media (max-width: 720px) {
+  .nas-overlay .overlay-kpis { gap: 12px; }
+  .nas-overlay .kpi-v { font-size: 15px; }
+  .nas-overlay .legend-row {
+    grid-template-columns: 12px 1fr 50px 50px 50px 60px;
+    gap: 10px; padding: 8px 6px;
+  }
+  .nas-overlay .legend-row .val { font-size: 12px; }
+  .nas-overlay .legend-row .val.now { font-size: 13px; }
+}
+
 /* Section heading variant for NAS page (left-aligned, with meta on right) */
 .nas-section-title { display: flex; align-items: baseline; gap: 12px; margin: 40px 0 14px; padding-bottom: 10px; border-bottom: 1px solid var(--line-soft); }
 .nas-section-title .numeral { font-family: var(--font-mono); font-size: 12px; color: var(--ember); letter-spacing: 0.14em; text-transform: uppercase; }

@@ -1,7 +1,8 @@
 /* ============================================================== *
- *  Quicklinks — full service directory.
+ *  Apps — full service directory.
  *  Every service from src/lib/services.js as a card, grouped into
- *  categories, with global Cmd-K / `/` search and a status footer.
+ *  categories, with global Cmd-K / `/` search, status tabs, and a
+ *  status footer.
  * ============================================================== */
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { ICONS, UI } from '../../lib/icons.jsx';
@@ -13,6 +14,18 @@ import { QUICK_APP_IDS } from '../home/pages.jsx';
 
 const STATUS_LABEL = { up: "online", warn: "degraded", down: "offline", off: "status unknown" };
 const statusText = (s) => STATUS_LABEL[s] || "status unknown";
+
+const TABS = [
+  { id: "all",     label: "all" },
+  { id: "healthy", label: "healthy" },
+  { id: "issues",  label: "issues" },
+  { id: "hidden",  label: "hidden" },
+];
+
+function bucket(status) {
+  if (status === "up") return "healthy";
+  return "issues";
+}
 
 function Mark({ id }) {
   const def = ICONS[id];
@@ -35,11 +48,11 @@ function ServiceCard({ s, editing, disabled, pinned, onToggle, onTogglePin, stat
         <div className="qlinks-card-body">
           <div className="qlinks-card-title">
             <span className="qlinks-name">{s.name}</span>
-            <span className={`status-dot ${live}`} role="img" aria-label={`status: ${statusText(live)}`} title={statusText(live)} />
           </div>
           <div className="qlinks-card-desc">{s.desc}</div>
         </div>
         <div className="qlinks-card-edit-actions">
+          <span className={`status-dot ${live}`} role="img" aria-label={`status: ${statusText(live)}`} title={statusText(live)} />
           <button type="button" className={"qlinks-card-pin" + (pinned ? " on" : "")}
                   onClick={() => onTogglePin(s.id)}
                   aria-label={pinned ? `unpin ${s.name} from home` : `pin ${s.name} to home`}
@@ -75,8 +88,16 @@ function ServiceCard({ s, editing, disabled, pinned, onToggle, onTogglePin, stat
   );
 }
 
-function Section({ s, editing, disabledSet, pinnedSet, onToggle, onTogglePin, live }) {
-  const visible = editing ? s.services : s.services.filter(svc => !disabledSet.has(svc.id));
+function Section({ s, editing, disabledSet, pinnedSet, onToggle, onTogglePin, live, tab }) {
+  const visible = s.services.filter(svc => {
+    if (editing) return true;
+    const isHidden = disabledSet.has(svc.id);
+    if (tab === "hidden") return isHidden;
+    if (isHidden) return false;
+    if (tab === "all") return true;
+    const status = live[svc.id] || svc.status;
+    return bucket(status) === tab;
+  });
   if (!visible.length) return null;
   return (
     <section className="section" id={`sec-${s.id}`}>
@@ -196,7 +217,28 @@ function SearchBar({ disabledSet }) {
   );
 }
 
-export default function Quicklinks() {
+function TabBar({ tab, setTab, counts }) {
+  return (
+    <div className="apps-tabs" role="tablist" aria-label="filter apps by status">
+      {TABS.map(t => {
+        const n = counts[t.id];
+        const dotCls = t.id === "healthy" ? "up" : t.id === "issues" ? "warn" : null;
+        return (
+          <button key={t.id} role="tab" aria-selected={tab === t.id}
+                  className={"apps-tab" + (tab === t.id ? " on" : "")}
+                  onClick={() => setTab(t.id)}
+                  title={`show ${t.label} · ${n}`}>
+            {dotCls && <span className={`status-dot ${dotCls}`} aria-hidden="true" />}
+            <span className="apps-tab-label">{t.label}</span>
+            <span className="apps-tab-count">{n}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+export default function Apps() {
   const now = useClock();
   const greeting = useGreeting();
   const weather = useWeather();
@@ -208,6 +250,7 @@ export default function Quicklinks() {
   const [disabled, setDisabled] = usePrefs('quicklinks.disabled', []);
   const [pinned, setPinned] = usePrefs('quicklinks.pinned', QUICK_APP_IDS);
   const [editing, setEditing] = useState(false);
+  const [tab, setTab] = useState("healthy");
   const [recentlyHidden, setRecentlyHidden] = useState(null);
   const disabledSet = useMemo(() => new Set(disabled), [disabled]);
   const pinnedSet = useMemo(() => new Set(pinned || []), [pinned]);
@@ -243,13 +286,24 @@ export default function Quicklinks() {
   };
 
   const counts = useMemo(() => {
-    const visible = ALL_SERVICES.filter(s => !disabledSet.has(s.id));
     const stat = (s) => live[s.id] || s.status;
-    const up   = visible.filter(s => stat(s) === "up").length;
-    const warn = visible.filter(s => stat(s) === "warn").length;
-    const down = visible.filter(s => { const x = stat(s); return x === "down" || x === "off"; }).length;
-    return { total: visible.length, up, warn, down, hidden: ALL_SERVICES.length - visible.length };
+    let up = 0, warn = 0, down = 0, hidden = 0, visible = 0;
+    for (const s of ALL_SERVICES) {
+      if (disabledSet.has(s.id)) { hidden++; continue; }
+      visible++;
+      const x = stat(s);
+      if (x === "up") up++;
+      else if (x === "warn") warn++;
+      else if (x === "down" || x === "off") down++;
+    }
+    return {
+      total: visible, up, warn, down, hidden,
+      all: visible, healthy: up, issues: warn + down,
+    };
   }, [disabledSet, live]);
+
+  const activeTab = editing ? "all" : tab;
+  const emptyTab = !editing && counts[activeTab] === 0;
 
   return (
     <div className="shell">
@@ -261,7 +315,7 @@ export default function Quicklinks() {
               <path d="M8.5 13 H15.5" />
             </svg>
           </div>
-          <div className="brand-name">arylmera <span className="sub">directory · hera</span></div>
+          <div className="brand-name">arylmera <span className="sub">apps · hera</span></div>
         </div>
         <div className="topbar-right">
           <button type="button" className={"nav-pill" + (editing ? " on" : "")}
@@ -310,6 +364,8 @@ export default function Quicklinks() {
 
       <SearchBar disabledSet={disabledSet} />
 
+      {!editing && <TabBar tab={tab} setTab={setTab} counts={counts} />}
+
       {!editing && counts.total === 0 && (
         <div className="qlinks-empty" role="status">
           <div className="qlinks-empty-title">Nothing to show.</div>
@@ -319,10 +375,26 @@ export default function Quicklinks() {
         </div>
       )}
 
+      {emptyTab && counts.total > 0 && (
+        <div className="qlinks-empty" role="status">
+          <div className="qlinks-empty-title">
+            {tab === "issues" && "Everything looks healthy."}
+            {tab === "healthy" && "No healthy services right now."}
+            {tab === "hidden" && "Nothing hidden."}
+          </div>
+          <div className="qlinks-empty-sub">
+            {tab === "issues" && "No degraded or offline services. Switch to all to browse."}
+            {tab === "healthy" && "Check the issues tab to see what's wrong."}
+            {tab === "hidden" && "Tap edit above to hide services you don't use."}
+          </div>
+        </div>
+      )}
+
       {SECTIONS.map((s) => (
         <Section key={s.id} s={s} editing={editing}
                  disabledSet={disabledSet} pinnedSet={pinnedSet}
-                 onToggle={onToggle} onTogglePin={onTogglePin} live={live} />
+                 onToggle={onToggle} onTogglePin={onTogglePin} live={live}
+                 tab={activeTab} />
       ))}
 
       {recentlyHidden && (
@@ -350,7 +422,7 @@ export default function Quicklinks() {
           </span>
           <span aria-label={`${counts.total} services total`}><b>{counts.total}</b> total</span>
         </div>
-        <div>arylmera · directory · {todayISO}</div>
+        <div>arylmera · apps · {todayISO}</div>
       </div>
     </div>
   );

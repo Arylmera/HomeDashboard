@@ -49,7 +49,7 @@ export function useWeather({ poll = 30 * 60_000 } = {}) {
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       return shapeForecast(await r.json());
     },
-    { poll }
+    { poll, cacheKey: 'weather'}
   );
   return data || EMPTY;
 }

@@ -11,7 +11,7 @@ import { POOL_COLORS } from './utils.js';
 import useNasHistory from './useNasHistory.js';
 import SystemOverview from './components/SystemOverview.jsx';
 import PoolCard from './components/PoolCard.jsx';
-import CoreCard from './components/CoreCard.jsx';
+import CoreOverlay from './components/CoreOverlay.jsx';
 import DiskTable from './components/DiskTable.jsx';
 
 export default function NAS() {
@@ -63,7 +63,7 @@ export default function NAS() {
   const netRx = networkTotal?.bytes_recv_rate_per_sec ?? networkTotal?.rx ?? null;
   const netTx = networkTotal?.bytes_sent_rate_per_sec ?? networkTotal?.tx ?? null;
 
-  const { tempHistory, avgTempHistory, memHistory, rxHistory } = useNasHistory({
+  const { tempHistory, usageHistory, avgTempHistory, memHistory, rxHistory } = useNasHistory({
     cores, memUsed, netRx, netTx,
   });
   const avgTemp = avgTempHistory.length ? avgTempHistory[avgTempHistory.length - 1] : null;
@@ -139,11 +139,11 @@ export default function NAS() {
         <h2>CPU cores</h2>
         <span className="meta">warn 82 °C · crit 100 °C</span>
       </div>
-      <div className="nas-grid-4">
-        {cores.map((c) => (
-          <CoreCard key={c.i} core={c} history={tempHistory[c.i]} />
-        ))}
-      </div>
+      <CoreOverlay
+        cores={cores}
+        tempHistory={tempHistory}
+        usageHistory={usageHistory}
+      />
 
       <div className="nas-section-title">
         <span className="numeral">04 · disks</span>

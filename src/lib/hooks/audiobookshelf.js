@@ -7,7 +7,7 @@ export function useAudiobookshelf({ poll = 5 * 60_000 } = {}) {
       const j = await getJson('/api/audiobookshelf/api/libraries', { signal });
       return j?.libraries ?? [];
     },
-    { poll }
+    { poll, cacheKey: 'audiobookshelf'}
   );
   return { libraries: data, state };
 }

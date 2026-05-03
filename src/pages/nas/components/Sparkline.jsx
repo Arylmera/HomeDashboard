@@ -79,7 +79,7 @@ export default function Sparkline({
       <circle cx={lastX} cy={lastY} r="2" fill={color} />
 
       {showLabels && (
-        <g style={{ font: '9px var(--font-mono, ui-monospace)', fill: 'currentColor', fillOpacity: 0.55 }}>
+        <g style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', fill: 'currentColor', fillOpacity: 0.55 }}>
           <text x="3" y={padTop + 7}>max {format(scale.vmax)}</text>
           <text x="3" y={h - 2}>min {format(scale.vmin)}</text>
           <text x={w - 3} y={h - 2} textAnchor="end" fillOpacity="0.4">−{axisLabel}  ·  now</text>

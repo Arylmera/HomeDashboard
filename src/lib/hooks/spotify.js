@@ -10,7 +10,7 @@ import { getJson } from './_fetcher.js';
 export function useSpotifyAuth({ poll = 60_000 } = {}) {
   const { data, state, refresh } = usePolling(
     (signal) => getJson('/api/spotify/oauth/status', { signal }),
-    { poll }
+    { poll, cacheKey: 'spotify-auth'}
   );
   return { state, configured: data?.configured ?? false, authenticated: data?.authenticated ?? false, refresh };
 }
@@ -29,7 +29,7 @@ export function useSpotifyPlayback({ poll = 5_000, enabled = true } = {}) {
           return r.json();
         }
       : null,
-    { poll, deps: [enabled] }
+    { poll, deps: [enabled], cacheKey: 'spotify-playback'}
   );
   if (!enabled) return { state: 'idle', playback: null, refresh };
   return { state, playback: data ?? null, refresh };
@@ -43,7 +43,7 @@ export function useSpotifyPlaylists({ enabled = true, limit = 50 } = {}) {
           return j.items || [];
         }
       : null,
-    { poll: 0, deps: [enabled, limit] }
+    { poll: 0, deps: [enabled, limit], cacheKey: 'spotify-playlists' }
   );
   if (!enabled) return { state: 'idle', playlists: [] };
   return { state, playlists: data || [] };
@@ -57,7 +57,7 @@ export function useSpotifyDevices({ poll = 15_000, enabled = true } = {}) {
           return j.devices || [];
         }
       : null,
-    { poll, deps: [enabled] }
+    { poll, deps: [enabled], cacheKey: 'spotify-devices'}
   );
   if (!enabled) return { state: 'idle', devices: [], refresh };
   return { state, devices: data || [], refresh };

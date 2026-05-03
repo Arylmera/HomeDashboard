@@ -33,7 +33,7 @@ export function useArcane({ poll = 15_000 } = {}) {
         },
       };
     },
-    { poll }
+    { poll, cacheKey: 'arcane'}
   );
   return {
     state,

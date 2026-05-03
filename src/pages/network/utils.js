@@ -78,6 +78,15 @@ export function fmtUptime(s) {
   return `${m}m`;
 }
 
+export function isAnomaly(h, certsById) {
+  const s = statusOf(h);
+  if (s === 'offline' || s === 'disabled') return true;
+  const cert = h.certificate || (certsById && certsById.get(h.certificate_id));
+  const exp = certExpiry(cert);
+  if (exp && exp.days <= 14) return true;
+  return false;
+}
+
 export function fmtKb(kb) {
   if (!Number.isFinite(kb)) return null;
   if (kb >= 1024 * 1024) return `${(kb / 1024 / 1024).toFixed(1)} GB`;

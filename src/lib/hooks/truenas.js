@@ -157,7 +157,7 @@ export function useTrueNAS({ poll = 30_000 } = {}) {
         hotDisks,
       };
     },
-    { poll }
+    { poll, cacheKey: 'true-nas'}
   );
   return { data, state };
 }

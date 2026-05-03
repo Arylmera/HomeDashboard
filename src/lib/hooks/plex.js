@@ -22,7 +22,7 @@ export function usePlex({ poll = 30_000 } = {}) {
         libraries: dirs.map((d, i) => ({ ...d, count: counts[i] })),
       };
     },
-    { poll }
+    { poll, cacheKey: 'plex'}
   );
   return { sessions: data?.sessions ?? null, libraries: data?.libraries ?? null, state };
 }

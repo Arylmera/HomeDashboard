@@ -104,7 +104,7 @@
 .qlinks-card.editing:hover .qlinks-card-arrow { transform: none; }
 
 .qlinks-card-edit-actions {
-  position: absolute; top: 8px; right: 8px;
+  flex: 0 0 auto;
   display: inline-flex; gap: 6px; align-items: center;
 }
 .qlinks-card.editing .qlinks-card-edit-actions .qlinks-card-arrow {
@@ -138,6 +138,53 @@
 .qlinks-card.featured:hover::before {
   background: radial-gradient(110% 75% at 0% 0%, var(--ember-soft) 0%, transparent 55%);
 }
+
+/* Status filter tabs (all / healthy / issues / hidden) */
+.apps-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 18px 0 4px;
+  padding: 6px;
+  background: var(--bg-card);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-lg);
+}
+.apps-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  font: 500 12px/1 var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: calc(var(--radius-lg) - 4px);
+  cursor: pointer;
+  transition: color .15s ease, background .15s ease, border-color .15s ease;
+}
+.apps-tab:hover { color: var(--ink); background: var(--bg-soft); }
+.apps-tab.on {
+  color: var(--ink);
+  background: var(--bg-soft);
+  border-color: var(--line);
+}
+.apps-tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ink-faint);
+  background: var(--bg-deep, rgba(0,0,0,.18));
+  border-radius: 999px;
+}
+.apps-tab.on .apps-tab-count { color: var(--ember-hi); }
+.apps-tab .status-dot { width: 8px; height: 8px; }
 
 /* Empty state when every service is hidden */
 .qlinks-empty {

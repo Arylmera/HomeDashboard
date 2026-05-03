@@ -8,6 +8,9 @@ import { arcaneAction } from '../../lib/hooks.js';
  * ============================================================== */
 export default function useDockerActions(arcane) {
   const [actionErr, setActionErr] = useState(null);
+  // Auto-flip when Arcane refuses writes (no API key / no permission).
+  // Once tripped, the page hides action UI for the rest of the session.
+  const [writeBlocked, setWriteBlocked] = useState(false);
 
   useEffect(() => {
     if (!actionErr) return;
@@ -15,13 +18,23 @@ export default function useDockerActions(arcane) {
     return () => clearTimeout(t);
   }, [actionErr]);
 
+  const handle = (e, label) => {
+    const msg = e?.message || 'unknown error';
+    if (/HTTP 40[13]/.test(msg)) {
+      setWriteBlocked(true);
+      setActionErr(`${label}: Arcane refused (${msg.match(/40[13]/)?.[0]}) — switching to read-only mode.`);
+    } else {
+      setActionErr(`${label} failed: ${msg}`);
+    }
+  };
+
   const onContainerAction = async (kind, id, action) => {
     try {
       await arcaneAction(arcane.envId, kind, id, action);
       setTimeout(arcane.refresh, 600);
     } catch (e) {
       console.warn('[arcane action]', e);
-      setActionErr(`${action} failed: ${e?.message || 'unknown error'}`);
+      handle(e, action);
     }
   };
 
@@ -31,9 +44,9 @@ export default function useDockerActions(arcane) {
       setTimeout(arcane.refresh, 1200);
     } catch (e) {
       console.warn('[arcane project]', e);
-      setActionErr(`stack ${action} failed: ${e?.message || 'unknown error'}`);
+      handle(e, `stack ${action}`);
     }
   };
 
-  return { actionErr, setActionErr, onContainerAction, onProjectAction };
+  return { actionErr, setActionErr, writeBlocked, onContainerAction, onProjectAction };
 }

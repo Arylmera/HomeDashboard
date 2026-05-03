@@ -21,7 +21,7 @@ export function useGlances({ poll = 15_000 } = {}) {
       if (!cpu && !mem) throw new Error('glances_unavailable');
       return { cpu, mem, fs, sensors, network, percpu };
     },
-    { poll }
+    { poll, cacheKey: 'glances'}
   );
   return { data, state };
 }

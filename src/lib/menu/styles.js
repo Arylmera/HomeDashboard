@@ -129,6 +129,20 @@ const CSS = `
   .am-label::before { content: ""; width: 14px; height: 1px; background: var(--ember); opacity: 0.7; }
   .am-hint { font-size: 11.5px; color: var(--ink-faint); font-family: var(--font-mono, ui-monospace, Menlo, monospace); }
 
+  .am-nav { display: flex; flex-direction: column; gap: 4px; }
+  .am-nav-item {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+    padding: 9px 12px; border-radius: 8px;
+    background: var(--bg-card); border: 1px solid var(--line-soft);
+    color: var(--ink); text-decoration: none;
+    transition: 140ms ease;
+  }
+  .am-nav-item:hover { border-color: var(--line); background: var(--bg-card-hi); }
+  .am-nav-item.am-on { border-color: var(--ember); background: var(--ember-soft); }
+  .am-nav-name { font-weight: 600; font-size: 13px; }
+  .am-nav-desc { font-family: var(--font-mono, ui-monospace, Menlo, monospace); font-size: 10.5px; color: var(--ink-faint); letter-spacing: 0.02em; }
+  .am-nav-item.am-on .am-nav-desc { color: var(--ember-hi); }
+
   .am-themes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .am-theme {
     position: relative; padding: 12px; border-radius: 10px; cursor: pointer;

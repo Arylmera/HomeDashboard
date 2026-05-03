@@ -23,7 +23,7 @@ export function useSpeedtest({ poll = 60_000 } = {}) {
         when: d.created_at || d.timestamp || null,
       };
     },
-    { poll }
+    { poll, cacheKey: 'speedtest'}
   );
   return { state, down: null, up: null, ping: null, when: null, ...(data || {}) };
 }
@@ -48,7 +48,7 @@ export function useSpeedtestHistory({ limit = 24, poll = 60_000 } = {}) {
         healthy: d.healthy !== false,
       })).reverse();
     },
-    { poll, deps: [limit] }
+    { poll, deps: [limit], cacheKey: 'speedtest-history'}
   );
   return { state, items: data || [] };
 }

@@ -10,15 +10,20 @@
 
 .docker-card {
   position: relative;
-  display: flex; flex-direction: column; gap: 8px;
-  padding: 12px 14px;
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 10px 12px;
   background: var(--bg-card);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius);
   transition: transform 180ms cubic-bezier(.2,.7,.2,1), border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
   box-shadow: var(--shadow-card);
-  min-height: 96px;
+  min-height: 76px;
 }
+.docker-card-sub {
+  display: flex; align-items: baseline; gap: 8px; min-width: 0;
+}
+.docker-card-sub .docker-card-up { flex: 0 0 auto; }
+.docker-card-sub .docker-card-img { flex: 1; min-width: 0; }
 .docker-card:hover {
   transform: translateY(-2px);
   border-color: var(--line);
@@ -274,41 +279,314 @@
 .ix-children > .section { margin-left: 0; }
 .ix-children > .section .section-title h2 { font-size: 13px; }
 
-/* daemon banner (Homey-style summary row) */
-.docker-banner {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 10px;
+/* ============================================================== *
+ *  HealthHero — wide one-line health row + sparkline + infra
+ * ============================================================== */
+.health-hero {
+  display: flex; flex-direction: column; gap: 0;
   margin: 14px 0 18px;
-}
-.docker-banner .sum {
-  padding: 14px 16px;
   background: var(--bg-card);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius);
-  display: flex; flex-direction: column; gap: 4px;
   box-shadow: var(--shadow-card);
-  transition: 160ms ease;
+  overflow: hidden;
 }
-.docker-banner .sum:hover { border-color: var(--line); background: var(--bg-card-hi); }
-.docker-banner .sum .l {
+.hh-main {
+  display: flex; align-items: center; gap: 18px;
+  padding: 16px 18px;
+  flex-wrap: wrap;
+}
+.hh-headline {
+  display: flex; align-items: baseline; gap: 6px;
+  flex: 0 0 auto;
+}
+.hh-num {
+  font-family: var(--font-mono);
+  font-size: 38px; font-weight: 700;
+  color: var(--ember-hi);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.hh-of {
+  font-family: var(--font-mono);
+  font-size: 16px; color: var(--ink-faint);
+}
+.hh-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--ink-dim);
+  margin-left: 6px;
+}
+.hh-spark-wrap {
+  flex: 0 0 auto;
+  width: 120px; height: 28px;
+  color: var(--ember);
+  opacity: 0.85;
+}
+.hh-spark { width: 100%; height: 100%; display: block; }
+.hh-spark-empty {
+  display: inline-block; width: 100%; height: 1px;
+  background: var(--line-soft);
+}
+.hh-chips {
+  display: flex; align-items: center; gap: 8px;
+  flex: 1; min-width: 0;
+  flex-wrap: wrap;
+}
+.hh-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 10px;
+  background: var(--bg);
+  border: 1px solid var(--line-soft);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--ink-dim);
+}
+.hh-chip.is-down { color: var(--status-down); border-color: color-mix(in oklch, var(--status-down) 40%, var(--line-soft)); }
+.hh-chip.is-warn { color: var(--ember-hi); border-color: var(--ember-soft); }
+.hh-infra-toggle {
+  font: inherit; font-family: var(--font-mono);
+  font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.14em;
+  color: var(--ink-dim);
+  background: transparent;
+  border: 1px solid var(--line-soft);
+  border-radius: 6px;
+  padding: 6px 10px;
+  display: inline-flex; align-items: center; gap: 6px;
+  cursor: pointer; transition: 140ms ease;
+}
+.hh-infra-toggle:hover { color: var(--ember-hi); border-color: var(--ember); background: var(--ember-soft); }
+.hh-infra-toggle svg {
+  width: 12px; height: 12px;
+  transition: transform 220ms cubic-bezier(.2,.7,.2,1);
+}
+.hh-infra-toggle.is-open svg { transform: rotate(180deg); }
+.hh-infra {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1px;
+  background: var(--line-soft);
+  border-top: 1px solid var(--line-soft);
+}
+.hh-infra-cell {
+  padding: 12px 16px;
+  background: var(--bg-card);
+  display: flex; flex-direction: column; gap: 3px;
+}
+.hh-infra-cell .l {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ink-faint);
+}
+.hh-infra-cell .v {
+  font-family: var(--font-mono);
+  font-size: 18px; font-weight: 600;
+  color: var(--ink);
+}
+
+/* ============================================================== *
+ *  IssuesJump — sticky alert strip with stack quick-links
+ * ============================================================== */
+.issues-jump {
+  position: sticky; top: 8px; z-index: 12;
+  display: flex; align-items: center; gap: 14px;
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  background: color-mix(in oklch, var(--status-down) 10%, var(--bg-raised));
+  border: 1px solid color-mix(in oklch, var(--status-down) 50%, var(--line));
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px oklch(0 0 0 / .35);
+  flex-wrap: wrap;
+  backdrop-filter: blur(8px);
+}
+.issues-jump-head {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink);
+  flex: 0 0 auto;
+}
+.issues-jump-head b { font-weight: 700; }
+.issues-jump-hint {
+  font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.14em;
+  color: var(--ink-faint);
+  margin-left: 4px;
+}
+.issues-jump-chips {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  flex: 1; min-width: 0;
+}
+.issues-chip {
+  font: inherit; font-family: var(--font-mono);
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px;
+  background: var(--bg);
+  border: 1px solid var(--line-soft);
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 11px; color: var(--ink-dim);
+  transition: 140ms ease;
+}
+.issues-chip:hover {
+  color: var(--ink); border-color: var(--ember);
+  background: var(--ember-soft);
+}
+.issues-chip.is-down { color: var(--status-down); border-color: color-mix(in oklch, var(--status-down) 50%, var(--line-soft)); }
+.issues-chip.is-degraded { color: var(--ember-hi); border-color: var(--ember-soft); }
+.issues-chip-name { font-weight: 600; }
+.issues-chip-meta { color: var(--ink-faint); font-size: 10.5px; }
+.issues-chip.is-more {
+  color: var(--ink-faint);
+  padding: 4px 10px;
+  border: 1px dashed var(--line-soft);
+  border-radius: 999px;
+  font-size: 10.5px;
+}
+.search-match {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-faint);
+  padding: 0 4px;
+}
+.search-match b { color: var(--ember-hi); font-weight: 700; }
+
+.docker-readonly-note {
+  display: flex; align-items: center; gap: 10px;
+  margin: 0 0 14px;
+  padding: 8px 12px;
+  background: var(--bg-card);
+  border: 1px dashed var(--line-soft);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--ink-faint);
+  letter-spacing: 0.02em;
+}
+.docker-readonly-note code {
+  font-size: 11px;
+  padding: 1px 5px;
+  background: var(--bg);
+  border: 1px solid var(--line-soft);
+  border-radius: 4px;
+  color: var(--ink-dim);
+}
+.docker-readonly-note .status-dot {
+  background: var(--ink-faint);
+  box-shadow: none;
+}
+
+/* ============================================================== *
+ *  Stack as collapsible row (replaces section-head for stacks)
+ * ============================================================== */
+.docker-stack {
+  display: flex; flex-direction: column; gap: 10px;
+  position: relative;
+}
+.docker-stack-row {
+  font: inherit; color: inherit; text-align: left;
+  width: 100%;
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px 10px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: 160ms ease;
+  position: relative; overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+.docker-stack-row:hover { border-color: var(--line); background: var(--bg-card-hi); }
+.docker-stack.is-open .docker-stack-row {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+/* color stripe — hue per stack name */
+.docker-stack-stripe {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: oklch(65% 0.16 var(--stack-hue, 30));
+  opacity: 0.85;
+}
+.docker-stack.is-down .docker-stack-stripe { background: var(--status-down); opacity: 1; }
+.docker-stack.is-degraded .docker-stack-stripe { background: var(--ember); opacity: 1; }
+
+.docker-stack-name {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 0.01em;
+  text-transform: lowercase;
+  color: var(--ink);
+  flex: 0 0 auto;
+}
+.docker-stack-pill {
+  font-family: var(--font-mono);
+  font-size: 10.5px; letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--bg);
+  border: 1px solid var(--line-soft);
+  color: var(--ink-dim);
+  flex: 0 0 auto;
+}
+.docker-stack-pill.is-up { color: var(--status-up); border-color: color-mix(in oklch, var(--status-up) 40%, var(--line-soft)); }
+.docker-stack-pill.is-degraded { color: var(--ember-hi); border-color: var(--ember-soft); background: var(--ember-soft); }
+.docker-stack-pill.is-down { color: var(--status-down); border-color: color-mix(in oklch, var(--status-down) 50%, var(--line-soft)); background: color-mix(in oklch, var(--status-down) 12%, var(--bg)); }
+
+.docker-stack-dots {
+  display: inline-flex; align-items: center; gap: 3px;
+  flex-wrap: wrap;
+  flex: 0 0 auto;
+  max-width: 360px;
+}
+.docker-stack-dots-more {
+  font-family: var(--font-mono);
+  font-size: 10px; color: var(--ink-faint);
+  margin-left: 4px;
+}
+.docker-stack-spacer { flex: 1 1 auto; }
+.docker-stack-caret {
+  width: 16px; height: 16px;
+  color: var(--ink-dim);
+  transition: transform 220ms cubic-bezier(.2,.7,.2,1), color 160ms ease;
+  flex: 0 0 auto;
+}
+.docker-stack-row:hover .docker-stack-caret { color: var(--ember-hi); }
+.docker-stack.is-open .docker-stack-caret { transform: rotate(180deg); color: var(--ember); }
+.docker-stack.is-open .docker-grid {
+  border: 1px solid var(--line-soft);
+  border-top: none;
+  border-radius: 0 0 var(--radius) var(--radius);
+  padding: 12px;
+  background: oklch(from var(--bg-card) l c h / 0.4);
+}
+.section-meta-tag {
   font-family: var(--font-mono);
   font-size: 10.5px;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: var(--ink-faint);
+  flex: 0 0 auto;
 }
-.docker-banner .sum .v {
-  font-family: var(--font-mono);
-  font-size: 22px;
-  font-weight: 600;
-  color: var(--ink);
-  display: flex; align-items: baseline; gap: 6px;
-}
-.docker-banner .sum .v.on { color: var(--ember-hi); }
-.docker-banner .sum .v .unit {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--ink-faint);
-  letter-spacing: 0.04em;
-}
+
+/* ---------- Dense ---------- */
+html[data-density="dense"] body .docker-grid { gap: 8px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+html[data-density="dense"] body .docker-card { padding: 9px 11px; gap: 8px; border-radius: 8px; }
+html[data-density="dense"] body .docker-card-img { width: 28px; height: 28px; border-radius: 6px; }
+html[data-density="dense"] body .docker-card-name { font-size: 12.5px; }
+html[data-density="dense"] body .docker-card-sub { font-size: 10.5px; }
+html[data-density="dense"] body .docker-stack { gap: 6px; }
+html[data-density="dense"] body .docker-stack-row { padding: 6px 8px; }
+html[data-density="dense"] body .ix-section { gap: 6px; }
+html[data-density="dense"] body .ix-toggle { padding: 7px 10px; }
+html[data-density="dense"] body .ix-toggle-title { font-size: 12.5px; }
+html[data-density="dense"] body .health-hero { padding: 12px 14px; gap: 10px; }
+html[data-density="dense"] body .hh-num { font-size: 28px; }
+html[data-density="dense"] body .hh-chip { padding: 4px 8px; font-size: 10.5px; }
+html[data-density="dense"] body .issues-jump { padding: 9px 11px; gap: 8px; }
+html[data-density="dense"] body .issues-chip { padding: 5px 9px; font-size: 11px; }

@@ -6,7 +6,7 @@ import { getJson } from './_fetcher.js';
 export function useWan({ poll = 30_000 } = {}) {
   const { data, state } = usePolling(
     (signal) => getJson('/api/wan', { signal }),
-    { poll }
+    { poll, cacheKey: 'wan'}
   );
   return {
     state: data?.state || state,

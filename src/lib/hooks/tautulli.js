@@ -15,7 +15,7 @@ export function useTautulli({ poll = 30_000 } = {}) {
         activity: act?.response?.data ?? null,
       };
     },
-    { poll }
+    { poll, cacheKey: 'tautulli'}
   );
   return { state, home: data?.home ?? null, activity: data?.activity ?? null };
 }
@@ -51,7 +51,7 @@ export function useRecentlyAdded({ count = 8, poll = 5 * 60_000 } = {}) {
       const j = await getJson(`/api/tautulli/api/v2?cmd=get_recently_added&count=${count}`, { signal });
       return (j?.response?.data?.recently_added || []).map(shapeRecentlyAddedRow);
     },
-    { poll, deps: [count] }
+    { poll, deps: [count], cacheKey: 'recently-added'}
   );
   return { state, items: data || [] };
 }

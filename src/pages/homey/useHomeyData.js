@@ -4,7 +4,6 @@ import {
   homeySetCapability, homeyTriggerFlow, homeySetVariable,
 } from '../../lib/hooks.js';
 import { isHiddenZone } from './icons.jsx';
-import { MOCK_ZONES, MOCK_FLOWS, MOCK_VARIABLES } from './mocks.js';
 
 /* ============================================================== *
  *  useHomeyData — wires data sources, derives zones/flows/vars,
@@ -20,11 +19,11 @@ export default function useHomeyData() {
 
   const zones = useMemo(() => isLive
     ? homey.zones.filter(z => !isHiddenZone(z.name))
-    : MOCK_ZONES, [isLive, homey.zones]);
-  const flows = isLive ? homey.flows : MOCK_FLOWS;
+    : [], [isLive, homey.zones]);
+  const flows = isLive ? homey.flows : [];
   const folders = isLive ? (homey.folders || []) : [];
   const variables = useMemo(() => {
-    const list = isLive ? (homey.variables || []) : MOCK_VARIABLES;
+    const list = isLive ? (homey.variables || []) : [];
     return [...list].sort((a, b) => a.name.localeCompare(b.name));
   }, [isLive, homey.variables]);
 

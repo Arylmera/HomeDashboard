@@ -43,7 +43,12 @@ export default function SunCard({ sun }) {
   }
 
   const now = new Date();
-  const { sunrise, sunset, daylight, tomorrowRise } = sun;
+  const sunrise = sun.sunrise ? new Date(sun.sunrise) : null;
+  const sunset = sun.sunset ? new Date(sun.sunset) : null;
+  const tomorrowRise = sun.tomorrowRise ? new Date(sun.tomorrowRise) : null;
+  const daylight = sun.daylight;
+
+  if (!sunrise || !sunset) return null;
 
   const goldenAm = new Date(sunrise.getTime() + GOLDEN_MS);
   const goldenPm = new Date(sunset.getTime() - GOLDEN_MS);

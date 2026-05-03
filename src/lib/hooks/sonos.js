@@ -6,7 +6,7 @@ import { getJson } from './_fetcher.js';
 export function useSonosAuth({ poll = 60_000 } = {}) {
   const { data, state, refresh } = usePolling(
     (signal) => getJson('/api/sonos/oauth/status', { signal }),
-    { poll }
+    { poll, cacheKey: 'sonos-auth'}
   );
   return { state, configured: data?.configured ?? false, authenticated: data?.authenticated ?? false, refresh };
 }
@@ -14,7 +14,7 @@ export function useSonosAuth({ poll = 60_000 } = {}) {
 export function useSonosHouseholds({ enabled = true } = {}) {
   const { data, state } = usePolling(
     enabled ? (signal) => getJson('/api/sonos/control/households', { signal }) : null,
-    { poll: 0, deps: [enabled] }
+    { poll: 0, deps: [enabled], cacheKey: 'sonos-households' }
   );
   if (!enabled) return { state: 'idle', households: [] };
   return { state, households: data?.households || [] };
@@ -26,7 +26,7 @@ export function useSonosGroups(householdId, { poll = 10_000, enabled = true } = 
     active
       ? (signal) => getJson(`/api/sonos/control/households/${encodeURIComponent(householdId)}/groups`, { signal })
       : null,
-    { poll, deps: [householdId, active] }
+    { poll, deps: [householdId, active], cacheKey: 'sonos-groups'}
   );
   if (!active) return { state: 'idle', groups: [], players: [], refresh };
   return { state, groups: data?.groups || [], players: data?.players || [], refresh };
@@ -52,7 +52,7 @@ export function useSonosGroupPlayback(groupId, { poll = 5_000, enabled = true } 
           };
         }
       : null,
-    { poll, deps: [groupId, active] }
+    { poll, deps: [groupId, active], cacheKey: 'sonos-group-playback'}
   );
   if (!active) return { state: 'idle', playback: null, metadata: null, volume: null, refresh };
   return { state, playback: data?.playback ?? null, metadata: data?.metadata ?? null, volume: data?.volume ?? null, refresh };

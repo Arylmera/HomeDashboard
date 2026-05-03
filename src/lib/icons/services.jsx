@@ -56,7 +56,7 @@ export const ICONS = {
   pihole:         di("pi-hole"),
   nginx:          di("nginx-proxy-manager"),
   truenas:        di("truenas"),
-  router:         di("mikrotik"),
+  router:         di("asus"),
   socketproxy:    di("docker"),
   twingate:       di("twingate"),
   authentik:      di("authentik"),
@@ -78,14 +78,14 @@ export const ICONS = {
   uptime:         di("uptime-kuma"),
 
   // Management
-  arcane:         di("portainer"),
+  arcane:         di("arcane"),
   qui:            di("autobrr"),
   dockdeploy:     di("dockge"),
 
   // Utility / AI
-  scanopy:        di("paperless-ngx"),
+  scanopy:        di("scanopy"),
   vert:           di("vertiv"),
-  mazanoke:       di("immich"),
+  mazanoke:       di("mazanoke", "png"),
   weaviate:       di("qdrant"),
   ai:             di("open-webui"),
   baserow:        di("baserow"),

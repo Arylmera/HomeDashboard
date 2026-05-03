@@ -41,7 +41,7 @@ export function useArr(svc, { poll = 60_000 } = {}) {
         total: Array.isArray(library) ? library.length : null,
       };
     },
-    { poll, deps: [svc] }
+    { poll, deps: [svc], cacheKey: `arr:${svc}` }
   );
   return data
     ? { ...data, state }

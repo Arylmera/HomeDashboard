@@ -27,7 +27,7 @@ export function useServiceHealth(services, intervalMs = 60_000) {
       }));
       return out;
     },
-    { poll: intervalMs, deps: [key] }
+    { poll: intervalMs, deps: [key], cacheKey: 'service-health' }
   );
   return data || {};
 }

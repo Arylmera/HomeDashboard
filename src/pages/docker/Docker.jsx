@@ -1,9 +1,7 @@
 /* ============================================================== *
  *  Containers — live Docker view backed by Arcane API.
- *  Page shell: hero, banner, filter, section orchestration.
- *  Cards/sections live in ./components, helpers in ./utils.js,
- *  derivations + actions in ./useGroupedContainers.js and
- *  ./useDockerActions.js.
+ *  Page shell: hero, health row + sparkline, issues jump,
+ *  filter, health-sorted stack sections (collapsed when healthy).
  * ============================================================== */
 import { useState } from 'react';
 import { UI } from '../../lib/icons.jsx';
@@ -12,8 +10,15 @@ import FilterBar from './components/FilterBar.jsx';
 import Stack from './components/Stack.jsx';
 import IxSection from './components/IxSection.jsx';
 import LooseSection from './components/LooseSection.jsx';
+import HealthHero from './components/HealthHero.jsx';
+import IssuesJump from './components/IssuesJump.jsx';
 import useDockerActions from './useDockerActions.js';
 import useGroupedContainers from './useGroupedContainers.js';
+import useUpHistory from './useUpHistory.js';
+
+// Arcane write actions require ARCANE_API_KEY at the proxy. Default to
+// read-only; flip VITE_ARCANE_WRITE=true once a key is wired up.
+const CAN_WRITE = String(import.meta.env.VITE_ARCANE_WRITE || '').toLowerCase() === 'true';
 
 export default function Docker() {
   const now = useClock();
@@ -27,12 +32,17 @@ export default function Docker() {
   const dateStr = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
   const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
-  const { actionErr, setActionErr, onContainerAction, onProjectAction } = useDockerActions(arcane);
-  const { grouped, counts } = useGroupedContainers({
+  const { actionErr, setActionErr, writeBlocked, onContainerAction, onProjectAction } = useDockerActions(arcane);
+  const readOnly = !CAN_WRITE || writeBlocked;
+  const { grouped, counts, issues } = useGroupedContainers({
     containers: arcane.containers,
     projects: arcane.projects,
     q, scope,
   });
+  const upHistory = useUpHistory(counts.up);
+  const restartingCount = arcane.containers.filter(
+    c => c.state === 'restarting' || c.state === 'paused'
+  ).length;
 
   const stateLine =
     arcane.state === 'loading' ? 'Connecting to Arcane…' :
@@ -97,14 +107,28 @@ export default function Docker() {
         </div>
       </div>
 
-      <div className="docker-banner">
-        <div className="sum"><div className="l">Running</div><div className="v on">{counts.up}<span className="unit">/ {counts.total}</span></div></div>
-        <div className="sum"><div className="l">Stopped</div><div className="v">{counts.down}<span className="unit">down</span></div></div>
-        <div className="sum"><div className="l">Stacks</div><div className="v">{arcane.projects.length}<span className="unit">compose</span></div></div>
-        <div className="sum"><div className="l">Images</div><div className="v">{arcane.counts.images ?? '—'}<span className="unit">cached</span></div></div>
-        <div className="sum"><div className="l">Networks</div><div className="v">{arcane.counts.networks ?? '—'}<span className="unit">net</span></div></div>
-        <div className="sum"><div className="l">Volumes</div><div className="v">{arcane.counts.volumes ?? '—'}<span className="unit">vol</span></div></div>
-      </div>
+      <HealthHero
+        counts={counts}
+        history={upHistory}
+        restartingCount={restartingCount}
+        infra={{
+          stacks: arcane.projects.length,
+          images: arcane.counts.images,
+          networks: arcane.counts.networks,
+          volumes: arcane.counts.volumes,
+        }}
+      />
+
+      <IssuesJump issues={issues} />
+
+      {readOnly && (
+        <div className="docker-readonly-note" role="note">
+          <span className="status-dot" aria-hidden="true" />
+          {writeBlocked
+            ? <>read-only — Arcane refused write actions (<code>403/401</code>). Configure <code>ARCANE_API_KEY</code> at the proxy to enable start/stop/restart.</>
+            : <>read-only mode — set <code>VITE_ARCANE_WRITE=true</code> and provide <code>ARCANE_API_KEY</code> at the proxy to enable start/stop/restart actions.</>}
+        </div>
+      )}
 
       <FilterBar q={q} setQ={setQ} scope={scope} setScope={setScope} counts={counts} />
 
@@ -116,6 +140,7 @@ export default function Docker() {
           services={s.services}
           onAction={onContainerAction}
           onProjectAction={onProjectAction}
+          readOnly={readOnly}
         />
       ))}
 
@@ -133,6 +158,7 @@ export default function Docker() {
           containers={grouped.loose}
           idx={looseIdx}
           onAction={onContainerAction}
+          readOnly={readOnly}
         />
       )}
 

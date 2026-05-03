@@ -10,7 +10,7 @@ import { getJson } from './_fetcher.js';
 export function useHealth(intervalMs = 30_000) {
   const { data } = usePolling(
     (signal) => getJson('/api/health', { signal }),
-    { poll: intervalMs }
+    { poll: intervalMs, cacheKey: 'health' }
   );
   return data && typeof data === 'object' ? data : {};
 }

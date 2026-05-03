@@ -43,7 +43,7 @@ export function useQui({ poll = 15_000 } = {}) {
       }
       return { instances, dl, up, active, total };
     },
-    { poll }
+    { poll, cacheKey: 'qui'}
   );
   return { state, ...(data || EMPTY) };
 }

@@ -14,6 +14,8 @@ export default function FilterBar({ q, setQ, scope, setScope, counts }) {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
+  const showMatch = q.trim().length > 0;
+
   return (
     <div className="search-wrap">
       <div className="searchbar">
@@ -22,8 +24,13 @@ export default function FilterBar({ q, setQ, scope, setScope, counts }) {
           ref={inputRef}
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Filter containers by name, image, or stack…"
+          placeholder="filter… try `down`, `image:nginx`, `port:8080`, `stack:media`"
         />
+        {showMatch && (
+          <span className="search-match" title="containers matching the current filter">
+            <b>{counts.matched}</b>/{counts.total}
+          </span>
+        )}
         <div className="search-scope">
           {[
             ['all',     `all ${counts.total}`],

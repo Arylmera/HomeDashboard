@@ -71,7 +71,7 @@ export const PAGES = [
     pattern: "rays",
   },
   {
-    id: "nas", name: "Storage", desc: "truenas · pools · disks",
+    id: "nas", name: "NAS", desc: "truenas · pools · disks",
     href: "nas.html", glyph: PageGlyphs.storage,
     accent: "oklch(0.78 0.10 220)",
     accentSoft: "oklch(0.78 0.10 220 / .14)",
@@ -85,7 +85,7 @@ export const PAGES = [
     pattern: "rings",
   },
   {
-    id: "docker", name: "Containers", desc: "arcane · stacks · live",
+    id: "docker", name: "Docker", desc: "arcane · stacks · live",
     href: "docker.html", glyph: PageGlyphs.docker,
     accent: "oklch(0.78 0.12 250)",
     accentSoft: "oklch(0.78 0.12 250 / .14)",
@@ -106,8 +106,8 @@ export const PAGES = [
     pattern: "rays",
   },
   {
-    id: "quicklinks", name: "Directory", desc: "every service · search",
-    href: "quicklinks.html", glyph: PageGlyphs.directory,
+    id: "apps", name: "Apps", desc: "every service · search",
+    href: "apps.html", glyph: PageGlyphs.directory,
     accent: "oklch(0.80 0.13 320)",
     accentSoft: "oklch(0.80 0.13 320 / .14)",
     pattern: "dots",

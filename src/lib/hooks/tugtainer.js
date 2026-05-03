@@ -22,6 +22,6 @@ async function fetchUpdateCount(signal) {
 }
 
 export function useTugtainer({ poll = 5 * 60_000 } = {}) {
-  const { data, state } = usePolling(fetchUpdateCount, { poll });
+  const { data, state } = usePolling(fetchUpdateCount, { poll, cacheKey: 'tugtainer'});
   return { state, pending: data?.pending ?? null, total: data?.total ?? null };
 }

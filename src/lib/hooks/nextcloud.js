@@ -10,7 +10,7 @@ export function useNextcloud({ poll = 5 * 60_000 } = {}) {
       });
       return j?.ocs?.data ?? null;
     },
-    { poll }
+    { poll, cacheKey: 'nextcloud'}
   );
   return { info: data ?? null, state };
 }

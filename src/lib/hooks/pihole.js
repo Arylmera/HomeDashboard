@@ -41,7 +41,7 @@ export function usePihole({ poll = 30_000 } = {}) {
         clients: j.clients?.active,
       };
     },
-    { poll }
+    { poll, cacheKey: 'pihole'}
   );
 
   return { state, ...(data || EMPTY) };

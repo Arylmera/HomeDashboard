@@ -24,7 +24,7 @@ export function useNpm({ poll = 30_000 } = {}) {
         accessLists:      j['access-lists'] || [],
       };
     },
-    { poll }
+    { poll, cacheKey: 'npm'}
   );
   return { state, ...(data || EMPTY), refresh };
 }

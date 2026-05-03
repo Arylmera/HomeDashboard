@@ -64,7 +64,7 @@ function shapeDevice(d) {
 export function useHomey({ poll = 30_000 } = {}) {
   const { data, state, refresh } = usePolling(
     async (signal) => shapeSnapshot(await getJson('/api/homey/snapshot', { signal })),
-    { poll }
+    { poll, cacheKey: 'homey'}
   );
   return { state, ...(data || EMPTY), refresh };
 }

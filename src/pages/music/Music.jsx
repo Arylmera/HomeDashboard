@@ -109,7 +109,7 @@ export default function Music() {
         <AuthCards spAuth={spAuth} soAuth={soAuth} />
       )}
 
-      {spReady && soReady && (
+      {spReady && (
         <>
           <div className="bento">
             <div className="bento-bg" aria-hidden />

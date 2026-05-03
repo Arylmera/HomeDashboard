@@ -14,7 +14,7 @@ import { ALL_SERVICES } from '../../lib/services.js';
 import { fmtBytes, fmtNum } from '../../lib/format.js';
 import {
   useClock, useGreeting, useWeather, useTrueNAS, useGlances, usePihole, useSpeedtest,
-  usePlexSessions, useArr, useNextcloud, useTugtainer, useArcane, useNpm, useWan,
+  usePlexSessions, useArr, useNextcloud, useTugtainer, useArcane, useWan,
   useSpotifyAuth, useSpotifyPlayback,
 } from '../../lib/hooks.js';
 import { useHealth } from '../../lib/useHealth.js';
@@ -25,12 +25,14 @@ import QuickApp from './components/QuickApp.jsx';
 import NetworkPanel from './components/NetworkPanel.jsx';
 import NASPanel from './components/NASPanel.jsx';
 import Forecast from './components/Forecast.jsx';
-import CalendarCard from './components/CalendarCard.jsx';
-import TasksCard from './components/TasksCard.jsx';
+// TODO: re-enable CalendarCard and TasksCard once Google integration is fixed
+// import CalendarCard from './components/CalendarCard.jsx';
+// import TasksCard from './components/TasksCard.jsx';
 import RecentlyAdded from './components/RecentlyAdded.jsx';
 import EnergyCard from './components/EnergyCard.jsx';
 import SunCard from './components/SunCard.jsx';
 import { usePrefs } from '../../lib/usePrefs.js';
+import { LazyMount } from '../../lib/LazyMount.jsx';
 
 export default function Home() {
   useEffect(() => {
@@ -79,8 +81,6 @@ export default function Home() {
   );
   const dockerTotal = arcane.containers?.length ?? null;
   const dockerStacks = arcane.projects?.length ?? null;
-  const npm = useNpm();
-  const npmProxies = npm.proxyHosts?.length ?? null;
   const wan = useWan({ poll: 30_000 });
 
   const spAuth = useSpotifyAuth();
@@ -145,7 +145,6 @@ export default function Home() {
       },
     ],
     network: [
-      { label: "proxies", value: npmProxies ?? "—",                                title: "Proxy hosts configured in Nginx Proxy Manager." },
       { label: "down",    value: st.down != null ? `${Math.round(st.down)} Mbps` : "—", title: "Latest Speedtest download." },
       { label: "up",      value: st.up   != null ? `${Math.round(st.up)} Mbps`   : "—", title: "Latest Speedtest upload." },
     ],
@@ -247,25 +246,24 @@ export default function Home() {
       <div className="section">
         <div className="section-head">
           <div className="section-title"><span className="numeral">// 02</span><h2>Quick apps</h2></div>
-          <div className="section-meta"><a href="quicklinks.html">all services →</a></div>
+          <div className="section-meta"><a href="apps.html">all services →</a></div>
         </div>
         <div className="quickapps">
           {quickApps.map(s => <QuickApp key={s.id} svc={s} statusMap={healthMap} statText={qaStat(s.id)} />)}
         </div>
       </div>
 
-      <RecentlyAdded />
+      <LazyMount minHeight={220}>
+        <RecentlyAdded />
+      </LazyMount>
+
+      {/* TODO: restore Calendar + Tasks day-row once those cards are fixed */}
 
       <div className="section">
         <div className="day-row">
-          <CalendarCard />
-          <TasksCard />
-        </div>
-      </div>
-
-      <div className="section">
-        <div className="day-row">
-          <EnergyCard />
+          <LazyMount minHeight={180}>
+            <EnergyCard />
+          </LazyMount>
           <SunCard sun={weather.sun} />
         </div>
       </div>

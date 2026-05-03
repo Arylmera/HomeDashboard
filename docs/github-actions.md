@@ -21,6 +21,18 @@ Workflow file: [.github/workflows/build.yml](../.github/workflows/build.yml).
 3. Add `VITE_FOO=${{ secrets.VITE_FOO }}` line under `build-args:` in the workflow.
 4. Add the secret in GitHub Settings → Secrets and variables → Actions.
 
+## Auto-deploy to Arcane
+
+The `deploy` job runs after a successful `build` on the default branch only. It POSTs to an Arcane inbound webhook that pulls the new image and redeploys the project.
+
+Required repo secret:
+
+| Secret | Value |
+|--------|-------|
+| `ARCANE_WEBHOOK_URL` | full webhook URL, e.g. `https://arcane.example.com/api/webhooks/trigger/arc_wh_xxxxxxxx`. Create in Arcane → Settings → Webhooks (target: redeploy this project). Token is shown once at creation; it IS the credential, so treat the whole URL as a secret. |
+
+The Arcane instance must be reachable from GitHub-hosted runners (public DNS + TLS, or use a self-hosted runner on the LAN).
+
 ## Pulling the image
 
 The published package is **private by default**. To pull:

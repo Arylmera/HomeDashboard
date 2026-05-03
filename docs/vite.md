@@ -10,6 +10,7 @@ Build tool and dev server. Also serves as the **runtime** in production via `vit
 - **Proxies route `/api/<svc>/*`** to upstream services. Never call upstream URLs directly from the browser — always go through `/api/<svc>` so auth headers are injected server-side.
 - **`changeOrigin: true`** is required for most upstreams (matches the `Host` header). `secure: false` is fine for self-signed self-hosted services.
 - **Preview server** binds to `0.0.0.0:4173` in container. `allowedHosts: true` is set so reverse proxies don't 403.
+- **`@vitejs/plugin-basic-ssl` is dev-only.** It crashes `vite preview` in the production container (writes to a non-writable cert path). Skipped automatically when `NODE_ENV=production` or `DEV_HTTPS=false`.
 
 ## Adding a new upstream service
 

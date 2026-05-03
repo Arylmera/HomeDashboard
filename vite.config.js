@@ -191,7 +191,7 @@ export default defineConfig(({ mode }) => {
       // https) accepts the redirect URI. Self-signed cert — your browser
       // will warn once; accept it. Use https://127.0.0.1:5173 (NOT
       // localhost — Spotify rejects the localhost host).
-      ...(process.env.DEV_HTTPS === 'false' ? [] : [basicSsl()]),
+      ...(process.env.DEV_HTTPS === 'false' || process.env.NODE_ENV === 'production' ? [] : [basicSsl()]),
       prefsPlugin(), homeyOAuthPlugin(), spotifyOAuthPlugin(), sonosLanPlugin(),
       healthPlugin(), icloudPlugin(), npmPlugin(), asusPlugin(), wanPlugin(), metricsPlugin(),
     ],

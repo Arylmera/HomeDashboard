@@ -1,7 +1,7 @@
 # Example for deploying on the NAS.
-# Pull image from GitLab registry, inject runtime secrets via env_file.
+# Pull image from GitHub Container Registry, inject runtime secrets via env_file.
 #
-#   docker login registry.gitlab.com
+#   docker login ghcr.io   # username = GitHub user, password = PAT (read:packages)
 #   cp .env.example .env  &&  fill in secrets
 #   docker compose -f docker-compose.example.yml up -d
 #
@@ -18,7 +18,7 @@
 
 services:
   homedashboard:
-    image: registry.gitlab.com/<group>/<project>:latest
+    image: ghcr.io/<owner>/homedashboard:latest
     container_name: homedashboard
     restart: unless-stopped
     ports:

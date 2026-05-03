@@ -3,10 +3,12 @@
 # Usage in Arcane
 # ───────────────
 # 1. Settings → Container Registries → Add:
-#      URL:      registry.gitlab.com
-#      Username: <your GitLab username>
-#      Password: GitLab Deploy Token (scope: read_registry)
-#         Project → Settings → Repository → Deploy tokens
+#      URL:      ghcr.io
+#      Username: <your GitHub username>
+#      Password: GitHub Personal Access Token (classic) with scope: read:packages
+#         GitHub → Settings → Developer settings → Personal access tokens
+#      (Required because the GHCR package is private by default. Alternative:
+#       make the package public — then no creds needed.)
 # 2. Stacks → New Stack → paste this compose.
 # 3. Create a `.env` next to the stack with the runtime secrets
 #    (see .env.example — TRUENAS_API_KEY, PLEX_TOKEN, NPM_SECRET,
@@ -18,7 +20,7 @@
 #
 # Notes
 # ─────
-# - VITE_* values are baked at build time by GitLab CI. Setting them
+# - VITE_* values are baked at build time by GitHub Actions. Setting them
 #   here has no effect.
 # - Sonos LAN discovery needs SSDP multicast. If the bridge network
 #   blocks it, either set SONOS_HOSTS in .env to a comma-separated
@@ -27,7 +29,7 @@
 
 services:
   homedashboard:
-    image: registry.gitlab.com/arylmera/homedashboard:latest
+    image: ghcr.io/arylmera/homedashboard:latest
     container_name: homedashboard
     restart: unless-stopped
     ports:

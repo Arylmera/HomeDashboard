@@ -15,7 +15,7 @@ of the stack. Follow them.
 | `prefs.js`, SQLite, `/data`             | [docs/better-sqlite3.md](docs/better-sqlite3.md) |
 | Anything in `src/styles/`               | [docs/css.md](docs/css.md) |
 | `docker/Dockerfile`                     | [docs/docker.md](docs/docker.md) |
-| `.gitlab-ci.yml`                        | [docs/gitlab-ci.md](docs/gitlab-ci.md) |
+| `.github/workflows/*.yml`               | [docs/github-actions.md](docs/github-actions.md) |
 | `docker/docker-compose.example.yml`     | [docs/docker-compose.md](docs/docker-compose.md) |
 | Branching, commits, history             | [docs/git.md](docs/git.md) |
 | Any upstream HTTP API (`/api/<svc>` proxy or `useXxx` hook) | [docs/api/README.md](docs/api/README.md) |

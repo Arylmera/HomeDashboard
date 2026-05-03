@@ -13,7 +13,7 @@ Reference for stack used in this project. Each file = good practices for one tec
 | Storage     | better-sqlite3 (synchronous SQLite)           | [better-sqlite3.md](better-sqlite3.md) |
 | Styling     | Plain CSS (per-page bundles)                  | [css.md](css.md) |
 | Container   | Docker (multi-stage, BuildKit)                | [docker.md](docker.md) |
-| CI/CD       | GitLab CI + GitLab Container Registry         | [gitlab-ci.md](gitlab-ci.md) |
+| CI/CD       | GitHub Actions + GHCR                         | [github-actions.md](github-actions.md) |
 | Deployment  | Docker Compose                                | [docker-compose.md](docker-compose.md) |
 | Versioning  | Git                                           | [git.md](git.md) |
 

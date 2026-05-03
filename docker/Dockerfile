@@ -80,6 +80,7 @@ COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/vite.config.js ./vite.config.js
 COPY --from=build /app/src/server ./src/server
+COPY --from=build /app/src/lib ./src/lib
 # Glob picks up every Vite entry point (index, nas, plex, homey,
 # quicklinks, docker, network, music, …) so adding a new page does
 # not require updating this Dockerfile.

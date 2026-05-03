@@ -15,6 +15,7 @@ import { fmtBytes, fmtNum } from '../../lib/format.js';
 import {
   useClock, useGreeting, useWeather, useTrueNAS, useGlances, usePihole, useSpeedtest,
   usePlexSessions, useArr, useNextcloud, useTugtainer, useArcane, useNpm, useWan,
+  useSpotifyAuth, useSpotifyPlayback,
 } from '../../lib/hooks.js';
 import { useHealth } from '../../lib/useHealth.js';
 import { PAGES, QUICK_APP_IDS } from './pages.jsx';
@@ -82,6 +83,11 @@ export default function Home() {
   const npmProxies = npm.proxyHosts?.length ?? null;
   const wan = useWan({ poll: 30_000 });
 
+  const spAuth = useSpotifyAuth();
+  const spPlayback = useSpotifyPlayback({ poll: 30_000, enabled: spAuth.authenticated });
+  const playingTrack = spPlayback.playback?.is_playing ? spPlayback.playback?.item?.name : null;
+  const playingArtist = spPlayback.playback?.item?.artists?.[0]?.name;
+
   const [pinnedIds] = usePrefs('quicklinks.pinned', QUICK_APP_IDS);
   const [disabledIds] = usePrefs('quicklinks.disabled', []);
   const [displayName] = usePrefs('home.displayName', 'Guillaume');
@@ -142,6 +148,17 @@ export default function Home() {
       { label: "proxies", value: npmProxies ?? "—",                                title: "Proxy hosts configured in Nginx Proxy Manager." },
       { label: "down",    value: st.down != null ? `${Math.round(st.down)} Mbps` : "—", title: "Latest Speedtest download." },
       { label: "up",      value: st.up   != null ? `${Math.round(st.up)} Mbps`   : "—", title: "Latest Speedtest upload." },
+    ],
+    music: [
+      {
+        label: playingTrack ? "now" : "spotify",
+        value: playingTrack
+          ? (playingTrack.length > 14 ? playingTrack.slice(0, 13) + "…" : playingTrack)
+          : (spAuth.authenticated ? "idle" : "—"),
+        title: playingTrack
+          ? `${playingTrack}${playingArtist ? ` — ${playingArtist}` : ""}`
+          : (spAuth.authenticated ? "Spotify connected, nothing playing." : "Spotify not connected."),
+      },
     ],
     quicklinks: [
       { label: "services", value: totalServices, title: "Total services in the directory." },

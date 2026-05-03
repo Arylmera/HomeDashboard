@@ -30,6 +30,12 @@ export function RoomGroups({ householdId, groups, players, selectedGroupId, onSe
         {groups.map(g => {
           const ids = playersInGroup(g);
           const isPlaying = g.playbackState === 'PLAYBACK_STATE_PLAYING';
+          const isTv = g.playbackState === 'PLAYBACK_STATE_TV';
+          const stateLabel = isPlaying
+            ? '▶ playing'
+            : isTv
+              ? 'tv input'
+              : g.playbackState?.replace('PLAYBACK_STATE_', '').toLowerCase() || 'idle';
           return (
             <div
               key={g.id}
@@ -38,8 +44,8 @@ export function RoomGroups({ householdId, groups, players, selectedGroupId, onSe
             >
               <div className="room-head">
                 <div className="room-name">{g.name}</div>
-                <div className={`room-state ${isPlaying ? 'on' : ''}`}>
-                  {isPlaying ? '▶ playing' : g.playbackState?.replace('PLAYBACK_STATE_', '').toLowerCase() || 'idle'}
+                <div className={`room-state ${isPlaying ? 'on' : ''} ${isTv ? 'tv' : ''}`}>
+                  {stateLabel}
                 </div>
               </div>
               <div className="room-players">

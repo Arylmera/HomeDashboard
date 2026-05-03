@@ -238,11 +238,22 @@ export function sonosLanMiddleware() {
       const m = path.match(/^\/households\/([^/]+)\/groups$/);
       if (m && req.method === 'GET') {
         // Fetch playback state per group in parallel (fresh, not cached).
+        // Sonos soundbars (Beam/Arc/Playbar) keep AVTransport in `playing`
+        // whenever the TV input is selected, even when the TV is silent or
+        // off. Detect that via the CurrentURI scheme and surface it as a
+        // distinct `TV` state so room badges don't lie.
         const states = await Promise.all(cache.groups.map(async g => {
           const dev = cache.byUuid.get(g.coordinatorId);
           if (!dev) return 'PLAYBACK_STATE_IDLE';
           try {
-            const s = await dev.getCurrentState();
+            const [s, media] = await Promise.all([
+              dev.getCurrentState(),
+              dev.avTransportService().GetMediaInfo().catch(() => null),
+            ]);
+            const uri = media?.CurrentURI || '';
+            if (uri.startsWith('x-sonos-htastream:') || uri.startsWith('x-rincon-stream:')) {
+              return 'PLAYBACK_STATE_TV';
+            }
             return s === 'playing'         ? 'PLAYBACK_STATE_PLAYING'
                  : s === 'paused_playback' ? 'PLAYBACK_STATE_PAUSED'
                  : s === 'transitioning'   ? 'PLAYBACK_STATE_PLAYING'
@@ -267,13 +278,17 @@ export function sonosLanMiddleware() {
         const r = deviceForGroup(cache, gid);
         if (r.error) return send(res, 404, { error: r.error });
         try {
-          const [state, pos] = await Promise.all([
+          const [state, pos, media] = await Promise.all([
             r.dev.getCurrentState().catch(() => 'unknown'),
             r.dev.avTransportService().GetPositionInfo().catch(() => null),
+            r.dev.avTransportService().GetMediaInfo().catch(() => null),
           ]);
+          const uri = media?.CurrentURI || '';
+          const isTv = uri.startsWith('x-sonos-htastream:') || uri.startsWith('x-rincon-stream:');
           return send(res, 200, {
             playbackState:
-              state === 'playing' ? 'PLAYBACK_STATE_PLAYING'
+              isTv ? 'PLAYBACK_STATE_TV'
+            : state === 'playing' ? 'PLAYBACK_STATE_PLAYING'
             : state === 'paused_playback' ? 'PLAYBACK_STATE_PAUSED'
             : 'PLAYBACK_STATE_IDLE',
             positionMs: pos?.RelTime ? hmsToMs(pos.RelTime) : 0,

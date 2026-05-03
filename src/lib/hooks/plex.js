@@ -1,37 +1,30 @@
-import { useState, useEffect } from 'react';
-import { getJson } from './_fetcher.js';
+import { usePolling } from './usePolling.js';
+import { getJson, getJsonAll } from './_fetcher.js';
 
 export function usePlex({ poll = 30_000 } = {}) {
-  const [data, setData] = useState({ sessions: null, libraries: null, state: "loading" });
-  useEffect(() => {
-    let alive = true;
-    const run = async () => {
-      try {
-        const [sess, libs] = await Promise.all([
-          getJson("/api/plex/status/sessions").catch(() => null),
-          getJson("/api/plex/library/sections").catch(() => null),
-        ]);
-        const dirs = libs?.MediaContainer?.Directory ?? [];
-        // /library/sections does not return item counts — fetch totalSize per section.
-        const counts = await Promise.all(dirs.map(d =>
-          getJson(`/api/plex/library/sections/${d.key}/all?X-Plex-Container-Size=0&X-Plex-Container-Start=0`)
-            .then(r => r?.MediaContainer?.totalSize ?? 0)
-            .catch(() => 0)
-        ));
-        const enriched = dirs.map((d, i) => ({ ...d, count: counts[i] }));
-        if (!alive) return;
-        setData({
-          sessions: sess?.MediaContainer ?? null,
-          libraries: enriched,
-          state: sess ? "live" : "error",
-        });
-      } catch { if (alive) setData(d => ({ ...d, state: "error" })); }
-    };
-    run();
-    const id = setInterval(run, poll);
-    return () => { alive = false; clearInterval(id); };
-  }, [poll]);
-  return data;
+  const { data, state } = usePolling(
+    async (signal) => {
+      const [sess, libs] = await getJsonAll([
+        '/api/plex/status/sessions',
+        '/api/plex/library/sections',
+      ], { signal });
+      // Sessions endpoint is the canonical liveness probe.
+      if (!sess) throw new Error('plex_unavailable');
+      const dirs = libs?.MediaContainer?.Directory ?? [];
+      // /library/sections does not include item counts — fetch totalSize per section.
+      const counts = await Promise.all(dirs.map((d) =>
+        getJson(`/api/plex/library/sections/${d.key}/all?X-Plex-Container-Size=0&X-Plex-Container-Start=0`, { signal })
+          .then((r) => r?.MediaContainer?.totalSize ?? 0)
+          .catch(() => 0)
+      ));
+      return {
+        sessions: sess?.MediaContainer ?? null,
+        libraries: dirs.map((d, i) => ({ ...d, count: counts[i] })),
+      };
+    },
+    { poll }
+  );
+  return { sessions: data?.sessions ?? null, libraries: data?.libraries ?? null, state };
 }
 
 // Legacy compat for Home.jsx.

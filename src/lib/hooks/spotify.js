@@ -1,96 +1,66 @@
-import { useState, useEffect } from 'react';
+import { usePolling } from './usePolling.js';
 import { getJson } from './_fetcher.js';
 
 /* Spotify Web API (server-proxied at /api/spotify/v1/*).
  *
  * Auth flow: browser hits /api/spotify/oauth/login → Spotify → callback
- * persists tokens server-side. All API calls go through /api/spotify/v1/...
+ * persists tokens server-side. All API calls go through /api/spotify/v1/*
  * so the access token never reaches the browser. */
 
 export function useSpotifyAuth({ poll = 60_000 } = {}) {
-  const [data, setData] = useState({ state: 'loading', configured: false, authenticated: false });
-  const [tick, setTick] = useState(0);
-  const refresh = () => setTick(t => t + 1);
-  useEffect(() => {
-    let alive = true;
-    const run = async () => {
-      try {
-        const j = await getJson('/api/spotify/oauth/status');
-        if (alive) setData({ state: 'live', ...j });
-      } catch {
-        if (alive) setData(d => ({ ...d, state: 'error' }));
-      }
-    };
-    run();
-    const id = setInterval(run, poll);
-    return () => { alive = false; clearInterval(id); };
-  }, [poll, tick]);
-  return { ...data, refresh };
+  const { data, state, refresh } = usePolling(
+    (signal) => getJson('/api/spotify/oauth/status', { signal }),
+    { poll }
+  );
+  return { state, configured: data?.configured ?? false, authenticated: data?.authenticated ?? false, refresh };
 }
 
 export function useSpotifyPlayback({ poll = 5_000, enabled = true } = {}) {
-  const [data, setData] = useState({ state: 'loading', playback: null });
-  const [tick, setTick] = useState(0);
-  const refresh = () => setTick(t => t + 1);
-  useEffect(() => {
-    if (!enabled) { setData({ state: 'idle', playback: null }); return; }
-    let alive = true;
-    const run = async () => {
-      try {
-        const r = await fetch('/api/spotify/v1/me/player', { headers: { Accept: 'application/json' } });
-        if (r.status === 204) { if (alive) setData({ state: 'live', playback: null }); return; }
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        const j = await r.json();
-        if (alive) setData({ state: 'live', playback: j });
-      } catch (e) {
-        if (alive) setData(d => ({ ...d, state: 'error' }));
-      }
-    };
-    run();
-    const id = setInterval(run, poll);
-    return () => { alive = false; clearInterval(id); };
-  }, [poll, tick, enabled]);
-  return { ...data, refresh };
+  const { data, state, refresh } = usePolling(
+    enabled
+      ? async (signal) => {
+          const r = await fetch('/api/spotify/v1/me/player', {
+            signal,
+            headers: { Accept: 'application/json' },
+          });
+          // 204 No Content == nothing playing; that's a "live" state, not an error.
+          if (r.status === 204) return null;
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          return r.json();
+        }
+      : null,
+    { poll, deps: [enabled] }
+  );
+  if (!enabled) return { state: 'idle', playback: null, refresh };
+  return { state, playback: data ?? null, refresh };
 }
 
 export function useSpotifyPlaylists({ enabled = true, limit = 50 } = {}) {
-  const [data, setData] = useState({ state: 'loading', playlists: [] });
-  useEffect(() => {
-    if (!enabled) { setData({ state: 'idle', playlists: [] }); return; }
-    let alive = true;
-    (async () => {
-      try {
-        const j = await getJson(`/api/spotify/v1/me/playlists?limit=${limit}`);
-        if (alive) setData({ state: 'live', playlists: j.items || [] });
-      } catch {
-        if (alive) setData(d => ({ ...d, state: 'error' }));
-      }
-    })();
-    return () => { alive = false; };
-  }, [enabled, limit]);
-  return data;
+  const { data, state } = usePolling(
+    enabled
+      ? async (signal) => {
+          const j = await getJson(`/api/spotify/v1/me/playlists?limit=${limit}`, { signal });
+          return j.items || [];
+        }
+      : null,
+    { poll: 0, deps: [enabled, limit] }
+  );
+  if (!enabled) return { state: 'idle', playlists: [] };
+  return { state, playlists: data || [] };
 }
 
 export function useSpotifyDevices({ poll = 15_000, enabled = true } = {}) {
-  const [data, setData] = useState({ state: 'loading', devices: [] });
-  const [tick, setTick] = useState(0);
-  const refresh = () => setTick(t => t + 1);
-  useEffect(() => {
-    if (!enabled) { setData({ state: 'idle', devices: [] }); return; }
-    let alive = true;
-    const run = async () => {
-      try {
-        const j = await getJson('/api/spotify/v1/me/player/devices');
-        if (alive) setData({ state: 'live', devices: j.devices || [] });
-      } catch {
-        if (alive) setData(d => ({ ...d, state: 'error' }));
-      }
-    };
-    run();
-    const id = setInterval(run, poll);
-    return () => { alive = false; clearInterval(id); };
-  }, [poll, tick, enabled]);
-  return { ...data, refresh };
+  const { data, state, refresh } = usePolling(
+    enabled
+      ? async (signal) => {
+          const j = await getJson('/api/spotify/v1/me/player/devices', { signal });
+          return j.devices || [];
+        }
+      : null,
+    { poll, deps: [enabled] }
+  );
+  if (!enabled) return { state: 'idle', devices: [], refresh };
+  return { state, devices: data || [], refresh };
 }
 
 async function call(method, path, body) {
@@ -103,44 +73,48 @@ async function call(method, path, body) {
   return r.status === 204 ? null : r.json().catch(() => null);
 }
 
+const clampVol = (n) => Math.max(0, Math.min(100, Math.round(n)));
+const deviceQs = (deviceId) => deviceId ? `?device_id=${encodeURIComponent(deviceId)}` : '';
+
 export const spotify = {
-  play:        ({ deviceId, contextUri, uris, positionMs } = {}) => {
-    const q = deviceId ? `?device_id=${encodeURIComponent(deviceId)}` : '';
+  play: ({ deviceId, contextUri, uris, positionMs } = {}) => {
     const body = {};
     if (contextUri) body.context_uri = contextUri;
     if (uris) body.uris = uris;
     if (positionMs != null) body.position_ms = positionMs;
-    return call('PUT', `/me/player/play${q}`, Object.keys(body).length ? body : undefined);
+    return call('PUT', `/me/player/play${deviceQs(deviceId)}`, Object.keys(body).length ? body : undefined);
   },
-  pause:       ({ deviceId } = {}) => call('PUT', `/me/player/pause${deviceId ? `?device_id=${encodeURIComponent(deviceId)}` : ''}`),
-  next:        ({ deviceId } = {}) => call('POST', `/me/player/next${deviceId ? `?device_id=${encodeURIComponent(deviceId)}` : ''}`),
-  previous:    ({ deviceId } = {}) => call('POST', `/me/player/previous${deviceId ? `?device_id=${encodeURIComponent(deviceId)}` : ''}`),
-  seek:        (positionMs, { deviceId } = {}) => {
+  pause:    ({ deviceId } = {}) => call('PUT',  `/me/player/pause${deviceQs(deviceId)}`),
+  next:     ({ deviceId } = {}) => call('POST', `/me/player/next${deviceQs(deviceId)}`),
+  previous: ({ deviceId } = {}) => call('POST', `/me/player/previous${deviceQs(deviceId)}`),
+  seek: (positionMs, { deviceId } = {}) => {
     const params = new URLSearchParams({ position_ms: String(positionMs) });
     if (deviceId) params.set('device_id', deviceId);
     return call('PUT', `/me/player/seek?${params}`);
   },
-  setVolume:   (percent, { deviceId } = {}) => {
-    const params = new URLSearchParams({ volume_percent: String(Math.max(0, Math.min(100, Math.round(percent)))) });
+  setVolume: (percent, { deviceId } = {}) => {
+    const params = new URLSearchParams({ volume_percent: String(clampVol(percent)) });
     if (deviceId) params.set('device_id', deviceId);
     return call('PUT', `/me/player/volume?${params}`);
   },
-  shuffle:     (state, { deviceId } = {}) => {
+  shuffle: (state, { deviceId } = {}) => {
     const params = new URLSearchParams({ state: state ? 'true' : 'false' });
     if (deviceId) params.set('device_id', deviceId);
     return call('PUT', `/me/player/shuffle?${params}`);
   },
-  repeat:      (state, { deviceId } = {}) => {
-    const params = new URLSearchParams({ state }); // off | track | context
+  repeat: (state, { deviceId } = {}) => {
+    // off | track | context — Spotify rejects everything else.
+    const params = new URLSearchParams({ state });
     if (deviceId) params.set('device_id', deviceId);
     return call('PUT', `/me/player/repeat?${params}`);
   },
-  transfer:    (deviceId, { play = true } = {}) => call('PUT', '/me/player', { device_ids: [deviceId], play }),
-  search:      (q, types = ['track', 'album', 'artist', 'playlist'], limit = 10) => {
+  transfer: (deviceId, { play = true } = {}) =>
+    call('PUT', '/me/player', { device_ids: [deviceId], play }),
+  search: (q, types = ['track', 'album', 'artist', 'playlist'], limit = 10) => {
     const params = new URLSearchParams({ q, type: types.join(','), limit: String(limit) });
     return call('GET', `/search?${params}`);
   },
-  playlists:   (limit = 50) => call('GET', `/me/playlists?limit=${limit}`),
+  playlists: (limit = 50) => call('GET', `/me/playlists?limit=${limit}`),
 };
 
 export async function spotifyLogout() {

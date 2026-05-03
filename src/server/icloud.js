@@ -18,10 +18,13 @@
  *  state: "idle" (env empty) | "live" | "error"
  * ============================================================== */
 
+import { fetchWithTimeout, sanitizeError } from './_lib/http.js';
+
 const ROOT = 'https://caldav.icloud.com';
 const HORIZON_DAYS = 7;
 const TTL_MS    = 60_000;       // event/todo cache
 const DISC_TTL  = 6 * 3600_000; // discovery cache
+const FETCH_TIMEOUT_MS = 15_000;
 
 let discovery = null;           // { ts, principal, calendars: [{ url, name, comps }] }
 const cache = new Map();        // key → { ts, payload }
@@ -37,7 +40,7 @@ function authHeader() {
 async function dav(url, method, body, extraHeaders = {}) {
   const auth = authHeader();
   if (!auth) throw new Error('icloud not configured');
-  const r = await fetch(url, {
+  const r = await fetchWithTimeout(url, {
     method,
     headers: {
       Authorization: auth,
@@ -47,7 +50,7 @@ async function dav(url, method, body, extraHeaders = {}) {
     },
     body,
     redirect: 'follow',
-  });
+  }, FETCH_TIMEOUT_MS);
   if (!r.ok && r.status !== 207) throw new Error(`${method} ${url} → ${r.status}`);
   return { text: await r.text(), finalUrl: r.url };
 }
@@ -147,7 +150,7 @@ function icalDate(d) {
   return d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
 }
 
-function parseIcsDate(raw) {
+export function parseIcsDate(raw) {
   // 20260502T143000Z | 20260502T143000 | 20260502
   const s = raw.trim();
   if (/^\d{8}$/.test(s)) {
@@ -160,24 +163,24 @@ function parseIcsDate(raw) {
   return new Date(+Y, +Mo - 1, +D, +H, +Mi, +S);
 }
 
-function unfold(ics) {
+export function unfold(ics) {
   // RFC 5545: lines beginning with space/tab continue the previous line
   return ics.replace(/\r?\n[ \t]/g, '');
 }
 
-function* iterComponents(ics, comp) {
+export function* iterComponents(ics, comp) {
   const re = new RegExp(`BEGIN:${comp}\\r?\\n([\\s\\S]*?)END:${comp}`, 'g');
   let m; while ((m = re.exec(ics))) yield m[1];
 }
 
-function getProp(block, key) {
+export function getProp(block, key) {
   const re = new RegExp(`(?:^|\\n)${key}(;[^:\\n]*)?:([^\\n]*)`);
   const m = block.match(re);
   if (!m) return null;
   return { params: m[1] || '', value: m[2].trim() };
 }
 
-function parseEvent(block) {
+export function parseEvent(block) {
   const summary = getProp(block, 'SUMMARY')?.value || '(no title)';
   const dtstart = getProp(block, 'DTSTART');
   const dtend   = getProp(block, 'DTEND');
@@ -195,7 +198,7 @@ function parseEvent(block) {
   };
 }
 
-function parseTodo(block) {
+export function parseTodo(block) {
   const summary = getProp(block, 'SUMMARY')?.value || '(no title)';
   const status  = getProp(block, 'STATUS')?.value || '';
   const due     = getProp(block, 'DUE')?.value;
@@ -208,7 +211,7 @@ function parseTodo(block) {
 }
 
 // Extract <calendar-data> blobs from a multistatus, decoding entities.
-function extractCalendarData(xml) {
+export function extractCalendarData(xml) {
   const out = [];
   for (const resp of iterTags(xml, 'response')) {
     const blob = firstTag(resp, 'calendar-data');
@@ -327,7 +330,9 @@ async function fetchTodos({ raw = false } = {}) {
     if (icsBlobs.length === 0 && propfindHrefs.length) {
       const fetched = await Promise.all(propfindHrefs.slice(0, 200).map(async (u) => {
         try {
-          const r = await fetch(u, { headers: { Authorization: authHeader(), Accept: 'text/calendar' } });
+          const r = await fetchWithTimeout(u, {
+            headers: { Authorization: authHeader(), Accept: 'text/calendar' },
+          }, FETCH_TIMEOUT_MS);
           if (!r.ok) return '';
           return unfold(await r.text());
         } catch { return ''; }
@@ -435,10 +440,12 @@ export function icloudMiddleware() {
       res.statusCode = 404;
       res.end(JSON.stringify({ error: 'not found' }));
     } catch (e) {
-      const msg = String(e?.message || e);
-      console.error('[icloud]', req.url, '→', msg);
+      // Log full error server-side, return sanitized version to client
+      // (CalDAV URLs can leak per-user host shards; auth failures expose
+      // the user's principal path).
+      console.error('[icloud]', req.url, '→', e?.message || e);
       res.statusCode = 502;
-      res.end(JSON.stringify({ state: 'error', error: msg }));
+      res.end(JSON.stringify({ state: 'error', error: sanitizeError(e) }));
     }
   };
 }

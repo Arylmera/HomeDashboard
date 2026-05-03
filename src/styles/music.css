@@ -327,11 +327,24 @@
   position: static; top: auto; left: auto; right: auto;
   display: flex; flex-direction: column; gap: 4px;
   max-height: 320px; overflow-y: auto;
-  background: transparent; box-shadow: none; border: 0; padding: 0;
+  background: transparent; box-shadow: none; border: 0;
+  padding: 0 6px 0 0;
   scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklch, var(--music-accent) 55%, transparent) transparent;
 }
-.search-panel .search-results::-webkit-scrollbar { width: 6px; }
-.search-panel .search-results::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+.search-panel .search-results::-webkit-scrollbar { width: 8px; }
+.search-panel .search-results::-webkit-scrollbar-track { background: transparent; }
+.search-panel .search-results::-webkit-scrollbar-thumb {
+  background: color-mix(in oklch, var(--music-accent) 45%, transparent);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.search-panel .search-results::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklch, var(--music-accent) 75%, transparent);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+}
 .search-result {
   display: flex; gap: 10px; align-items: center;
   background: transparent; border: 1px solid transparent; border-radius: 10px;

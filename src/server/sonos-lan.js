@@ -131,20 +131,23 @@ async function buildSnapshot(devices) {
 async function getCache() {
   if (discoveryCache && Date.now() - discoveryCache.at < DISCOVERY_TTL) return discoveryCache;
   if (inFlight) return inFlight;
-  inFlight = (async () => {
-    try {
-      const staticHosts = (process.env.SONOS_HOSTS || '').split(',').map(s => s.trim()).filter(Boolean);
-      const devices = staticHosts.length > 0
-        ? await discoverFromHosts(staticHosts)
-        : await discoverViaSSDP();
-      const snap = await buildSnapshot(devices);
-      discoveryCache = { at: Date.now(), devices, ...snap };
-      return discoveryCache;
-    } finally {
-      inFlight = null;
-    }
+  // Wrap in a promise that ALWAYS clears `inFlight` — the previous
+  // try/finally only ran when the IIFE itself threw synchronously, so
+  // a rejected discoverViaSSDP() left `inFlight` permanently set,
+  // wedging every subsequent /api/sonos/* call until the process
+  // restarted.
+  const p = (async () => {
+    const staticHosts = (process.env.SONOS_HOSTS || '').split(',').map(s => s.trim()).filter(Boolean);
+    const devices = staticHosts.length > 0
+      ? await discoverFromHosts(staticHosts)
+      : await discoverViaSSDP();
+    const snap = await buildSnapshot(devices);
+    discoveryCache = { at: Date.now(), devices, ...snap };
+    return discoveryCache;
   })();
-  return inFlight;
+  inFlight = p;
+  p.finally(() => { if (inFlight === p) inFlight = null; });
+  return p;
 }
 
 function invalidateCache() { discoveryCache = null; }
@@ -467,7 +470,7 @@ export function sonosLanMiddleware() {
 const SPOTIFY_SID = '9';
 const SPOTIFY_SERVICE_TOKEN = '2311';
 
-function spotifyUriToSonos(spotifyUri, sn) {
+export function spotifyUriToSonos(spotifyUri, sn) {
   const m = String(spotifyUri).match(/^spotify:(track|album|playlist|artist):(.+)$/);
   if (!m) throw new Error('invalid_spotify_uri');
   const [, kind] = m;
@@ -493,7 +496,7 @@ function spotifyUriToSonos(spotifyUri, sn) {
   };
 }
 
-function buildSpotifyDidl({ didlId, parentId, upnpClass }) {
+export function buildSpotifyDidl({ didlId, parentId, upnpClass }) {
   return '<DIDL-Lite xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/" xmlns:r="urn:schemas-rinconnetworks-com:metadata-1-0/" xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/">'
     + `<item id="${didlId}" parentID="${parentId}" restricted="true">`
     + '<dc:title></dc:title>'
@@ -547,7 +550,7 @@ async function playSpotifyOnSonos(device, spotifyUri) {
   }
 }
 
-function hmsToMs(s) {
+export function hmsToMs(s) {
   const parts = String(s).split(':').map(Number);
   while (parts.length < 3) parts.unshift(0);
   return ((parts[0] * 60 + parts[1]) * 60 + parts[2]) * 1000;

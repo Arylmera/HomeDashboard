@@ -99,13 +99,19 @@ export function VinylHero({ spotify: sp, sonos: so, group, onSpotify, onSonos, o
           </button>
         </div>
 
-        {group && (
+        {group ? (
           <VolumeRow
             value={groupVolume}
             muted={muted}
             onChange={(v) => handle(() => onSonos.setGroupVolume(group.id, v))}
           />
-        )}
+        ) : sp?.device ? (
+          <VolumeRow
+            value={sp.device.volume_percent ?? 0}
+            muted={false}
+            onChange={(v) => handle(() => onSpotify.setVolume(v, opt))}
+          />
+        ) : null}
       </div>
     </section>
   );

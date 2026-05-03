@@ -1,32 +1,27 @@
-import { useState, useEffect } from 'react';
-import { getJson } from './_fetcher.js';
+import { usePolling } from './usePolling.js';
+import { getJsonAll } from './_fetcher.js';
+
+const URLS = [
+  '/api/glances/api/4/cpu',
+  '/api/glances/api/4/mem',
+  '/api/glances/api/4/fs',
+  '/api/glances/api/4/sensors',
+  '/api/glances/api/4/network',
+  '/api/glances/api/4/percpu',
+];
 
 export function useGlances({ poll = 15_000 } = {}) {
-  const [data, setData] = useState(null);
-  const [state, setState] = useState("loading");
-  useEffect(() => {
-    let alive = true;
-    const run = async () => {
-      try {
-        const [cpu, mem, fs, sensors, network, percpu] = await Promise.all([
-          getJson("/api/glances/api/4/cpu").catch(() => null),
-          getJson("/api/glances/api/4/mem").catch(() => null),
-          getJson("/api/glances/api/4/fs").catch(() => null),
-          getJson("/api/glances/api/4/sensors").catch(() => null),
-          getJson("/api/glances/api/4/network").catch(() => null),
-          getJson("/api/glances/api/4/percpu").catch(() => null),
-        ]);
-        if (!alive) return;
-        if (!cpu && !mem) { setState("error"); return; }
-        setData({ cpu, mem, fs, sensors, network, percpu });
-        setState("live");
-      } catch {
-        if (alive) setState("error");
-      }
-    };
-    run();
-    const id = setInterval(run, poll);
-    return () => { alive = false; clearInterval(id); };
-  }, [poll]);
+  const { data, state } = usePolling(
+    async (signal) => {
+      const [cpu, mem, fs, sensors, network, percpu] =
+        await getJsonAll(URLS, { signal });
+      // cpu+mem are the canonical liveness probe — without either,
+      // Glances is effectively down even if /sensors happened to
+      // 200 from a stale cache.
+      if (!cpu && !mem) throw new Error('glances_unavailable');
+      return { cpu, mem, fs, sensors, network, percpu };
+    },
+    { poll }
+  );
   return { data, state };
 }

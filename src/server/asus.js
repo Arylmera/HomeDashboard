@@ -170,8 +170,9 @@ function runSsh(target) {
 }
 
 /* ── parsing ────────────────────────────────────────────────── */
+/* Exported for unit tests — keep pure (no I/O, no env access). */
 
-function splitSections(out) {
+export function splitSections(out) {
   const sections = {};
   for (const p of out.split(/^##/m)) {
     if (!p) continue;
@@ -181,15 +182,15 @@ function splitSections(out) {
   }
   return sections;
 }
-function parseUptime(body) {
+export function parseUptime(body) {
   const n = parseFloat((body || '').split(/\s+/)[0]);
   return Number.isFinite(n) ? Math.round(n) : null;
 }
-function parseLoadavg(body) {
+export function parseLoadavg(body) {
   const m = (body || '').match(/^([\d.]+)\s+([\d.]+)\s+([\d.]+)/);
   return m ? [+m[1], +m[2], +m[3]] : null;
 }
-function parseMeminfo(body) {
+export function parseMeminfo(body) {
   const get = (k) => {
     const m = (body || '').match(new RegExp(`^${k}:\\s+(\\d+)\\s+kB`, 'm'));
     return m ? +m[1] : null;
@@ -205,21 +206,21 @@ function parseMeminfo(body) {
     pct: used != null ? +((used / total) * 100).toFixed(1) : null,
   };
 }
-function parseCpuLine(line) {
+export function parseCpuLine(line) {
   const parts = (line || '').split(/\s+/).slice(1).map(Number).filter(Number.isFinite);
   if (parts.length < 4) return null;
   const idle = parts[3] + (parts[4] || 0);
   const total = parts.reduce((a, b) => a + b, 0);
   return { idle, total };
 }
-function cpuPct(stat1, stat2) {
+export function cpuPct(stat1, stat2) {
   const a = parseCpuLine(stat1), b = parseCpuLine(stat2);
   if (!a || !b) return null;
   const dTotal = b.total - a.total, dIdle = b.idle - a.idle;
   if (dTotal <= 0) return null;
   return +(((dTotal - dIdle) / dTotal) * 100).toFixed(1);
 }
-function parseArp(body) {
+export function parseArp(body) {
   const lines = (body || '').split('\n').slice(1).filter(Boolean);
   let total = 0, online = 0, wired = 0, wireless = 0;
   for (const ln of lines) {
@@ -234,7 +235,7 @@ function parseArp(body) {
   }
   return { total, online, wired, wireless };
 }
-function parseWan(s) {
+export function parseWan(s) {
   return {
     up: s['wan_state'] === '2',
     type: s['wan_proto'] || null,
@@ -247,7 +248,7 @@ function parseWan(s) {
 // cfg_clientlist format (Asuswrt-Merlin AiMesh):
 //   <MODEL>MAC>FW>NEWFW>ONLINE>...   one entry per `<`
 // First entry is the CAP (main router). Remaining entries are RE nodes.
-function parseMeshNodes(rawClients, rawDevices) {
+export function parseMeshNodes(rawClients, rawDevices) {
   const out = [];
   const raw = (rawClients || '').trim();
   if (!raw) return out;
@@ -280,7 +281,7 @@ function parseMeshNodes(rawClients, rawDevices) {
   return out;
 }
 
-function buildPayload(out, target) {
+export function buildPayload(out, target) {
   const s = splitSections(out);
   const fw = [s['firmver'], s['buildno'], s['extendno']].filter(Boolean).join('.');
   const payload = {

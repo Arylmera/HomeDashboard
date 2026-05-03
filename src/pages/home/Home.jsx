@@ -27,6 +27,8 @@ import Forecast from './components/Forecast.jsx';
 import CalendarCard from './components/CalendarCard.jsx';
 import TasksCard from './components/TasksCard.jsx';
 import RecentlyAdded from './components/RecentlyAdded.jsx';
+import EnergyCard from './components/EnergyCard.jsx';
+import SunCard from './components/SunCard.jsx';
 import { usePrefs } from '../../lib/usePrefs.js';
 
 export default function Home() {
@@ -241,6 +243,13 @@ export default function Home() {
         <div className="day-row">
           <CalendarCard />
           <TasksCard />
+        </div>
+      </div>
+
+      <div className="section">
+        <div className="day-row">
+          <EnergyCard />
+          <SunCard sun={weather.sun} />
         </div>
       </div>
 

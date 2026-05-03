@@ -149,6 +149,7 @@ function serializeSnapshot({ system, zones, devices, flows, advFlows, folders, v
           onoff:                c.onoff?.value ?? null,
           dim:                  c.dim?.value ?? null,
           measure_power:        c.measure_power?.value ?? null,
+          meter_power:          c.meter_power?.value ?? null,
           measure_temperature:  c.measure_temperature?.value ?? null,
           measure_humidity:     c.measure_humidity?.value ?? null,
           measure_battery:      c.measure_battery?.value ?? null,

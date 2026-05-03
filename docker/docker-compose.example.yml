@@ -4,6 +4,17 @@
 #   docker login registry.gitlab.com
 #   cp .env.example .env  &&  fill in secrets
 #   docker compose -f docker-compose.example.yml up -d
+#
+# Notes
+# ─────
+# - VITE_* values must be set at build time (--build-arg / CI vars).
+#   Setting them here only takes effect if you build locally.
+# - Secrets without VITE_ prefix (TRUENAS_API_KEY, NPM_SECRET, ASUS_*,
+#   ICLOUD_APP_PASSWORD, HOMEY_CLIENT_SECRET, SPOTIFY_CLIENT_SECRET, …)
+#   are read from process.env at runtime — env_file is enough.
+# - Sonos LAN control uses SSDP multicast for discovery. If your bridge
+#   network blocks multicast, either set SONOS_HOSTS to a comma list of
+#   speaker IPs, or run with `network_mode: host` (uncomment below).
 
 services:
   homedashboard:
@@ -18,6 +29,9 @@ services:
       PREFS_DB: /data/prefs.db
     volumes:
       - homedashboard-data:/data
+    # Uncomment for Sonos discovery via SSDP multicast (skip if you
+    # set SONOS_HOSTS in .env to a fixed list of speaker IPs).
+    # network_mode: host
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:4173/"]
       interval: 30s

@@ -14,7 +14,7 @@ import { ALL_SERVICES } from '../../lib/services.js';
 import { fmtBytes, fmtNum } from '../../lib/format.js';
 import {
   useClock, useGreeting, useWeather, useTrueNAS, useGlances, usePihole, useSpeedtest,
-  usePlexSessions, useArr, useNextcloud, useTugtainer, useArcane, useNpm,
+  usePlexSessions, useArr, useNextcloud, useTugtainer, useArcane, useNpm, useWan,
 } from '../../lib/hooks.js';
 import { useHealth } from '../../lib/useHealth.js';
 import { PAGES, QUICK_APP_IDS } from './pages.jsx';
@@ -78,6 +78,7 @@ export default function Home() {
   const dockerStacks = arcane.projects?.length ?? null;
   const npm = useNpm();
   const npmProxies = npm.proxyHosts?.length ?? null;
+  const wan = useWan({ poll: 30_000 });
 
   const [pinnedIds] = usePrefs('quicklinks.pinned', QUICK_APP_IDS);
   const [disabledIds] = usePrefs('quicklinks.disabled', []);
@@ -245,7 +246,7 @@ export default function Home() {
 
       <div className="section">
         <div className="bottom-row">
-          <NetworkPanel nas={nas} pi={pi} st={st} />
+          <NetworkPanel nas={nas} pi={pi} st={st} wan={wan} />
           <NASPanel nas={nas} state={nasState} />
         </div>
       </div>

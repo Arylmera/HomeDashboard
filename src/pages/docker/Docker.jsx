@@ -1,197 +1,19 @@
 /* ============================================================== *
  *  Containers — live Docker view backed by Arcane API.
- *  Mirrors the Quicklinks layout: topbar / hero / search /
- *  sections / footer. Sections are: stacks, loose containers,
- *  daemon (counts).
+ *  Page shell: hero, banner, filter, section orchestration.
+ *  Cards/sections live in ./components, helpers in ./utils.js,
+ *  derivations + actions in ./useGroupedContainers.js and
+ *  ./useDockerActions.js.
  * ============================================================== */
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { UI } from '../../lib/icons.jsx';
-import { useClock, useGreeting, useWeather, useArcane, arcaneAction } from '../../lib/hooks.js';
-
-/* ── small helpers ──────────────────────────────────────────── */
-
-function stateClass(s) {
-  if (s === "running") return "up";
-  if (s === "restarting" || s === "paused") return "warn";
-  return "down";
-}
-
-function shortName(c) {
-  const raw = c.names?.[0] || c.id?.slice(0, 12) || "?";
-  return raw.replace(/^\//, "");
-}
-
-function projectOf(c) {
-  return c.labels?.["com.docker.compose.project"] || null;
-}
-
-function serviceOf(c) {
-  return c.labels?.["com.docker.compose.service"] || null;
-}
-
-function uptimeOf(c) {
-  // e.g. "Up 37 minutes (healthy)" → "37m · healthy"; "Exited (0) 2 hours ago" → "down 2h"
-  const s = c.status || "";
-  const up = s.match(/^Up\s+(.+?)(?:\s+\((healthy|unhealthy|starting)\))?$/i);
-  if (up) {
-    const dur = up[1].replace(/about\s+/i, "").replace(/\sago/, "");
-    const h = up[2];
-    return h ? `${dur} · ${h}` : dur;
-  }
-  return s || "—";
-}
-
-function uniqPorts(ports) {
-  const seen = new Set();
-  const out = [];
-  for (const p of ports || []) {
-    if (!p.publicPort) continue;
-    const k = `${p.publicPort}->${p.privatePort}`;
-    if (seen.has(k)) continue;
-    seen.add(k);
-    out.push(p);
-  }
-  return out;
-}
-
-/* ── status dot ─────────────────────────────────────────────── */
-
-function Dot({ s }) {
-  return <span className={`status-dot ${stateClass(s)}`} title={s} />;
-}
-
-/* ── container card ─────────────────────────────────────────── */
-
-function ContainerCard({ c, envId, onAction }) {
-  const [busy, setBusy] = useState(false);
-  const ports = uniqPorts(c.ports);
-  const running = c.state === "running";
-  const name = shortName(c);
-  const svc = serviceOf(c);
-
-  const fire = async (action) => {
-    setBusy(true);
-    try { await onAction("containers", c.id, action); }
-    finally { setBusy(false); }
-  };
-
-  return (
-    <div className={"docker-card" + (running ? "" : " is-down") + (busy ? " is-busy" : "")}>
-      <div className="docker-card-head">
-        <Dot s={c.state} />
-        <div className="docker-card-name" title={name}>{svc || name}</div>
-        <div className="docker-card-up">{uptimeOf(c)}</div>
-      </div>
-      <div className="docker-card-img" title={c.image}>{c.image}</div>
-      {ports.length > 0 && (
-        <div className="docker-card-ports">
-          {ports.slice(0, 4).map((p, i) => (
-            <span key={i} className="port-chip">{p.publicPort}<span className="arrow">↦</span>{p.privatePort}</span>
-          ))}
-          {ports.length > 4 && <span className="port-chip more">+{ports.length - 4}</span>}
-        </div>
-      )}
-      <div className="docker-card-actions">
-        {running ? (
-          <>
-            <button onClick={() => { if (window.confirm(`Restart ${c.name}?`)) fire("restart"); }} disabled={busy} title="restart" aria-label={`restart ${c.name}`}>↻</button>
-            <button onClick={() => { if (window.confirm(`Stop ${c.name}?`)) fire("stop"); }} disabled={busy} title="stop" aria-label={`stop ${c.name}`}>■</button>
-          </>
-        ) : (
-          <button onClick={() => fire("start")} disabled={busy} title="start" aria-label={`start ${c.name}`}>▶</button>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/* ── stack section (compose project) ────────────────────────── */
-
-function Stack({ project, services, idx, envId, onAction, onProjectAction }) {
-  const [busy, setBusy] = useState(false);
-  const total = services.length;
-  const running = services.filter(s => s.state === "running").length;
-  const allUp = running === total;
-
-  const fire = async (action) => {
-    if (!project?.id) return;
-    setBusy(true);
-    try { await onProjectAction(project.id, action); } finally { setBusy(false); }
-  };
-
-  return (
-    <section className="section docker-stack">
-      <div className="section-head">
-        <div className="section-title">
-          <span className="numeral">// {String(idx + 1).padStart(2, "0")}</span>
-          <h2>{project?.name || "(loose)"}</h2>
-          <span className={`status-dot ${allUp ? "up" : running === 0 ? "down" : "warn"}`} title={`${running}/${total} up`} />
-        </div>
-        <div className="section-meta">
-          <span>{running}/{total} up</span>
-          {project?.id && (
-            <span className="stack-actions">
-              <button disabled={busy}
-                      onClick={() => { if (window.confirm(`Redeploy stack ${project.name}? This recreates every container in the project.`)) fire("redeploy"); }}
-                      title="redeploy">redeploy</button>
-              {allUp
-                ? <button disabled={busy}
-                          onClick={() => { if (window.confirm(`Stop stack ${project.name}? This brings every container in the project down.`)) fire("down"); }}>stop</button>
-                : <button disabled={busy} onClick={() => fire("up")}>start</button>}
-            </span>
-          )}
-        </div>
-      </div>
-      <div className="docker-grid">
-        {services.map(c => (
-          <ContainerCard key={c.id} c={c} envId={envId} onAction={onAction} />
-        ))}
-      </div>
-    </section>
-  );
-}
-
-/* ── filter bar ─────────────────────────────────────────────── */
-
-function FilterBar({ q, setQ, scope, setScope, counts }) {
-  const inputRef = useRef(null);
-  useEffect(() => {
-    const onKey = (e) => {
-      if ((e.key === "k" && (e.metaKey || e.ctrlKey)) || e.key === "/") {
-        e.preventDefault(); inputRef.current?.focus();
-      }
-      if (e.key === "Escape") inputRef.current?.blur();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
-
-  return (
-    <div className="search-wrap">
-      <div className="searchbar">
-        <span className="q">{UI.search}</span>
-        <input
-          ref={inputRef}
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Filter containers by name, image, or stack…"
-        />
-        <div className="search-scope">
-          {[
-            ["all",      `all ${counts.total}`],
-            ["running",  `up ${counts.up}`],
-            ["stopped",  `down ${counts.down}`],
-          ].map(([id, label]) => (
-            <button key={id} className={scope === id ? "on" : ""} onClick={() => setScope(id)}>{label}</button>
-          ))}
-        </div>
-        <span className="kbd">⌘K</span>
-      </div>
-    </div>
-  );
-}
-
-/* ── page ───────────────────────────────────────────────────── */
+import { useClock, useGreeting, useWeather, useArcane } from '../../lib/hooks.js';
+import FilterBar from './components/FilterBar.jsx';
+import Stack from './components/Stack.jsx';
+import IxSection from './components/IxSection.jsx';
+import LooseSection from './components/LooseSection.jsx';
+import useDockerActions from './useDockerActions.js';
+import useGroupedContainers from './useGroupedContainers.js';
 
 export default function Docker() {
   const now = useClock();
@@ -199,81 +21,25 @@ export default function Docker() {
   const weather = useWeather();
   const arcane = useArcane({ poll: 15_000 });
 
-  const [q, setQ] = useState("");
-  const [scope, setScope] = useState("all");
-  const [ixOpen, setIxOpen] = useState(false);
+  const [q, setQ] = useState('');
+  const [scope, setScope] = useState('all');
 
-  const dateStr = now.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
-  const timeStr = now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+  const dateStr = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+  const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
-  const [actionErr, setActionErr] = useState(null);
-  useEffect(() => {
-    if (!actionErr) return;
-    const t = setTimeout(() => setActionErr(null), 6000);
-    return () => clearTimeout(t);
-  }, [actionErr]);
-
-  const onContainerAction = async (kind, id, action) => {
-    try {
-      await arcaneAction(arcane.envId, kind, id, action);
-      setTimeout(arcane.refresh, 600);
-    } catch (e) {
-      console.warn("[arcane action]", e);
-      setActionErr(`${action} failed: ${e?.message || "unknown error"}`);
-    }
-  };
-  const onProjectAction = async (projectId, action) => {
-    try {
-      await arcaneAction(arcane.envId, "projects", projectId, action);
-      setTimeout(arcane.refresh, 1200);
-    } catch (e) {
-      console.warn("[arcane project]", e);
-      setActionErr(`stack ${action} failed: ${e?.message || "unknown error"}`);
-    }
-  };
-
-  const filtered = useMemo(() => {
-    const n = q.trim().toLowerCase();
-    return arcane.containers.filter(c => {
-      if (scope === "running" && c.state !== "running") return false;
-      if (scope === "stopped" && c.state === "running") return false;
-      if (!n) return true;
-      const hay = `${shortName(c)} ${c.image} ${projectOf(c) || ""} ${serviceOf(c) || ""}`.toLowerCase();
-      return hay.includes(n);
-    });
-  }, [arcane.containers, q, scope]);
-
-  const grouped = useMemo(() => {
-    const map = new Map();
-    const loose = [];
-    for (const c of filtered) {
-      const p = projectOf(c);
-      if (!p) { loose.push(c); continue; }
-      if (!map.has(p)) map.set(p, []);
-      map.get(p).push(c);
-    }
-    const projectByName = new Map((arcane.projects || []).map(p => [p.name?.toLowerCase(), p]));
-    const allStacks = [...map.entries()]
-      .map(([name, services]) => ({
-        project: projectByName.get(name.toLowerCase()) || { name, id: null },
-        services: services.sort((a, b) => shortName(a).localeCompare(shortName(b))),
-      }))
-      .sort((a, b) => a.project.name.localeCompare(b.project.name));
-    const stacks = allStacks.filter(s => !s.project.name.startsWith("ix-"));
-    const ixStacks = allStacks.filter(s =>  s.project.name.startsWith("ix-"));
-    return { stacks, ixStacks, loose };
-  }, [filtered, arcane.projects]);
-
-  const counts = useMemo(() => {
-    const all = arcane.containers;
-    const up = all.filter(c => c.state === "running").length;
-    return { total: all.length, up, down: all.length - up };
-  }, [arcane.containers]);
+  const { actionErr, setActionErr, onContainerAction, onProjectAction } = useDockerActions(arcane);
+  const { grouped, counts } = useGroupedContainers({
+    containers: arcane.containers,
+    projects: arcane.projects,
+    q, scope,
+  });
 
   const stateLine =
-    arcane.state === "loading" ? "Connecting to Arcane…" :
-    arcane.state === "error"   ? "Arcane unreachable. Check VITE_ARCANE_URL / ARCANE_API_KEY." :
-    `${counts.up} of ${counts.total} containers running across ${arcane.envs.length} environment${arcane.envs.length === 1 ? "" : "s"}.`;
+    arcane.state === 'loading' ? 'Connecting to Arcane…' :
+    arcane.state === 'error'   ? 'Arcane unreachable. Check VITE_ARCANE_URL / ARCANE_API_KEY.' :
+    `${counts.up} of ${counts.total} containers running across ${arcane.envs.length} environment${arcane.envs.length === 1 ? '' : 's'}.`;
+
+  const looseIdx = grouped.stacks.length + (grouped.ixStacks.length ? 2 : 1);
 
   return (
     <div className="shell">
@@ -306,9 +72,9 @@ export default function Docker() {
           <p className="greeting-sub">
             {stateLine}
             {arcane.envName && (
-              <> Host <code>{arcane.envName}</code>{" "}
-                <span className={`status-dot ${arcane.envStatus === "online" ? "up" : "down"}`}
-                      role="img" aria-label={`host ${arcane.envStatus === "online" ? "online" : "offline"}`} />.
+              <> Host <code>{arcane.envName}</code>{' '}
+                <span className={`status-dot ${arcane.envStatus === 'online' ? 'up' : 'down'}`}
+                      role="img" aria-label={`host ${arcane.envStatus === 'online' ? 'online' : 'offline'}`} />.
               </>
             )}
           </p>
@@ -335,9 +101,9 @@ export default function Docker() {
         <div className="sum"><div className="l">Running</div><div className="v on">{counts.up}<span className="unit">/ {counts.total}</span></div></div>
         <div className="sum"><div className="l">Stopped</div><div className="v">{counts.down}<span className="unit">down</span></div></div>
         <div className="sum"><div className="l">Stacks</div><div className="v">{arcane.projects.length}<span className="unit">compose</span></div></div>
-        <div className="sum"><div className="l">Images</div><div className="v">{arcane.counts.images ?? "—"}<span className="unit">cached</span></div></div>
-        <div className="sum"><div className="l">Networks</div><div className="v">{arcane.counts.networks ?? "—"}<span className="unit">net</span></div></div>
-        <div className="sum"><div className="l">Volumes</div><div className="v">{arcane.counts.volumes ?? "—"}<span className="unit">vol</span></div></div>
+        <div className="sum"><div className="l">Images</div><div className="v">{arcane.counts.images ?? '—'}<span className="unit">cached</span></div></div>
+        <div className="sum"><div className="l">Networks</div><div className="v">{arcane.counts.networks ?? '—'}<span className="unit">net</span></div></div>
+        <div className="sum"><div className="l">Volumes</div><div className="v">{arcane.counts.volumes ?? '—'}<span className="unit">vol</span></div></div>
       </div>
 
       <FilterBar q={q} setQ={setQ} scope={scope} setScope={setScope} counts={counts} />
@@ -348,68 +114,26 @@ export default function Docker() {
           idx={i}
           project={s.project}
           services={s.services}
-          envId={arcane.envId}
           onAction={onContainerAction}
           onProjectAction={onProjectAction}
         />
       ))}
 
-      {grouped.ixStacks.length > 0 && (() => {
-        const ixUp = grouped.ixStacks.reduce((n, s) => n + s.services.filter(c => c.state === "running").length, 0);
-        const ixTot = grouped.ixStacks.reduce((n, s) => n + s.services.length, 0);
-        const allUp = ixUp === ixTot;
-        return (
-          <section className={"section ix-section" + (ixOpen ? " is-open" : "")}>
-            <button
-              type="button"
-              className="ix-toggle"
-              onClick={() => setIxOpen(o => !o)}
-              aria-expanded={ixOpen}
-            >
-              <span className={`status-dot ${allUp ? "up" : ixUp === 0 ? "down" : "warn"}`} />
-              <span className="ix-toggle-numeral">// {String(grouped.stacks.length + 1).padStart(2, "0")}</span>
-              <span className="ix-toggle-title">truenas apps</span>
-              <span className="ix-toggle-badge">{grouped.ixStacks.length} stacks</span>
-              <span className="ix-toggle-meta">{ixUp}/{ixTot} up · managed by ix</span>
-              <span className="ix-toggle-action">{ixOpen ? "hide" : "show"}</span>
-              <svg className="ix-toggle-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </button>
-            {ixOpen && (
-              <div className="ix-children">
-                {grouped.ixStacks.map((s, i) => (
-                  <Stack
-                    key={s.project.name}
-                    idx={grouped.stacks.length + i + 1}
-                    project={s.project}
-                    services={s.services}
-                    envId={arcane.envId}
-                    onAction={onContainerAction}
-                    onProjectAction={onProjectAction}
-                  />
-                ))}
-              </div>
-            )}
-          </section>
-        );
-      })()}
+      {grouped.ixStacks.length > 0 && (
+        <IxSection
+          stacks={grouped.ixStacks}
+          baseIdx={grouped.stacks.length}
+          onAction={onContainerAction}
+          onProjectAction={onProjectAction}
+        />
+      )}
 
       {grouped.loose.length > 0 && (
-        <section className="section">
-          <div className="section-head">
-            <div className="section-title">
-              <span className="numeral">// {String(grouped.stacks.length + (grouped.ixStacks.length ? 2 : 1)).padStart(2, "0")}</span>
-              <h2>loose containers</h2>
-            </div>
-            <span className="section-meta">{grouped.loose.length} unmanaged</span>
-          </div>
-          <div className="docker-grid">
-            {grouped.loose.map(c => (
-              <ContainerCard key={c.id} c={c} envId={arcane.envId} onAction={onContainerAction} />
-            ))}
-          </div>
-        </section>
+        <LooseSection
+          containers={grouped.loose}
+          idx={looseIdx}
+          onAction={onContainerAction}
+        />
       )}
 
       <div className="footbar" role="status" aria-live="polite">

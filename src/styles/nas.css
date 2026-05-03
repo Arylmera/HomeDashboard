@@ -75,3 +75,18 @@
 /* `.eyebrow`, `.page-h1`, `.page-lede` are now defined universally in forge.css. */
 
 .footnote { margin-top: 40px; font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); text-align: center; }
+
+/* Pool health row — SMART · scrub · snapshot */
+.pool-health {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-faint);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.pool-health .hk { margin-right: 8px; }
+.pool-health .hk:last-of-type { margin-right: 0; }

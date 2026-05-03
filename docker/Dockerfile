@@ -7,12 +7,14 @@ WORKDIR /app
 # Build toolchain for native modules (better-sqlite3).
 RUN apk add --no-cache python3 make g++
 
-# Install deps (cache-friendly)
+# Install deps (cache-friendly).
 COPY package.json package-lock.json* ./
 RUN npm ci
 
-# Build-time public env (baked into bundle).
-# Pass via `docker build --build-arg VITE_FOO=...` or GitLab CI variables.
+# Build-time public env (VITE_*) — baked into the bundle.
+# Pass via `docker build --build-arg VITE_FOO=...` or CI vars.
+# Server-side secrets (TRUENAS_API_KEY, *_API_KEY, *_PASS, …) are
+# read at runtime from process.env — do NOT bake them here.
 ARG VITE_TRUENAS_URL
 ARG VITE_PLEX_URL
 ARG VITE_SONARR_URL
@@ -26,10 +28,14 @@ ARG VITE_PIHOLE_KEY
 ARG VITE_SPEEDTEST_URL
 ARG VITE_AUDIOBOOKSHELF_URL
 ARG VITE_QBITTORRENT_URL
+ARG VITE_QUI_URL
 ARG VITE_GLANCES_URL
 ARG VITE_BESZEL_URL
 ARG VITE_NEXTCLOUD_URL
+ARG VITE_ARCANE_URL
+ARG VITE_TUGTAINER_URL
 ARG VITE_NPM_URL
+ARG VITE_ASUS_URL
 ARG HOMEY_ID
 
 ENV VITE_TRUENAS_URL=$VITE_TRUENAS_URL \
@@ -45,10 +51,14 @@ ENV VITE_TRUENAS_URL=$VITE_TRUENAS_URL \
     VITE_SPEEDTEST_URL=$VITE_SPEEDTEST_URL \
     VITE_AUDIOBOOKSHELF_URL=$VITE_AUDIOBOOKSHELF_URL \
     VITE_QBITTORRENT_URL=$VITE_QBITTORRENT_URL \
+    VITE_QUI_URL=$VITE_QUI_URL \
     VITE_GLANCES_URL=$VITE_GLANCES_URL \
     VITE_BESZEL_URL=$VITE_BESZEL_URL \
     VITE_NEXTCLOUD_URL=$VITE_NEXTCLOUD_URL \
+    VITE_ARCANE_URL=$VITE_ARCANE_URL \
+    VITE_TUGTAINER_URL=$VITE_TUGTAINER_URL \
     VITE_NPM_URL=$VITE_NPM_URL \
+    VITE_ASUS_URL=$VITE_ASUS_URL \
     HOMEY_ID=$HOMEY_ID
 
 COPY . .
@@ -70,7 +80,10 @@ COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/vite.config.js ./vite.config.js
 COPY --from=build /app/src/server ./src/server
-COPY --from=build /app/index.html /app/nas.html /app/plex.html /app/homey.html /app/quicklinks.html /app/docker.html /app/network.html ./
+# Glob picks up every Vite entry point (index, nas, plex, homey,
+# quicklinks, docker, network, music, …) so adding a new page does
+# not require updating this Dockerfile.
+COPY --from=build /app/*.html ./
 
 # Persistent SQLite store (mount a volume here in compose).
 RUN mkdir -p /data

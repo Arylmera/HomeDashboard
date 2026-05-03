@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getJson } from './_fetcher.js';
 
-export function useAsus({ poll = 15_000 } = {}) {
+function useAsusEndpoint(url, poll) {
   const [data, setData] = useState({ state: 'loading' });
   const [tick, setTick] = useState(0);
   const refresh = () => setTick(t => t + 1);
@@ -10,7 +10,7 @@ export function useAsus({ poll = 15_000 } = {}) {
     let alive = true;
     const run = async () => {
       try {
-        const j = await getJson('/api/asus/status');
+        const j = await getJson(url);
         if (!alive) return;
         setData(j);
       } catch {
@@ -20,7 +20,15 @@ export function useAsus({ poll = 15_000 } = {}) {
     run();
     const id = setInterval(run, poll);
     return () => { alive = false; clearInterval(id); };
-  }, [poll, tick]);
+  }, [url, poll, tick]);
 
   return { ...data, refresh };
+}
+
+export function useAsus({ poll = 15_000 } = {}) {
+  return useAsusEndpoint('/api/asus/status', poll);
+}
+
+export function useAsusNode({ poll = 15_000 } = {}) {
+  return useAsusEndpoint('/api/asus/node/status', poll);
 }

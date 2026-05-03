@@ -275,3 +275,25 @@ a.net-card-link:hover .host { color: var(--ember-hi); }
   transition: width 0.4s ease;
 }
 
+.router-subsection {
+  margin-top: 12px;
+  padding: 10px 12px 12px;
+  border: 1px solid var(--line-soft);
+  border-radius: 6px;
+  background: color-mix(in oklch, var(--bg) 92%, transparent);
+}
+.router-subsection-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.router-subsection-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink-dim);
+}
+.router-subsection .router-panel { margin: 0; }
+

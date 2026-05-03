@@ -22,6 +22,13 @@ ASUS_SSH_PORT=1024
 ASUS_USERNAME=Admin         # case-sensitive
 ASUS_PASSWORD=•••           # OR
 ASUS_SSH_KEY=C:\Users\…\id_ed25519
+
+# AiMesh node (optional — blank fields fall back to main creds)
+ASUS_NODE_SSH_HOST=192.168.1.2
+ASUS_NODE_SSH_PORT=1024
+ASUS_NODE_USERNAME=
+ASUS_NODE_PASSWORD=
+ASUS_NODE_SSH_KEY=
 ```
 
 ## Remote command
@@ -40,12 +47,26 @@ sections (each prefixed by `##<name>` markers in stdout):
 | `meminfo`     | `cat /proc/meminfo`     | MemTotal / MemAvailable |
 | `stat1`/`stat2` | `head -n 1 /proc/stat` × 2 with `sleep 1` | CPU % delta |
 | `arp`         | `cat /proc/net/arp`     | client count (online / wired / wifi) |
+| `cfg_clientlist` | `nvram get cfg_clientlist` (main only) | AiMesh node list (model, MAC, fw, online) |
+| `cfg_device_list` | `nvram get cfg_device_list` (main only) | best-effort node IPs |
+
+## Endpoints
+
+| Path                   | Source         | Notes |
+|------------------------|----------------|-------|
+| `/api/asus/status`     | main router    | full payload + `mesh[]` |
+| `/api/asus/mesh`       | main router    | just the mesh node list |
+| `/api/asus/node/status`| AiMesh node    | same shape as main, no `mesh[]` |
+
+`mesh[]` entries: `{ role: 'cap'|'re', model, mac, firmware, online, ip? }`.
+The CAP entry (`role: 'cap'`) is the main router itself.
 
 ## Project wiring
 
 - Server: [src/server/asus.js](../../src/server/asus.js) — spawns `ssh`,
   caches result for 15 s, 60 s backoff on errors.
-- Hook: [src/lib/hooks/asus.js](../../src/lib/hooks/asus.js).
+- Hook: [src/lib/hooks/asus.js](../../src/lib/hooks/asus.js) —
+  exports `useAsus()` (main, includes `mesh[]`) and `useAsusNode()`.
 - UI: router panel on the Network page, between Speedtest and NPM.
 
 ## Troubleshooting

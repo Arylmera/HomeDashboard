@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { I, DEV_ICON } from './icons.jsx';
+import { I, DEV_ICON } from '../icons.jsx';
 
 export function Device({ d, onToggle }) {
   const [pending, setPending] = useState(false);

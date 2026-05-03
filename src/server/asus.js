@@ -4,13 +4,25 @@
  *  Connects with password OR private key, runs one batched shell
  *  command, parses marker-delimited sections.
  *
- *  Env:
+ *  Two SSH targets are supported:
+ *    main → primary AiMesh router (also exposes the mesh node list
+ *           parsed from `nvram get cfg_clientlist`)
+ *    node → optional AiMesh node, queried over its own SSH session
+ *
+ *  Env (main):
  *    VITE_ASUS_URL    public URL for the "open router" link
  *    ASUS_SSH_HOST    host (defaults to host of VITE_ASUS_URL)
  *    ASUS_SSH_PORT    SSH port (default 1024)
  *    ASUS_USERNAME    SSH user (case-sensitive — usually "Admin")
  *    ASUS_PASSWORD    password (omit if using key auth)
  *    ASUS_SSH_KEY     path to private key (omit if using password)
+ *
+ *  Env (AiMesh node — all optional, falls back to main creds where blank):
+ *    ASUS_NODE_SSH_HOST   node LAN IP/hostname
+ *    ASUS_NODE_SSH_PORT   default 1024
+ *    ASUS_NODE_USERNAME   default same as ASUS_USERNAME
+ *    ASUS_NODE_PASSWORD   default same as ASUS_PASSWORD
+ *    ASUS_NODE_SSH_KEY    default same as ASUS_SSH_KEY
  * ============================================================== */
 
 import { Client } from 'ssh2';
@@ -19,9 +31,9 @@ import { readFileSync } from 'node:fs';
 const TTL_MS = 15_000;
 const TIMEOUT_MS = 10_000;
 
-let cached = null;     // { ts, payload }
-let inflight = null;
-let backoffUntil = 0;
+const cache = { main: null, node: null };
+const inflight = { main: null, node: null };
+const backoffUntil = { main: 0, node: 0 };
 
 function hostFromUrl() {
   const u = (process.env.VITE_ASUS_URL || '').trim();
@@ -30,7 +42,7 @@ function hostFromUrl() {
   catch { return u.replace(/^https?:\/\//i, '').replace(/\/.*$/, ''); }
 }
 
-function cfg() {
+function cfgMain() {
   return {
     host: process.env.ASUS_SSH_HOST || hostFromUrl(),
     port: Number(process.env.ASUS_SSH_PORT || 1024),
@@ -39,12 +51,23 @@ function cfg() {
     keyPath: process.env.ASUS_SSH_KEY || '',
   };
 }
-function configured() {
-  const c = cfg();
+function cfgNode() {
+  const m = cfgMain();
+  return {
+    host: process.env.ASUS_NODE_SSH_HOST || '',
+    port: Number(process.env.ASUS_NODE_SSH_PORT || m.port || 1024),
+    user: process.env.ASUS_NODE_USERNAME || m.user,
+    password: process.env.ASUS_NODE_PASSWORD || m.password,
+    keyPath: process.env.ASUS_NODE_SSH_KEY || m.keyPath,
+  };
+}
+function cfg(target) { return target === 'node' ? cfgNode() : cfgMain(); }
+function configured(target) {
+  const c = cfg(target);
   return !!(c.host && (c.password || c.keyPath));
 }
 
-const REMOTE = `
+const REMOTE_BASE = `
 echo '##model'; nvram get productid
 echo '##firmver'; nvram get firmver
 echo '##buildno'; nvram get buildno
@@ -60,11 +83,20 @@ echo '##meminfo'; cat /proc/meminfo
 echo '##stat1'; head -n 1 /proc/stat; sleep 1
 echo '##stat2'; head -n 1 /proc/stat
 echo '##arp'; cat /proc/net/arp 2>/dev/null
-echo '##end'
 `.trim();
 
-function runSsh() {
-  const c = cfg();
+const REMOTE_MAIN = `${REMOTE_BASE}
+echo '##cfg_clientlist'; nvram get cfg_clientlist
+echo '##cfg_device_list'; nvram get cfg_device_list
+echo '##end'`;
+
+const REMOTE_NODE = `${REMOTE_BASE}
+echo '##cfg_local'; nvram get cfg_local
+echo '##end'`;
+
+function runSsh(target) {
+  const c = cfg(target);
+  const remote = target === 'node' ? REMOTE_NODE : REMOTE_MAIN;
   const opts = {
     host: c.host,
     port: c.port,
@@ -100,7 +132,7 @@ function runSsh() {
   }
   if (c.keyPath) {
     try { opts.privateKey = readFileSync(c.keyPath); }
-    catch (e) { return Promise.reject(new Error(`asus: cannot read ASUS_SSH_KEY: ${e.message}`)); }
+    catch (e) { return Promise.reject(new Error(`asus: cannot read key: ${e.message}`)); }
   }
 
   return new Promise((resolve, reject) => {
@@ -112,7 +144,7 @@ function runSsh() {
     }, TIMEOUT_MS + 2000);
 
     conn.on('ready', () => {
-      conn.exec(REMOTE, (err, stream) => {
+      conn.exec(remote, (err, stream) => {
         if (err) { clearTimeout(timer); conn.end(); return reject(err); }
         stream.on('data', (b) => { stdout += b.toString(); });
         stream.stderr.on('data', (b) => { stderr += b.toString(); });
@@ -211,10 +243,47 @@ function parseWan(s) {
     dns: s['wan_dns'] || null,
   };
 }
-function buildPayload(out) {
+
+// cfg_clientlist format (Asuswrt-Merlin AiMesh):
+//   <MODEL>MAC>FW>NEWFW>ONLINE>...   one entry per `<`
+// First entry is the CAP (main router). Remaining entries are RE nodes.
+function parseMeshNodes(rawClients, rawDevices) {
+  const out = [];
+  const raw = (rawClients || '').trim();
+  if (!raw) return out;
+  const entries = raw.split('<').filter(Boolean);
+  for (let i = 0; i < entries.length; i++) {
+    const cols = entries[i].split('>');
+    if (cols.length < 2) continue;
+    const model = cols[0]?.trim() || null;
+    const mac = (cols[1] || '').trim().toUpperCase();
+    if (!/^[0-9A-F:]{11,}$/.test(mac)) continue;
+    const fw = cols[2]?.trim() || null;
+    const onlineFlag = (cols[4] ?? cols[3] ?? '').toString().trim();
+    const online = onlineFlag === '1' || onlineFlag.toLowerCase() === 'online';
+    out.push({
+      role: i === 0 ? 'cap' : 're',
+      model,
+      mac,
+      firmware: fw,
+      online,
+    });
+  }
+  // Try to enrich with IP from cfg_device_list (best-effort, optional).
+  const dev = (rawDevices || '').trim();
+  if (dev && out.length) {
+    for (const node of out) {
+      const ipMatch = dev.match(new RegExp(`${node.mac.replace(/:/g, ':?')}[^<>]*?(\\d+\\.\\d+\\.\\d+\\.\\d+)`, 'i'));
+      if (ipMatch) node.ip = ipMatch[1];
+    }
+  }
+  return out;
+}
+
+function buildPayload(out, target) {
   const s = splitSections(out);
   const fw = [s['firmver'], s['buildno'], s['extendno']].filter(Boolean).join('.');
-  return {
+  const payload = {
     model: s['model'] || null,
     firmware: fw || null,
     uptime: { seconds: parseUptime(s['uptime']), load: parseLoadavg(s['loadavg']) },
@@ -224,29 +293,34 @@ function buildPayload(out) {
     mem: parseMeminfo(s['meminfo']),
     clients: parseArp(s['arp']),
   };
+  if (target === 'main') {
+    payload.mesh = parseMeshNodes(s['cfg_clientlist'], s['cfg_device_list']);
+  }
+  return payload;
 }
 
 /* ── cache + middleware ─────────────────────────────────────── */
 
-async function fetchStatus() {
-  if (Date.now() < backoffUntil) {
-    const wait = Math.ceil((backoffUntil - Date.now()) / 1000);
+async function fetchStatus(target) {
+  if (Date.now() < backoffUntil[target]) {
+    const wait = Math.ceil((backoffUntil[target] - Date.now()) / 1000);
     throw new Error(`asus ssh backoff: retry in ${wait}s`);
   }
-  try { return buildPayload(await runSsh()); }
-  catch (e) { backoffUntil = Date.now() + 60_000; throw e; }
+  try { return buildPayload(await runSsh(target), target); }
+  catch (e) { backoffUntil[target] = Date.now() + 60_000; throw e; }
 }
 
-async function getCached() {
-  if (cached && Date.now() - cached.ts < TTL_MS) return cached.payload;
-  if (inflight) return inflight;
-  inflight = (async () => {
-    const payload = await fetchStatus();
-    cached = { ts: Date.now(), payload };
-    inflight = null;
+async function getCached(target) {
+  const c = cache[target];
+  if (c && Date.now() - c.ts < TTL_MS) return c.payload;
+  if (inflight[target]) return inflight[target];
+  inflight[target] = (async () => {
+    const payload = await fetchStatus(target);
+    cache[target] = { ts: Date.now(), payload };
+    inflight[target] = null;
     return payload;
   })();
-  try { return await inflight; } catch (e) { inflight = null; throw e; }
+  try { return await inflight[target]; } catch (e) { inflight[target] = null; throw e; }
 }
 
 export function asusMiddleware() {
@@ -254,12 +328,24 @@ export function asusMiddleware() {
     if (!req.url || !req.url.startsWith('/api/asus/')) return next();
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Cache-Control', 'no-store');
-    if (!configured()) return res.end(JSON.stringify({ state: 'idle' }));
     const path = req.url.replace(/^\/api\/asus\//, '').replace(/\?.*$/, '');
+
+    // Route resolution
+    let target = 'main';
+    let kind = path.replace(/\/$/, '');
+    if (kind.startsWith('node/')) { target = 'node'; kind = kind.slice(5); }
+    else if (kind === 'node') { target = 'node'; kind = 'status'; }
+
+    if (!configured(target)) return res.end(JSON.stringify({ state: 'idle' }));
+
     try {
-      if (path === 'status' || path === 'status/') {
-        const data = await getCached();
+      if (kind === 'status' || kind === '') {
+        const data = await getCached(target);
         return res.end(JSON.stringify({ state: 'live', ...data }));
+      }
+      if (kind === 'mesh' && target === 'main') {
+        const data = await getCached('main');
+        return res.end(JSON.stringify({ state: 'live', mesh: data.mesh || [] }));
       }
       res.statusCode = 404;
       res.end(JSON.stringify({ error: 'not found' }));

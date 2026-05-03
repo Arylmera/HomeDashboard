@@ -1,4 +1,5 @@
 import { fmtBytes, pct } from '../../../lib/format.js';
+import { scrubDot, snapDot, smartDot } from '../../../lib/nas-health.js';
 import Spark from './Spark.jsx';
 
 export default function NASPanel({ nas, state }) {
@@ -46,6 +47,20 @@ export default function NASPanel({ nas, state }) {
             <i className={p.pct > 90 ? "crit" : p.pct > 75 ? "warn" : ""} style={{ width: `${p.pct}%` }} />
           </div>
           <div className="meta">{fmtBytes(p.used)} <b>used</b> · {fmtBytes(p.total - p.used)} <b>free</b></div>
+          <div className="pool-health" aria-label="pool health">
+            {(() => {
+              const sm = smartDot(nas?.disks, p.name);
+              const sc = scrubDot(p);
+              const sn = snapDot(p);
+              return (
+                <>
+                  <span className={`status-dot ${sm.cls}`} title={`SMART · ${sm.txt}`} /><span className="hk">SMART</span>
+                  <span className={`status-dot ${sc.cls}`} title={`Scrub · ${sc.txt}`} /><span className="hk">scrub</span>
+                  <span className={`status-dot ${sn.cls}`} title={`Snapshots · ${sn.txt}`} /><span className="hk">snap</span>
+                </>
+              );
+            })()}
+          </div>
         </div>
       )) : <div className="empty">No pools detected. Set <code>VITE_TRUENAS_URL</code> and <code>TRUENAS_API_KEY</code> in <code>.env</code>, then restart the dev server.</div>}
     </div>

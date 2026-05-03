@@ -338,3 +338,18 @@ html[data-density="dense"] body .pool-row { padding: 7px 10px; }
 .recent-title { font-size: 12px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .recent-sub { font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); letter-spacing: 0.04em; }
 
+/* Pool health row — SMART · scrub · snapshot */
+.pool-health {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-faint);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.pool-health .hk { margin-right: 8px; }
+.pool-health .hk:last-of-type { margin-right: 0; }
+

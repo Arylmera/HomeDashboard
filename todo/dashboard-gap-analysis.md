@@ -39,19 +39,19 @@ difficulty given the existing stack. Priority: combined recommendation.
 |---|------------------------------------------|------|--------|----------|
 | 1 | Calendar (today + next 7 days)           | high | M      | **P0**   |
 | 2 | Tasks / shopping list (shared)           | high | M      | **P0**   |
-| 3 | Recently-added media strip               | high | S      | **P0**   |
-| 4 | Multi-day weather forecast               | high | S      | **P0**   |
-| 5 | Container updates digest (Tugtainer)     | high | S      | **P0**   |
+| 3 | Recently-added media strip               | high | S      | ✅ done  |
+| 4 | Multi-day weather forecast               | high | S      | ✅ done  |
+| 5 | Container updates digest (Tugtainer)     | high | S      | ✅ done  |
 | 6 | Cert expiry tracker                      | med  | S      | P1       |
-| 7 | WAN / internet up sentinel               | high | S      | P1       |
+| 7 | WAN / internet up sentinel               | high | S      | ✅ done  |
 | 8 | Energy / power tile (Homey)              | high | M      | P1       |
-| 9 | Sensor digest (temp/humidity per zone)   | high | S      | P1       |
-|10 | TrueNAS health (SMART, scrub, snapshots) | high | M      | P1       |
+| 9 | Sensor digest (temp/humidity per zone)   | high | S      | ✅ done  |
+|10 | TrueNAS health (SMART, scrub, snapshots) | high | M      | ✅ done  |
 |11 | ntfy recent notifications                | med  | S      | P1       |
 |12 | Music now-playing (Navidrome)            | med  | S      | P2       |
 |13 | Sun / moon / golden-hour                 | med  | XS     | P2       |
 |14 | Reading progress (Audiobookshelf)        | med  | S      | P2       |
-|15 | Network clients online (Pi-hole/router)  | med  | M      | P2       |
+|15 | Network clients online (Pi-hole/router)  | med  | M      | ✅ done  |
 |16 | Birthdays (Nextcloud Contacts)           | med  | M      | P3       |
 |17 | RSS / feed digest                        | low  | M      | P3       |
 |18 | Bin / waste collection schedule          | med  | XS     | P3       |

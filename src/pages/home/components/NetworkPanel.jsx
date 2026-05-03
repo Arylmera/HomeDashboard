@@ -1,7 +1,7 @@
 import { fmtRate, fmtNum } from '../../../lib/format.js';
 import Spark from './Spark.jsx';
 
-export default function NetworkPanel({ nas, pi, st }) {
+export default function NetworkPanel({ nas, pi, st, wan }) {
   return (
     <div className="panel">
       <div className="panel-head">
@@ -31,9 +31,18 @@ export default function NetworkPanel({ nas, pi, st }) {
           <div className="lbl">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z M12 12l4-4 M12 7v0" /></svg>
             ISP · Speedtest
+            {wan?.state === 'live' && (
+              <span
+                className={`status-dot ${wan.up ? 'up' : 'down'}`}
+                style={{ marginLeft: 6 }}
+                title={wan.up
+                  ? `WAN up · ${wan.latencyMs ?? '—'} ms · ${wan.target || ''}`
+                  : 'WAN sentinel: both probes failed'}
+              />
+            )}
           </div>
           <div className="val">{st?.down != null ? `↓ ${Math.round(st.down)}` : "—"}<small className="unit">Mbps</small></div>
-          <div className="sub">↑ <b>{st?.up != null ? Math.round(st.up) : "—"}</b> Mbps · <b>{st?.ping != null ? Math.round(st.ping) : "—"}</b> ms</div>
+          <div className="sub">↑ <b>{st?.up != null ? Math.round(st.up) : "—"}</b> Mbps · <b>{st?.ping != null ? Math.round(st.ping) : "—"}</b> ms{wan?.state === 'live' && wan.up && wan.latencyMs != null && <> · WAN <b>{wan.latencyMs}</b> ms</>}</div>
         </div>
       </div>
     </div>

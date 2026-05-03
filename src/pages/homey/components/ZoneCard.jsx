@@ -1,4 +1,4 @@
-import { iconForZone } from './icons.jsx';
+import { iconForZone } from '../icons.jsx';
 import { Device } from './Device.jsx';
 
 export function ZoneCard({ zone, collapsed, onToggle, onDeviceToggle }) {

@@ -173,3 +173,35 @@ button.flow:disabled { cursor: progress; }
 }
 .hint-banner b { color: var(--ember-hi); font-weight: 600; }
 .hint-banner a { color: var(--ember-hi); }
+
+/* Sensor digest — compact climate readings per zone */
+.sensor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.sensor-zone {
+  background: var(--panel, rgba(255,255,255,0.03));
+  border: 1px solid var(--line, rgba(255,255,255,0.06));
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.sensor-zone-name {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+.sensor-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.sensor-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: 8px; font-size: 13px;
+}
+.sensor-name { color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sensor-vals { display: inline-flex; gap: 8px; font-family: var(--font-mono); color: var(--ink-dim); flex-shrink: 0; }
+.sensor-vals .t { color: var(--ember-hi, var(--ink)); }
+.sensor-vals .h { color: var(--steel, var(--ink-dim)); }
+.sensor-vals .b { color: var(--ember); }

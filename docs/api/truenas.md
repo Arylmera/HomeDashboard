@@ -9,8 +9,11 @@ Used in: [src/lib/hooks.js](../../src/lib/hooks.js) `useTrueNAS()`. Proxy: `/api
 | Endpoint | Method | Returns |
 |----------|--------|---------|
 | `/system/info` | GET | `hostname`, `version`, `physmem` (bytes), `uptime_seconds`, `cores`, `loadavg`, `model` |
-| `/pool` | GET | array of pools — `name`, `healthy` (bool), `status`, `size`, `allocated`, `free`, `topology` (data/cache/log/spare vdev tree with disk paths) |
+| `/pool` | GET | array of pools — `name`, `healthy` (bool), `status`, `size`, `allocated`, `free`, `topology`, `scan` (last scrub/resilver: `{function, state, errors, start_time, end_time}`) |
 | `/reporting/get_data` | POST | timeseries — body: `[{name:"cpu"},{name:"memory"},{name:"interface",identifier:"eno1"}]`. Returns `{legend, data:[[t, ...values]], start, end}` per query |
+| `/disk` | GET | physical disks (`name`, `model`, `size`, `type`, `pool`, `critical` SMART flag) |
+| `/disk/temperatures` | POST | body `{names:["sda",…]}` → `{sda: 34, …}` °C — drives the SMART dot on each pool |
+| `/zfs/snapshot?limit=500` | GET | recent snapshots; grouped per pool to derive last-snapshot age |
 
 ## Endpoints worth adding
 

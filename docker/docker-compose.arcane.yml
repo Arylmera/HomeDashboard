@@ -1,0 +1,49 @@
+# Arcane stack for HomeDashboard.
+#
+# Usage in Arcane
+# ───────────────
+# 1. Settings → Container Registries → Add:
+#      URL:      registry.gitlab.com
+#      Username: <your GitLab username>
+#      Password: GitLab Deploy Token (scope: read_registry)
+#         Project → Settings → Repository → Deploy tokens
+# 2. Stacks → New Stack → paste this compose.
+# 3. Create a `.env` next to the stack with the runtime secrets
+#    (see .env.example — TRUENAS_API_KEY, PLEX_TOKEN, NPM_SECRET,
+#     ASUS_*, ICLOUD_APP_PASSWORD, HOMEY_CLIENT_SECRET,
+#     SPOTIFY_CLIENT_SECRET, SONOS_HOSTS, …).
+# 4. Deploy.
+#
+# After each CI build: open the stack → Pull → Redeploy.
+#
+# Notes
+# ─────
+# - VITE_* values are baked at build time by GitLab CI. Setting them
+#   here has no effect.
+# - Sonos LAN discovery needs SSDP multicast. If the bridge network
+#   blocks it, either set SONOS_HOSTS in .env to a comma-separated
+#   list of speaker IPs, or switch to `network_mode: host` (then
+#   remove the `ports:` block).
+
+services:
+  homedashboard:
+    image: registry.gitlab.com/arylmera/homedashboard:latest
+    container_name: homedashboard
+    restart: unless-stopped
+    ports:
+      - "4173:4173"
+    env_file:
+      - .env
+    environment:
+      PREFS_DB: /data/prefs.db
+    volumes:
+      - homedashboard-data:/data
+    # network_mode: host   # uncomment for Sonos SSDP multicast
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:4173/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  homedashboard-data:

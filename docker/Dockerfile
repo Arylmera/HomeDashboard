@@ -3,6 +3,8 @@
 # ─── build stage ───────────────────────────────────────────────
 FROM node:20-alpine AS build
 WORKDIR /app
+ENV NPM_CONFIG_UPDATE_NOTIFIER=false \
+    NPM_CONFIG_FUND=false
 
 # Build toolchain for native modules (better-sqlite3).
 RUN apk add --no-cache python3 make g++
@@ -73,7 +75,9 @@ WORKDIR /app
 ENV NODE_ENV=production \
     HOST=0.0.0.0 \
     PORT=4173 \
-    PREFS_DB=/data/prefs.db
+    PREFS_DB=/data/prefs.db \
+    NPM_CONFIG_UPDATE_NOTIFIER=false \
+    NPM_CONFIG_FUND=false
 
 COPY --from=build /app/package.json /app/package-lock.json* ./
 COPY --from=build /app/node_modules ./node_modules

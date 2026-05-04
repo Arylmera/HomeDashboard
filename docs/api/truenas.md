@@ -10,10 +10,10 @@ Used in: [src/lib/hooks.js](../../src/lib/hooks.js) `useTrueNAS()`. Proxy: `/api
 |----------|--------|---------|
 | `/system/info` | GET | `hostname`, `version`, `physmem` (bytes), `uptime_seconds`, `cores`, `loadavg`, `model` |
 | `/pool` | GET | array of pools — `name`, `healthy` (bool), `status`, `size`, `allocated`, `free`, `topology`, `scan` (last scrub/resilver: `{function, state, errors, start_time, end_time}`) |
-| `/reporting/get_data` | POST | timeseries — body: `[{name:"cpu"},{name:"memory"},{name:"interface",identifier:"eno1"}]`. Returns `{legend, data:[[t, ...values]], start, end}` per query |
+| `/reporting/netdata_get_data` | POST | timeseries — body: `{graphs:[{name:"cpu",identifier:null},…], query:{unit:"HOUR",page:1,aggregate:true}}`. Returns `{legend, data:[[t, ...values]], start, end}` per graph. (Old `/reporting/get_data` removed in 24.10+.) |
 | `/disk` | GET | physical disks (`name`, `model`, `size`, `type`, `pool`, `critical` SMART flag) |
 | `/disk/temperatures` | POST | body `{names:["sda",…]}` → `{sda: 34, …}` °C — drives the SMART dot on each pool |
-| `/zfs/snapshot?limit=500` | GET | recent snapshots; grouped per pool to derive last-snapshot age |
+| `/pool/snapshot?limit=500` | GET | recent snapshots; grouped per pool to derive last-snapshot age (TrueNAS 25.x — `/zfs/snapshot` removed) |
 
 ## Endpoints worth adding
 
@@ -35,7 +35,7 @@ Used in: [src/lib/hooks.js](../../src/lib/hooks.js) `useTrueNAS()`. Proxy: `/api
 | `GET /sharing/iscsi/target` | iSCSI targets |
 
 ### Snapshots / replication / backups
-| `GET /zfs/snapshot` | snapshots (paginate with `limit`/`offset`) |
+| `GET /pool/snapshot` | snapshots (paginate with `limit`/`offset`) — `/zfs/snapshot` removed in 25.x |
 | `GET /pool/snapshottask` | scheduled snapshot tasks |
 | `GET /replication` | replication tasks + state |
 | `GET /cloudsync` | cloud sync tasks |
@@ -44,7 +44,7 @@ Used in: [src/lib/hooks.js](../../src/lib/hooks.js) `useTrueNAS()`. Proxy: `/api
 ### Network
 | `GET /interface` | interfaces — `name`, `state.aliases`, `state.link_state`, `state.speed`, `mtu`, `state.received_bytes`, `state.sent_bytes` |
 | `GET /network/configuration` | hostname, gateway, nameservers |
-| `POST /reporting/get_data` `{name:"interface", identifier:"eno1"}` | rx/tx timeseries |
+| `POST /reporting/netdata_get_data` `{graphs:[{name:"interface",identifier:"eno1"}],query:{unit:"HOUR",aggregate:true}}` | rx/tx timeseries |
 
 ### Services / system
 | `GET /service` | running services (smbd, nfs, ssh, ups, …) — `state`, `enable` |
@@ -56,10 +56,10 @@ Used in: [src/lib/hooks.js](../../src/lib/hooks.js) `useTrueNAS()`. Proxy: `/api
 | `GET /ups` | UPS status if configured |
 | `GET /system/advanced` | advanced settings |
 
-### Reporting metrics names (`/reporting/get_data`)
+### Reporting metrics names (`/reporting/netdata_get_data`)
 `cpu`, `cputemp`, `memory`, `swap`, `load`, `uptime`, `interface` (+`identifier`), `disk` (+`identifier:"sda"`), `disktemp` (+`identifier`), `arcsize`, `arcratio`, `arcresult`, `df` (+`identifier:"mnt-pool-dataset"`), `processes`, `nfsstat`, `ctl` (iSCSI).
 
-Time window via `{start, end, prefer_user_units}` next to `name` block.
+Time window via top-level `query`: either `{unit:"HOUR"|"DAY"|…, page, aggregate}` OR `{start, end, aggregate}` — not both.
 
 ## Auth gotchas
 - Bearer key from web UI (Credentials → API Keys). Cannot be viewed again after creation.
@@ -70,7 +70,7 @@ Time window via `{start, end, prefer_user_units}` next to `name` block.
 ## Pitfalls
 - `/pool/dataset` returns nested children — flatten before display.
 - `physmem` is bytes; `size`/`allocated` on `/pool` are **strings** of bytes (cast with `+x`).
-- `/reporting/get_data` legend order matters; always look up index by name (`legend.indexOf("idle")`).
+- `/reporting/netdata_get_data` legend order matters; always look up index by name (`legend.indexOf("idle")`). Old `/reporting/get_data` was removed in 24.10+ (returns 400) — use `netdata_get_data` with `{graphs, query}` body.
 - Network identifier is the kernel name (`eno1`, `enp3s0`), not the alias. Pull from `/interface` first.
 - `/disk` does not include real-time temps — must POST `/disk/temperatures` separately. Cache; SMART hits the drive.
 - TrueNAS 25.04 (Fangtooth) is migrating to a new HTTP API namespace (`/api/v3`). v2.0 will remain for a while but check release notes when upgrading.

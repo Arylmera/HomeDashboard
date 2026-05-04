@@ -61,21 +61,22 @@ export function useTrueNAS({ poll = 30_000 } = {}) {
   const { data, state } = usePolling(
     async (signal) => {
       const sys = await tn('/system/info', { signal });
-      const [pools, reporting, disks, snapshots] = await getJsonAll([
+      const [pools, disks, snapshots] = await getJsonAll([
         `${TN_BASE}/pool`,
-        `${TN_BASE}/reporting/get_data`,
         `${TN_BASE}/disk`,
-        `${TN_BASE}/zfs/snapshot?limit=500`,
+        `${TN_BASE}/pool/snapshot?limit=500`,
       ], { signal });
-      // Reporting is a POST so getJsonAll doesn't fit — refetch:
-      const reportingActual = await tn('/reporting/get_data', {
+      const reportingActual = await tn('/reporting/netdata_get_data', {
         signal,
         method: 'POST',
-        body: JSON.stringify([
-          { name: 'cpu' },
-          { name: 'memory' },
-          { name: 'interface', identifier: 'eno1' },
-        ]),
+        body: JSON.stringify({
+          graphs: [
+            { name: 'cpu', identifier: null },
+            { name: 'memory', identifier: null },
+            { name: 'interface', identifier: 'eno1' },
+          ],
+          query: { unit: 'HOUR', page: 1, aggregate: true },
+        }),
       }).catch(() => null);
 
       // Disk temperatures — single batched call. Skip if no disks loaded.
@@ -86,7 +87,7 @@ export function useTrueNAS({ poll = 30_000 } = {}) {
         ? await tn('/disk/temperatures', {
             signal,
             method: 'POST',
-            body: JSON.stringify({ names: diskNames }),
+            body: JSON.stringify([diskNames, { powermode: 'NEVER' }]),
           }).catch(() => ({}))
         : {};
 

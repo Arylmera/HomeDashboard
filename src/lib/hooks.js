@@ -20,5 +20,5 @@ export { useCalendar, useReminders } from './hooks/icloud.js';
 export { useServiceHealth } from './hooks/service-health.js';
 export { useNpm } from './hooks/npm.js';
 export { useWan } from './hooks/wan.js';
-export { useSpotifyAuth, useSpotifyPlayback, useSpotifyDevices, useSpotifyPlaylists, spotify, spotifyLogout } from './hooks/spotify.js';
+export { useSpotifyAuth, useSpotifyPlayback, useSpotifyDevices, useSpotifyPlaylists, useSpotifyQueue, useSpotifyRecent, useSpotifyLiked, spotify, spotifyLogout } from './hooks/spotify.js';
 export { useSonosAuth, useSonosHouseholds, useSonosGroups, useSonosGroupPlayback, sonos, sonosLogout } from './hooks/sonos.js';

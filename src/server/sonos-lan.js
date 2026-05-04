@@ -218,6 +218,30 @@ export function sonosLanMiddleware() {
       return send(res, 200, { ok: true });
     }
 
+    // ─── Art proxy: same-origin pass-through to Sonos's /getaa ───
+    // Restricted to discovered Sonos hosts (no SSRF) and the /getaa
+    // endpoint, so this can't be used to fetch arbitrary URLs.
+    if (url.startsWith('/api/sonos/art')) {
+      try {
+        const u = new URL(url, 'http://x');
+        const host = u.searchParams.get('host');
+        const port = parseInt(u.searchParams.get('port') || '1400', 10);
+        const path = u.searchParams.get('path') || '';
+        if (!host || !path.startsWith('/')) return send(res, 400, { error: 'bad_request' });
+        const cache = await getCache().catch(() => ({ players: [] }));
+        const allowed = new Set(cache.players.map(p => p.host).filter(Boolean));
+        if (!allowed.has(host)) return send(res, 403, { error: 'host_not_allowed' });
+        const upstream = await fetch(`http://${host}:${port}${path}`);
+        if (!upstream.ok) return send(res, upstream.status, { error: 'upstream_error' });
+        res.statusCode = 200;
+        res.setHeader('Content-Type', upstream.headers.get('content-type') || 'image/jpeg');
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        const buf = Buffer.from(await upstream.arrayBuffer());
+        res.end(buf);
+        return;
+      } catch (e) { return send(res, 502, { error: 'art_proxy_failed', detail: String(e?.message || e) }); }
+    }
+
     // ─── Control routes ───────────────────────────────────────
     if (!url.startsWith('/api/sonos/control/')) {
       return send(res, 404, { error: 'unknown sonos route' });
@@ -311,8 +335,16 @@ export function sonosLanMiddleware() {
           // Album art on Sonos is often a relative path served by the
           // speaker itself (`/getaa?...`). Resolve to an absolute URL.
           let imageUrl = t.albumArtURI || t.albumArtURL || null;
-          if (imageUrl && !/^https?:/.test(imageUrl)) {
-            imageUrl = `http://${r.dev.host}:1400${imageUrl}`;
+          if (imageUrl) {
+            // Route artwork through our same-origin proxy so the
+            // browser doesn't hit the Sonos LAN directly (CORS, mixed
+            // content under HTTPS).
+            if (/^https?:/.test(imageUrl)) {
+              const u = new URL(imageUrl);
+              imageUrl = `/api/sonos/art?host=${encodeURIComponent(u.hostname)}&port=${u.port || 80}&path=${encodeURIComponent(u.pathname + u.search)}`;
+            } else {
+              imageUrl = `/api/sonos/art?host=${encodeURIComponent(r.dev.host)}&port=1400&path=${encodeURIComponent(imageUrl)}`;
+            }
           }
           return send(res, 200, {
             currentItem: {

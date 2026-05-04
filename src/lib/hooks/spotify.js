@@ -35,8 +35,55 @@ export function useSpotifyPlayback({ poll = 5_000, enabled = true } = {}) {
   return { state, playback: data ?? null, refresh };
 }
 
+export function useSpotifyQueue({ poll = 10_000, enabled = true } = {}) {
+  const { data, state, refresh } = usePolling(
+    enabled
+      ? async (signal) => {
+          const r = await fetch('/api/spotify/v1/me/player/queue', {
+            signal,
+            headers: { Accept: 'application/json' },
+          });
+          if (r.status === 204 || r.status === 404) return null;
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          return r.json();
+        }
+      : null,
+    { poll, deps: [enabled], cacheKey: 'spotify-queue' }
+  );
+  if (!enabled) return { state: 'idle', queue: null, refresh };
+  return { state, queue: data ?? null, refresh };
+}
+
+export function useSpotifyRecent({ enabled = true, limit = 30 } = {}) {
+  const { data, state, refresh } = usePolling(
+    enabled
+      ? async (signal) => {
+          const j = await getJson(`/api/spotify/v1/me/player/recently-played?limit=${limit}`, { signal });
+          return j.items || [];
+        }
+      : null,
+    { poll: 0, deps: [enabled, limit], cacheKey: 'spotify-recent' }
+  );
+  if (!enabled) return { state: 'idle', items: [], refresh };
+  return { state, items: data || [], refresh };
+}
+
+export function useSpotifyLiked({ enabled = true, limit = 50 } = {}) {
+  const { data, state, refresh } = usePolling(
+    enabled
+      ? async (signal) => {
+          const j = await getJson(`/api/spotify/v1/me/tracks?limit=${limit}`, { signal });
+          return j.items || [];
+        }
+      : null,
+    { poll: 0, deps: [enabled, limit], cacheKey: 'spotify-liked' }
+  );
+  if (!enabled) return { state: 'idle', items: [], refresh };
+  return { state, items: data || [], refresh };
+}
+
 export function useSpotifyPlaylists({ enabled = true, limit = 50 } = {}) {
-  const { data, state } = usePolling(
+  const { data, state, refresh, error } = usePolling(
     enabled
       ? async (signal) => {
           const j = await getJson(`/api/spotify/v1/me/playlists?limit=${limit}`, { signal });
@@ -45,8 +92,8 @@ export function useSpotifyPlaylists({ enabled = true, limit = 50 } = {}) {
       : null,
     { poll: 0, deps: [enabled, limit], cacheKey: 'spotify-playlists' }
   );
-  if (!enabled) return { state: 'idle', playlists: [] };
-  return { state, playlists: data || [] };
+  if (!enabled) return { state: 'idle', playlists: [], refresh, error: null };
+  return { state, playlists: data || [], refresh, error };
 }
 
 export function useSpotifyDevices({ poll = 15_000, enabled = true } = {}) {

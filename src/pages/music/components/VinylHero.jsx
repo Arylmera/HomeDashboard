@@ -8,10 +8,10 @@
  *    - Active Spotify device drives transport unless it's a
  *      restricted device (Sonos/Cast); then Sonos LAN handles it.
  * ============================================================== */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, memo } from 'react';
 import { useAlbumColor } from '../../../lib/useAlbumColor.js';
 
-export function VinylHero({ spotify: sp, sonos: so, group, onSpotify, onSonos, onRefresh }) {
+export const VinylHero = memo(function VinylHero({ spotify: sp, sonos: so, group, queue, onSpotify, onSonos, onRefresh }) {
   const sonosTrack = so?.metadata?.currentItem?.track;
   const sonosPlaybackState = so?.playback?.playbackState;
   const item = sp?.item;
@@ -58,10 +58,22 @@ export function VinylHero({ spotify: sp, sonos: so, group, onSpotify, onSonos, o
     ? sp.device.name
     : (group ? group.name : (sp?.device?.name || '—'));
 
+  // Up-next from Spotify queue (works even with Sonos meta routing).
+  const upNext = queue?.queue?.[0] || null;
+  const upNextLabel = upNext
+    ? `${upNext.name} — ${upNext.artists?.map(a => a.name).join(', ') || ''}`
+    : null;
+
   return (
     <section className="vinyl-hero">
       <div className="vinyl-stage">
-        <div className={`vinyl ${isPlaying ? 'spinning' : ''}`}>
+        <ProgressRing duration={duration} progress={progress} isPlaying={isPlaying} />
+        <button
+          type="button"
+          className={`vinyl ${isPlaying ? 'spinning' : ''}`}
+          aria-label={isPlaying ? 'Pause' : 'Play'}
+          onClick={togglePlay}
+        >
           <div className="vinyl-disc">
             <div className="vinyl-grooves" />
             <div className="vinyl-art">
@@ -70,7 +82,7 @@ export function VinylHero({ spotify: sp, sonos: so, group, onSpotify, onSonos, o
             </div>
           </div>
           <div className="vinyl-glow" />
-        </div>
+        </button>
       </div>
 
       <div className="vinyl-meta">
@@ -78,7 +90,12 @@ export function VinylHero({ spotify: sp, sonos: so, group, onSpotify, onSonos, o
           <span className="dot" />
           {activeRoom}
         </div>
-        <h2 className="vinyl-title" title={title}>{title}</h2>
+
+        <div className="vinyl-title-row">
+          <Marquee text={title} className="vinyl-title" />
+          {isPlaying && <EqBars />}
+        </div>
+
         <div className="vinyl-artist" title={`${artist}${album ? ' · ' + album : ''}`}>
           {artist}{album && <span className="vinyl-album"> · {album}</span>}
         </div>
@@ -99,6 +116,13 @@ export function VinylHero({ spotify: sp, sonos: so, group, onSpotify, onSonos, o
           </button>
         </div>
 
+        {upNextLabel && (
+          <div className="vh-upnext" aria-label="Up next">
+            <span className="vh-upnext-label">up next</span>
+            <span className="vh-upnext-text">{upNextLabel}</span>
+          </div>
+        )}
+
         {group ? (
           <VolumeRow
             value={groupVolume}
@@ -114,6 +138,32 @@ export function VinylHero({ spotify: sp, sonos: so, group, onSpotify, onSonos, o
         ) : null}
       </div>
     </section>
+  );
+});
+
+function ProgressRing({ duration, progress, isPlaying }) {
+  const [now, setNow] = useState(progress);
+  useEffect(() => {
+    setNow(progress);
+    if (!isPlaying || !duration) return;
+    const id = setInterval(() => setNow((p) => Math.min(p + 1000, duration)), 1000);
+    return () => clearInterval(id);
+  }, [progress, isPlaying, duration]);
+  if (!duration) return null;
+  const pct = Math.max(0, Math.min(1, now / duration));
+  const r = 49;
+  const c = 2 * Math.PI * r;
+  const off = c * (1 - pct);
+  return (
+    <svg className="vinyl-ring" viewBox="0 0 100 100" aria-hidden>
+      <circle cx="50" cy="50" r={r} className="vinyl-ring-track" />
+      <circle
+        cx="50" cy="50" r={r}
+        className="vinyl-ring-fill"
+        strokeDasharray={c}
+        strokeDashoffset={off}
+      />
+    </svg>
   );
 }
 
@@ -137,6 +187,34 @@ function Progress({ duration, progress, isPlaying }) {
   );
 }
 
+function EqBars() {
+  return (
+    <span className="vh-eq" aria-hidden>
+      <span /><span /><span /><span />
+    </span>
+  );
+}
+
+function Marquee({ text, className = '' }) {
+  // Conditionally scroll only if the text overflows its container.
+  const wrap = useRef(null);
+  const inner = useRef(null);
+  const [overflow, setOverflow] = useState(false);
+  useEffect(() => {
+    const w = wrap.current, i = inner.current;
+    if (!w || !i) return;
+    setOverflow(i.scrollWidth > w.clientWidth + 2);
+  }, [text]);
+  return (
+    <div ref={wrap} className={`marquee ${overflow ? 'is-overflow' : ''} ${className}`} title={text}>
+      <span ref={inner} className="marquee-inner">
+        <span className="marquee-text">{text}</span>
+        {overflow && <span className="marquee-text" aria-hidden>{text}</span>}
+      </span>
+    </div>
+  );
+}
+
 function VolumeRow({ value, muted, onChange }) {
   const [local, setLocal] = useState(value ?? 0);
   useEffect(() => { if (value != null) setLocal(value); }, [value]);
@@ -149,6 +227,7 @@ function VolumeRow({ value, muted, onChange }) {
       </svg>
       <input
         type="range" min="0" max="100" value={local}
+        style={{ '--vh-vol': local }}
         onChange={(e) => setLocal(+e.target.value)}
         onMouseUp={(e) => onChange(+e.target.value)}
         onTouchEnd={(e) => onChange(+e.target.value)}

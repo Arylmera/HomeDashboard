@@ -141,7 +141,6 @@ export default function NAS() {
       </div>
       <CoreOverlay
         cores={cores}
-        tempHistory={tempHistory}
         usageHistory={usageHistory}
       />
 

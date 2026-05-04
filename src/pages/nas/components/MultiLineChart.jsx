@@ -131,6 +131,28 @@ export default function MultiLineChart({
 
       {hover != null && (() => {
         const x = padLeft + hover * stepX;
+        const ref = visible.find(s => s.times && s.times.length === scale.maxLen) || visible.find(s => s.times && s.times.length);
+        let label = null;
+        if (ref?.times?.length) {
+          const refOffset = scale.maxLen - ref.times.length;
+          const tIdx = hover - refOffset;
+          if (tIdx >= 0 && tIdx < ref.times.length) {
+            const t = ref.times[tIdx];
+            const d = new Date(t);
+            const ageSec = Math.max(0, Math.round((Date.now() - t) / 1000));
+            const ago = ageSec < 60
+              ? `${ageSec}s ago`
+              : ageSec < 3600
+                ? `${Math.round(ageSec / 60)}m ago`
+                : `${Math.round(ageSec / 360) / 10}h ago`;
+            const hh = String(d.getHours()).padStart(2, '0');
+            const mm = String(d.getMinutes()).padStart(2, '0');
+            const ss = String(d.getSeconds()).padStart(2, '0');
+            label = `${hh}:${mm}:${ss} · ${ago}`;
+          }
+        }
+        const labelW = 132;
+        const lx = Math.min(Math.max(x - labelW / 2, padLeft + 2), w - padRight - labelW - 2);
         return (
           <g>
             <line x1={x} x2={x} y1={padTop} y2={h - padBot}
@@ -146,6 +168,18 @@ export default function MultiLineChart({
                   stroke="var(--bg-card, #0a0a0a)" strokeWidth="1.4" />
               );
             })}
+            {label && (
+              <g pointerEvents="none">
+                <rect x={lx} y={padTop + 2} width={labelW} height={20} rx="4"
+                  fill="oklch(0.18 0 0 / 0.85)"
+                  stroke="currentColor" strokeOpacity="0.2"
+                  vectorEffect="non-scaling-stroke" />
+                <text x={lx + labelW / 2} y={padTop + 16} textAnchor="middle"
+                  style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', fill: 'currentColor', fillOpacity: 0.92, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.02em' }}>
+                  {label}
+                </text>
+              </g>
+            )}
           </g>
         );
       })()}

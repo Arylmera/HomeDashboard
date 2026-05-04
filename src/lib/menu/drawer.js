@@ -3,6 +3,7 @@
  * and handles open/close + escape/overlay/storage events. */
 
 import { THEMES, STORAGE_KEY, load, save, apply } from './store.js';
+import { readPref, writePref } from '../hooks/prefs.js';
 
 const ICON_HAMBURGER = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>`;
 const ICON_X = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>`;
@@ -102,6 +103,36 @@ function buildDrawer(getState, setState) {
     themeGrid,
   ));
 
+  /* Helper — build a 2-button segment bound to a usePrefs key.
+   * options is [{ value, label }, { value, label }]. */
+  const prefSegment = (sectionLabel, prefKey, fallback, options, hint) => {
+    const buttons = options.map(o => el("button", {}, o.label));
+    const sync = (v) => buttons.forEach((b, i) => b.classList.toggle("am-on", options[i].value === v));
+    sync(readPref(prefKey, fallback));
+    options.forEach((o, i) => buttons[i].onclick = () => { writePref(prefKey, o.value); sync(o.value); });
+    return el("div", { class: "am-section" },
+      el("div", { class: "am-label" }, sectionLabel),
+      el("div", { class: "am-segment" }, ...buttons),
+      el("div", { class: "am-hint" }, hint),
+    );
+  };
+
+  /* Site-wide: visual style (flat / glass) */
+  body.appendChild(prefSegment(
+    "Style", "home.style", "default",
+    [{ value: "default", label: "flat" }, { value: "glass", label: "glass" }],
+    "Glass adds frosted cards over an animated gradient backdrop, site-wide.",
+  ));
+
+  /* Home page only — time-aware layout */
+  if (here === "index.html") {
+    body.appendChild(prefSegment(
+      "Home layout", "home.timeAware", false,
+      [{ value: false, label: "off" }, { value: true, label: "auto" }],
+      "Auto reorders sections by time of day. Pages stay on top.",
+    ));
+  }
+
   const densitySeg = el("div", { class: "am-segment" });
   const densComf = el("button", { class: state0.density === "comfortable" ? "am-on" : "" }, "comfortable");
   const densDense = el("button", { class: state0.density === "dense" ? "am-on" : "" }, "dense");
@@ -163,9 +194,21 @@ function buildTrigger() {
   });
 }
 
+/* Apply or remove the body.style-glass class based on the home.style pref.
+ * Runs on every page mount via mountDrawer + listens for prefs-changed so
+ * toggling the drawer takes effect site-wide without a reload. */
+function applyGlassClass(value) {
+  document.body.classList.toggle("style-glass", value === "glass");
+}
+
 export function mountDrawer(getState, setState) {
   const { overlay, drawer, closeBtn } = buildDrawer(getState, setState);
   const trigger = buildTrigger();
+
+  applyGlassClass(readPref("home.style", "default"));
+  window.addEventListener("prefs-changed", (e) => {
+    if (e?.detail?.key === "home.style") applyGlassClass(e.detail.value);
+  });
 
   document.body.appendChild(overlay);
   document.body.appendChild(drawer);

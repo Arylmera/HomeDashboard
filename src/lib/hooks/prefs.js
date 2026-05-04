@@ -4,10 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
  * Optimistic updates + localStorage fallback so the UI never blocks on the API. */
 export function usePrefs(key, fallback) {
   const lsKey = `prefs:${key}`;
-  const [value, setValue] = useState(() => {
-    try { const raw = localStorage.getItem(lsKey); return raw ? JSON.parse(raw) : fallback; }
-    catch { return fallback; }
-  });
+  const [value, setValue] = useState(() => readPref(key, fallback));
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -26,15 +23,37 @@ export function usePrefs(key, fallback) {
     return () => { alive = false; };
   }, [key]);
 
+  /* React to in-tab pref writes from outside React (e.g. vanilla drawer). */
+  useEffect(() => {
+    const onChange = (e) => {
+      if (e?.detail?.key === key) setValue(e.detail.value);
+    };
+    window.addEventListener('prefs-changed', onChange);
+    return () => window.removeEventListener('prefs-changed', onChange);
+  }, [key]);
+
   const save = useCallback((next) => {
     setValue(next);
-    try { localStorage.setItem(lsKey, JSON.stringify(next)); } catch {}
-    fetch(`/api/prefs/${encodeURIComponent(key)}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ value: next }),
-    }).catch(() => {});
-  }, [key, lsKey]);
+    writePref(key, next);
+  }, [key]);
 
   return [value, save, loaded];
+}
+
+/* Write a pref from anywhere (React or vanilla). Persists localStorage + server,
+ * and dispatches a window event so any usePrefs mounted on the same key updates. */
+export function writePref(key, value) {
+  const lsKey = `prefs:${key}`;
+  try { localStorage.setItem(lsKey, JSON.stringify(value)); } catch {}
+  fetch(`/api/prefs/${encodeURIComponent(key)}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ value }),
+  }).catch(() => {});
+  try { window.dispatchEvent(new CustomEvent('prefs-changed', { detail: { key, value } })); } catch {}
+}
+
+export function readPref(key, fallback) {
+  try { const raw = localStorage.getItem(`prefs:${key}`); return raw ? JSON.parse(raw) : fallback; }
+  catch { return fallback; }
 }

@@ -373,3 +373,30 @@ html[data-density="dense"] body .pool-row { padding: 7px 10px; }
 .sun-bar-now { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--ink); border-radius: 2px; transform: translateX(-1px); }
 .sun-next { display: flex; justify-content: space-between; margin-top: 8px; font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); letter-spacing: 0.1em; text-transform: uppercase; }
 
+/* Time-aware: per-mode accent shift. --accent is consumed by tiles, hero ico, hover glows. */
+.shell.time-aware.mode-morning   { --accent: oklch(0.78 0.15 70);  --accent-soft: oklch(0.78 0.15 70 / 0.18); }
+.shell.time-aware.mode-afternoon { --accent: oklch(0.72 0.13 200); --accent-soft: oklch(0.72 0.13 200 / 0.15); }
+.shell.time-aware.mode-evening   { --accent: oklch(0.70 0.16 30);  --accent-soft: oklch(0.70 0.16 30 / 0.18); }
+.shell.time-aware.mode-night     { --accent: oklch(0.62 0.13 280); --accent-soft: oklch(0.62 0.13 280 / 0.15); }
+
+/* Background tint per mode — soft top fade, never blocks content */
+.shell.time-aware { position: relative; }
+.shell.time-aware::before {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(80% 50% at 50% -10%, var(--accent-soft) 0%, transparent 60%);
+  opacity: 0.6;
+}
+.shell.time-aware > * { position: relative; z-index: 1; }
+
+/* Night mode — slight dim, calmer accents. Live data still readable. */
+.shell.mode-night { filter: brightness(0.94) saturate(0.95); }
+.shell.mode-night .hero { opacity: 0.88; }
+.shell.mode-night .page-tile { box-shadow: none; }
+
+/* Morning — pop the day-row */
+.shell.mode-morning .day-row { box-shadow: 0 0 0 1px color-mix(in oklch, var(--accent) 22%, transparent); border-radius: var(--radius-lg); }
+
+/* Evening — let recently-added breathe */
+.shell.mode-evening .recently-added { margin-top: 4px; }
+
+

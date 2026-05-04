@@ -42,7 +42,7 @@ export function ServiceRow({ icon, name, desc, port, url, statusBadge, stats, ex
   const { stage } = usePlexUI();
   const myStage = SERVICE_STAGE[icon] || null;
   const dimmed = stage && myStage && stage !== myStage;
-  const cls = 'row-stats c' + Math.min(Math.max(stats.length, 2), 5);
+  const cls = 'row-stats c' + Math.min(Math.max(stats.length, 1), 5);
   return (
     <div className={'plex-row' + (dimmed ? ' dimmed' : '') + (stage && myStage === stage ? ' highlighted' : '')}>
       <a className="row-head" href={url} target="_blank" rel="noopener noreferrer">

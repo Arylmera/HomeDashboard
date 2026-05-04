@@ -33,6 +33,7 @@ import EnergyCard from './components/EnergyCard.jsx';
 import SunCard from './components/SunCard.jsx';
 import { usePrefs } from '../../lib/usePrefs.js';
 import { LazyMount } from '../../lib/LazyMount.jsx';
+import { timeModeFor, SECTION_ORDERS } from './timeMode.js';
 
 export default function Home() {
   useEffect(() => {
@@ -84,13 +85,17 @@ export default function Home() {
   const wan = useWan({ poll: 30_000 });
 
   const spAuth = useSpotifyAuth();
-  const spPlayback = useSpotifyPlayback({ poll: 30_000, enabled: spAuth.authenticated });
-  const playingTrack = spPlayback.playback?.is_playing ? spPlayback.playback?.item?.name : null;
-  const playingArtist = spPlayback.playback?.item?.artists?.[0]?.name;
+  const spPlayback = useSpotifyPlayback({ poll: 10_000, enabled: spAuth.authenticated });
+  const spItem = spPlayback.playback?.item || null;
+  const spIsPlaying = !!spPlayback.playback?.is_playing;
+  const playingTrack = spItem?.name || null;
+  const playingArtist = spItem?.artists?.[0]?.name;
 
   const [pinnedIds] = usePrefs('quicklinks.pinned', QUICK_APP_IDS);
   const [disabledIds] = usePrefs('quicklinks.disabled', []);
   const [displayName] = usePrefs('home.displayName', 'Guillaume');
+  const [timeAware] = usePrefs('home.timeAware', false);
+  const mode = useMemo(() => timeModeFor(now), [now]);
   const quickApps = useMemo(() => {
     const map = Object.fromEntries(ALL_SERVICES.map(s => [s.id, s]));
     const ids = (pinnedIds && pinnedIds.length ? pinnedIds : QUICK_APP_IDS);
@@ -150,12 +155,12 @@ export default function Home() {
     ],
     music: [
       {
-        label: playingTrack ? "now" : "spotify",
+        label: playingTrack ? (spIsPlaying ? "now" : "paused") : "spotify",
         value: playingTrack
           ? (playingTrack.length > 14 ? playingTrack.slice(0, 13) + "…" : playingTrack)
           : (spAuth.authenticated ? "idle" : "—"),
         title: playingTrack
-          ? `${playingTrack}${playingArtist ? ` — ${playingArtist}` : ""}`
+          ? `${spIsPlaying ? "Playing" : "Paused"}: ${playingTrack}${playingArtist ? ` — ${playingArtist}` : ""}`
           : (spAuth.authenticated ? "Spotify connected, nothing playing." : "Spotify not connected."),
       },
     ],
@@ -177,8 +182,58 @@ export default function Home() {
     return "";
   };
 
+  const sections = {
+    pages: (
+      <div className="section" key="pages">
+        <div className="section-head">
+          <div className="section-title"><span className="numeral">// 01</span><h2>Pages</h2></div>
+          <div className="section-meta">{PAGES.length} · routes</div>
+        </div>
+        <div className="pages-grid">
+          {PAGES.map(p => <PageTile key={p.id} page={p} stats={pageStats[p.id] || []} />)}
+        </div>
+      </div>
+    ),
+    quickapps: (
+      <div className="section" key="quickapps">
+        <div className="section-head">
+          <div className="section-title"><span className="numeral">// 02</span><h2>Quick apps</h2></div>
+          <div className="section-meta"><a href="apps.html">all services →</a></div>
+        </div>
+        <div className="quickapps">
+          {quickApps.map(s => <QuickApp key={s.id} svc={s} statusMap={healthMap} statText={qaStat(s.id)} />)}
+        </div>
+      </div>
+    ),
+    recent: (
+      <LazyMount minHeight={220} key="recent">
+        <RecentlyAdded />
+      </LazyMount>
+    ),
+    day: (
+      <div className="section" key="day">
+        <div className="day-row">
+          <LazyMount minHeight={180}>
+            <EnergyCard />
+          </LazyMount>
+          <SunCard sun={weather.sun} />
+        </div>
+      </div>
+    ),
+    bottom: (
+      <div className="section" key="bottom">
+        <div className="bottom-row">
+          <NetworkPanel nas={nas} pi={pi} st={st} wan={wan} />
+          <NASPanel nas={nas} state={nasState} />
+        </div>
+      </div>
+    ),
+  };
+
+  const order = SECTION_ORDERS[timeAware ? mode : 'default'];
+
   return (
-    <div className="shell">
+    <div className={`shell${timeAware ? ` time-aware mode-${mode}` : ''}`}>
       <div className="topbar">
         <div className="brand">
           <div className="brand-mark">
@@ -233,47 +288,7 @@ export default function Home() {
 
       <Search />
 
-      <div className="section">
-        <div className="section-head">
-          <div className="section-title"><span className="numeral">// 01</span><h2>Pages</h2></div>
-          <div className="section-meta">{PAGES.length} · routes</div>
-        </div>
-        <div className="pages-grid">
-          {PAGES.map(p => <PageTile key={p.id} page={p} stats={pageStats[p.id] || []} />)}
-        </div>
-      </div>
-
-      <div className="section">
-        <div className="section-head">
-          <div className="section-title"><span className="numeral">// 02</span><h2>Quick apps</h2></div>
-          <div className="section-meta"><a href="apps.html">all services →</a></div>
-        </div>
-        <div className="quickapps">
-          {quickApps.map(s => <QuickApp key={s.id} svc={s} statusMap={healthMap} statText={qaStat(s.id)} />)}
-        </div>
-      </div>
-
-      <LazyMount minHeight={220}>
-        <RecentlyAdded />
-      </LazyMount>
-
-      {/* TODO: restore Calendar + Tasks day-row once those cards are fixed */}
-
-      <div className="section">
-        <div className="day-row">
-          <LazyMount minHeight={180}>
-            <EnergyCard />
-          </LazyMount>
-          <SunCard sun={weather.sun} />
-        </div>
-      </div>
-
-      <div className="section">
-        <div className="bottom-row">
-          <NetworkPanel nas={nas} pi={pi} st={st} wan={wan} />
-          <NASPanel nas={nas} state={nasState} />
-        </div>
-      </div>
+      {order.map(k => sections[k])}
 
     </div>
   );

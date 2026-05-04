@@ -3,6 +3,12 @@ import { Device } from './Device.jsx';
 
 export function ZoneCard({ zone, collapsed, onToggle, onDeviceToggle }) {
   const onCount = zone.devices.filter(d => d.on).length;
+  const sortedDevices = [...zone.devices].sort((a, b) => {
+    const al = a.type === 'light' ? 0 : 1;
+    const bl = b.type === 'light' ? 0 : 1;
+    if (al !== bl) return al - bl;
+    return (a.name || '').localeCompare(b.name || '');
+  });
   return (
     <div className={"zone" + (collapsed ? " collapsed" : "")}>
       <button
@@ -31,7 +37,7 @@ export function ZoneCard({ zone, collapsed, onToggle, onDeviceToggle }) {
             <div className="h"><span>RH</span>{zone.humidity != null ? `${Math.round(zone.humidity)}%` : "—"}</div>
           </div>
           <div className="dev-list">
-            {zone.devices.map(d => <Device d={d} key={d.id} onToggle={onDeviceToggle} />)}
+            {sortedDevices.map(d => <Device d={d} key={d.id} onToggle={onDeviceToggle} />)}
           </div>
         </div>
       )}

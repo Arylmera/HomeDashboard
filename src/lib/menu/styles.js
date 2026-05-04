@@ -1,7 +1,10 @@
 /* CSS for the Arylmera menu drawer + theme tokens.
- * Injected once into <head> by injectStyles(). */
+ * Injected once into <head> by injectStyles().
+ * Glass-mode styles live in ./glass.js and are concatenated below. */
 
-const CSS = `
+import { GLASS_CSS } from './glass.js';
+
+const MENU_CSS = `
   [data-theme="forge"] {
     --bg:          oklch(0.19 0.01 50);
     --bg-raised:   oklch(0.22 0.012 50);
@@ -177,10 +180,11 @@ const CSS = `
   }
 `;
 
+
 export function injectStyles() {
   if (document.getElementById("arylmera-menu-style")) return;
   const styleEl = document.createElement("style");
   styleEl.id = "arylmera-menu-style";
-  styleEl.textContent = CSS;
+  styleEl.textContent = MENU_CSS + GLASS_CSS;
   document.head.appendChild(styleEl);
 }

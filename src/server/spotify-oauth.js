@@ -212,8 +212,16 @@ export function spotifyOAuthMiddleware() {
         if (body && body.length === 0) body = undefined;
       }
 
+      // Spotify's /me/player/* endpoints sometimes 502/503 on transient
+      // upstream hiccups. Retry once with a short backoff so a single bad
+      // poll doesn't surface as a UI error.
+      const doFetch = () => fetch(upstream, { method: req.method, headers, body });
       try {
-        const r = await fetch(upstream, { method: req.method, headers, body });
+        let r = await doFetch();
+        if ((r.status === 502 || r.status === 503 || r.status === 504) && (req.method === 'GET' || req.method === 'HEAD')) {
+          await new Promise(rs => setTimeout(rs, 400));
+          r = await doFetch();
+        }
         res.statusCode = r.status;
         const respCt = r.headers.get('content-type');
         if (respCt) res.setHeader('Content-Type', respCt);

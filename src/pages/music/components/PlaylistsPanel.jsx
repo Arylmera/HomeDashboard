@@ -25,8 +25,9 @@ export function PlaylistsPanel({ onPlay }) {
         onChange={(e) => setFilter(e.target.value)}
       />
       {state === 'loading' && <div className="search-loading">loading…</div>}
-      {state === 'error' && <div className="empty">Couldn't load playlists.</div>}
-      {state === 'live' && filtered.length === 0 && <div className="empty">No playlists match.</div>}
+      {state === 'error' && playlists.length === 0 && <div className="empty">Couldn't load playlists.</div>}
+      {(state === 'live' || state === 'stale') && filtered.length === 0 && playlists.length > 0 && <div className="empty">No playlists match.</div>}
+      {state === 'live' && playlists.length === 0 && <div className="empty">No playlists.</div>}
 
       <div className="search-results">
         {filtered.map(p => (

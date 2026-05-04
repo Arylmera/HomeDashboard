@@ -32,15 +32,15 @@ services:
     image: ghcr.io/arylmera/homedashboard:latest
     container_name: homedashboard
     restart: unless-stopped
-    ports:
-      - "4173:4173"
+    # Host networking: needed for Sonos SSDP multicast discovery.
+    # The app binds 4173 directly on the host — no `ports:` mapping.
+    network_mode: host
     env_file:
       - .env
     environment:
       PREFS_DB: /data/prefs.db
     volumes:
       - homedashboard-data:/data
-    # network_mode: host   # uncomment for Sonos SSDP multicast
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:4173/"]
       interval: 30s

@@ -24,7 +24,7 @@ function currentPageFile() {
   return p === "" ? "index.html" : p;
 }
 
-const el = (tag, attrs = {}, ...children) => {
+export const el = (tag, attrs = {}, ...children) => {
   const n = document.createElement(tag);
   for (const [k, v] of Object.entries(attrs)) {
     if (k === "class") n.className = v;

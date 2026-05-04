@@ -12,6 +12,7 @@
 import { THEMES, load, apply } from './menu/store.js';
 import { injectStyles } from './menu/styles.js';
 import { mountDrawer } from './menu/drawer.js';
+import './gaming-toggle.js';
 
 let state = load();
 apply(state);

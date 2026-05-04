@@ -36,7 +36,7 @@ export function PlexProvider({ children }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [stage]);
 
-  const value = useMemo(() => ({ stage, setStage, toggleStage, density }), [stage, toggleStage, density]);
+  const value = useMemo(() => ({ stage, toggleStage, density }), [stage, toggleStage, density]);
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 

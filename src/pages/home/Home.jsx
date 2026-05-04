@@ -84,7 +84,8 @@ export default function Home() {
   const wan = useWan({ poll: 30_000 });
 
   const spAuth = useSpotifyAuth();
-  const spPlayback = useSpotifyPlayback({ poll: 10_000, enabled: spAuth.authenticated });
+  // 10s poll only while playing; back off to 30s when idle/paused to spare quota.
+  const spPlayback = useSpotifyPlayback({ poll: 30_000, enabled: spAuth.authenticated });
   const spItem = spPlayback.playback?.item || null;
   const spIsPlaying = !!spPlayback.playback?.is_playing;
   const playingTrack = spItem?.name || null;
@@ -94,7 +95,9 @@ export default function Home() {
   const [disabledIds] = usePrefs('quicklinks.disabled', []);
   const [displayName] = usePrefs('home.displayName', 'Guillaume');
   const [timeAware] = usePrefs('home.timeAware', false);
-  const mode = useMemo(() => timeModeFor(now), [now]);
+  // Memo on the hour bucket so per-second clock ticks don't recompute mode.
+  const hourKey = now.getHours();
+  const mode = useMemo(() => timeModeFor(now), [hourKey]); // eslint-disable-line react-hooks/exhaustive-deps
   const quickApps = useMemo(() => {
     const map = Object.fromEntries(ALL_SERVICES.map(s => [s.id, s]));
     const ids = (pinnedIds && pinnedIds.length ? pinnedIds : QUICK_APP_IDS);

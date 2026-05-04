@@ -2,7 +2,7 @@
 
 Base: `${VITE_QBITTORRENT_URL}/api/v2` · Auth: cookie session via `/api/v2/auth/login`. Form-encoded body, **not** JSON.
 
-Used in: not yet wired. Proxy: `/api/qbittorrent/*` → upstream.
+Used in: site-wide gaming-mode toggle (`src/lib/gaming-toggle.js` + `src/server/gaming.js` — pause/resume all torrents from the topbar pill). Proxy: `/api/qbittorrent/*` → upstream.
 
 ## Auth flow
 

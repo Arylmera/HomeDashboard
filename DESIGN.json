@@ -1,155 +1,152 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-04-30T00:00:00Z",
+  "generatedAt": "2026-05-04T00:00:00Z",
   "title": "Design System: HomeDashboard",
   "extensions": {
     "colorMeta": {
-      "bg": { "role": "neutral", "displayName": "Forge Floor", "canonical": "oklch(0.19 0.01 50)", "tonalRamp": ["oklch(0.12 0.008 50)", "oklch(0.16 0.009 50)", "oklch(0.19 0.01 50)", "oklch(0.235 0.014 50)", "oklch(0.275 0.016 50)", "oklch(0.32 0.012 50)", "oklch(0.55 0.01 55)", "oklch(0.95 0.01 60)"] },
-      "bg-raised": { "role": "neutral", "displayName": "Forge Raised", "canonical": "oklch(0.22 0.012 50)" },
-      "bg-card": { "role": "neutral", "displayName": "Card Graphite", "canonical": "oklch(0.235 0.014 50)" },
-      "bg-card-hi": { "role": "neutral", "displayName": "Card Graphite Lit", "canonical": "oklch(0.275 0.016 50)" },
-      "line": { "role": "neutral", "displayName": "Line", "canonical": "oklch(0.32 0.012 50)" },
-      "line-soft": { "role": "neutral", "displayName": "Line Soft", "canonical": "oklch(0.28 0.01 50 / 0.6)" },
-      "ink": { "role": "neutral", "displayName": "Bone Ink", "canonical": "oklch(0.95 0.01 60)" },
-      "ink-dim": { "role": "neutral", "displayName": "Ink Dim", "canonical": "oklch(0.72 0.01 55)" },
-      "ink-faint": { "role": "neutral", "displayName": "Ink Faint", "canonical": "oklch(0.55 0.01 55)" },
-      "ember": { "role": "primary", "displayName": "Copper Ember", "canonical": "oklch(0.73 0.14 50)", "tonalRamp": ["oklch(0.30 0.06 50)", "oklch(0.42 0.09 50)", "oklch(0.55 0.12 50)", "oklch(0.65 0.13 50)", "oklch(0.73 0.14 50)", "oklch(0.80 0.15 55)", "oklch(0.88 0.10 55)", "oklch(0.95 0.04 55)"] },
-      "ember-hi": { "role": "primary", "displayName": "Ember Highlight", "canonical": "oklch(0.80 0.15 55)" },
-      "ember-soft": { "role": "primary", "displayName": "Ember Soft", "canonical": "oklch(0.73 0.14 50 / 0.14)" },
-      "sage": { "role": "secondary", "displayName": "Workshop Sage", "canonical": "oklch(0.72 0.06 150)" },
-      "sage-soft": { "role": "secondary", "displayName": "Sage Soft", "canonical": "oklch(0.72 0.06 150 / 0.14)" },
-      "steel": { "role": "secondary", "displayName": "Cold Steel", "canonical": "oklch(0.70 0.07 230)" },
-      "steel-soft": { "role": "secondary", "displayName": "Steel Soft", "canonical": "oklch(0.70 0.07 230 / 0.14)" },
-      "alarm": { "role": "tertiary", "displayName": "Alarm", "canonical": "oklch(0.68 0.18 28)" },
-      "status-up": { "role": "tertiary", "displayName": "Status Up", "canonical": "oklch(0.74 0.15 145)" },
-      "status-warn": { "role": "tertiary", "displayName": "Status Warn", "canonical": "oklch(0.82 0.15 85)" },
-      "status-down": { "role": "tertiary", "displayName": "Status Down", "canonical": "oklch(0.65 0.20 28)" }
+      "bg":          { "role": "neutral", "displayName": "Forge Floor",       "canonical": "oklch(0.19 0.01 50)",       "tonalRamp": ["oklch(0.12 0.008 50)","oklch(0.16 0.009 50)","oklch(0.19 0.01 50)","oklch(0.235 0.014 50)","oklch(0.275 0.016 50)","oklch(0.40 0.014 55)","oklch(0.55 0.011 55)","oklch(0.95 0.01 60)"] },
+      "bg-raised":   { "role": "neutral", "displayName": "Forge Raised",      "canonical": "oklch(0.22 0.012 50)",      "tonalRamp": ["oklch(0.14 0.01 50)","oklch(0.18 0.011 50)","oklch(0.22 0.012 50)","oklch(0.27 0.014 50)","oklch(0.32 0.014 50)","oklch(0.45 0.013 55)","oklch(0.62 0.011 55)","oklch(0.92 0.01 60)"] },
+      "bg-card":     { "role": "neutral", "displayName": "Card Surface",      "canonical": "oklch(0.235 0.014 50)",     "tonalRamp": ["oklch(0.15 0.01 50)","oklch(0.19 0.012 50)","oklch(0.235 0.014 50)","oklch(0.275 0.016 50)","oklch(0.34 0.016 55)","oklch(0.48 0.014 55)","oklch(0.66 0.012 55)","oklch(0.93 0.01 60)"] },
+      "line":        { "role": "neutral", "displayName": "Hairline",          "canonical": "oklch(0.32 0.012 50)",      "tonalRamp": ["oklch(0.18 0.01 50)","oklch(0.24 0.011 50)","oklch(0.28 0.01 50)","oklch(0.32 0.012 50)","oklch(0.42 0.012 55)","oklch(0.55 0.011 55)","oklch(0.72 0.01 55)","oklch(0.92 0.008 60)"] },
+      "ink":         { "role": "neutral", "displayName": "Forge Ink",         "canonical": "oklch(0.95 0.01 60)",       "tonalRamp": ["oklch(0.30 0.012 55)","oklch(0.45 0.012 55)","oklch(0.55 0.01 55)","oklch(0.62 0.01 55)","oklch(0.72 0.01 55)","oklch(0.84 0.01 60)","oklch(0.92 0.01 60)","oklch(0.97 0.008 60)"] },
+      "ember":       { "role": "primary", "displayName": "Banked Ember",      "canonical": "oklch(0.73 0.14 50)",       "tonalRamp": ["oklch(0.32 0.10 50)","oklch(0.45 0.13 50)","oklch(0.58 0.15 50)","oklch(0.66 0.14 50)","oklch(0.73 0.14 50)","oklch(0.80 0.15 55)","oklch(0.86 0.11 60)","oklch(0.94 0.06 65)"] },
+      "sage":        { "role": "secondary","displayName": "Sage (semantic)",  "canonical": "oklch(0.72 0.06 150)",      "tonalRamp": ["oklch(0.30 0.04 150)","oklch(0.42 0.05 150)","oklch(0.55 0.06 150)","oklch(0.65 0.06 150)","oklch(0.72 0.06 150)","oklch(0.80 0.06 150)","oklch(0.88 0.04 150)","oklch(0.96 0.02 150)"] },
+      "steel":       { "role": "tertiary","displayName": "Steel (data viz)",  "canonical": "oklch(0.70 0.07 230)",      "tonalRamp": ["oklch(0.30 0.05 230)","oklch(0.42 0.06 230)","oklch(0.55 0.07 230)","oklch(0.63 0.07 230)","oklch(0.70 0.07 230)","oklch(0.78 0.07 230)","oklch(0.86 0.05 230)","oklch(0.95 0.02 230)"] },
+      "alarm":       { "role": "tertiary","displayName": "Alarm (destructive)","canonical": "oklch(0.68 0.18 28)",      "tonalRamp": ["oklch(0.32 0.12 28)","oklch(0.45 0.15 28)","oklch(0.55 0.17 28)","oklch(0.62 0.18 28)","oklch(0.68 0.18 28)","oklch(0.76 0.16 28)","oklch(0.85 0.10 28)","oklch(0.95 0.04 28)"] },
+      "status-up":   { "role": "tertiary","displayName": "Status Up",         "canonical": "oklch(0.74 0.15 145)",      "tonalRamp": ["oklch(0.30 0.10 145)","oklch(0.45 0.13 145)","oklch(0.58 0.15 145)","oklch(0.66 0.15 145)","oklch(0.74 0.15 145)","oklch(0.82 0.13 145)","oklch(0.90 0.08 145)","oklch(0.96 0.04 145)"] },
+      "status-warn": { "role": "tertiary","displayName": "Status Warn",       "canonical": "oklch(0.82 0.15 85)",       "tonalRamp": ["oklch(0.40 0.10 85)","oklch(0.55 0.13 85)","oklch(0.68 0.15 85)","oklch(0.76 0.15 85)","oklch(0.82 0.15 85)","oklch(0.88 0.13 85)","oklch(0.93 0.08 85)","oklch(0.97 0.03 85)"] },
+      "status-down": { "role": "tertiary","displayName": "Status Down",       "canonical": "oklch(0.65 0.20 28)",       "tonalRamp": ["oklch(0.28 0.13 28)","oklch(0.42 0.17 28)","oklch(0.55 0.19 28)","oklch(0.60 0.20 28)","oklch(0.65 0.20 28)","oklch(0.74 0.17 28)","oklch(0.85 0.10 28)","oklch(0.95 0.04 28)"] }
     },
     "typographyMeta": {
-      "display": { "displayName": "Display", "purpose": "Greeting on Home page only. Inter 600, ember <em>." },
-      "headline": { "displayName": "Headline", "purpose": "Section titles, preceded by mono numeral eyebrow." },
-      "title": { "displayName": "Title", "purpose": "Card titles and list-item headings." },
-      "body": { "displayName": "Body", "purpose": "Paragraphs, descriptions, controls. Cap around 60ch." },
-      "label": { "displayName": "Label", "purpose": "Mono uppercase tracked: eyebrows, kbd, status timestamps, hero-card units, every numeric readout." }
+      "display":  { "displayName": "Display",  "purpose": "Home greeting only. <em> sets in ember, never italic." },
+      "headline": { "displayName": "Headline", "purpose": "Section titles, always preceded by mono numeral eyebrow." },
+      "title":    { "displayName": "Title",    "purpose": "Card titles, list item headings." },
+      "body":     { "displayName": "Body",     "purpose": "Paragraphs and controls. Cap line length 60-65ch." },
+      "label":    { "displayName": "Label",    "purpose": "Mono, tracked open, often uppercase. Eyebrows, kbd, status timestamps, units." }
     },
     "shadows": [
-      { "name": "shadow-card", "value": "0 1px 0 oklch(1 0 0 / .04) inset, 0 8px 24px oklch(0 0 0 / .28)", "purpose": "Resting card. Inset highlight + ambient drop." },
-      { "name": "shadow-card-hover", "value": "0 1px 0 oklch(1 0 0 / .06) inset, 0 14px 36px oklch(0 0 0 / .38), 0 0 0 1px oklch(0.73 0.14 50 / 0.14)", "purpose": "Hover card. Deeper drop + ember-soft outer ring." },
-      { "name": "shadow-popover", "value": "0 24px 60px oklch(0 0 0 / .45)", "purpose": "Search results popover and similar floating panels." },
-      { "name": "brand-mark-glow", "value": "0 6px 14px color-mix(in oklch, oklch(0.73 0.14 50) 40%, transparent), inset 0 1px 0 oklch(1 0 0 / .2)", "purpose": "Brand mark in topbar — the only ember-glowing surface." }
+      { "name": "shadow-card",       "value": "0 1px 0 oklch(1 0 0 / 0.04) inset, 0 8px 24px oklch(0 0 0 / 0.28)", "purpose": "Resting card shadow. Inset highlight + ambient drop, always together." },
+      { "name": "shadow-card-hover", "value": "0 1px 0 oklch(1 0 0 / 0.06) inset, 0 14px 36px oklch(0 0 0 / 0.38), 0 0 0 1px oklch(0.73 0.14 50 / 0.14)", "purpose": "Hover state. Adds 1px ember-soft outer ring." },
+      { "name": "shadow-popover",    "value": "0 24px 60px oklch(0 0 0 / 0.45)", "purpose": "Search results dropdown. Single deep ambient drop, no inset." }
     ],
     "motion": [
-      { "name": "ease-standard", "value": "cubic-bezier(0.2, 0.7, 0.2, 1)", "purpose": "Card lift, hover transitions. Ease-out-quart-ish, no overshoot." },
-      { "name": "duration-fast", "value": "140ms", "purpose": "Chrome state changes (icon-btn, nav-pill hover)." },
-      { "name": "duration-base", "value": "180ms", "purpose": "Card hover lift, search expansion." },
-      { "name": "pulse-status", "value": "2.6s ease-out infinite", "purpose": "status-up dot heartbeat. The system's only ambient animation." }
+      { "name": "ease-system",   "value": "cubic-bezier(0.2, 0.7, 0.2, 1)", "purpose": "The only easing. Ease-out-quart-ish. Nothing bounces or overshoots." },
+      { "name": "lift-duration", "value": "180ms",                          "purpose": "Card hover lift duration." },
+      { "name": "warm-duration", "value": "140ms",                          "purpose": "Color/border state transitions on chrome." },
+      { "name": "pulse-up",      "value": "2.6s ease-out infinite",         "purpose": "Status-up halo pulse. The system's heartbeat." },
+      { "name": "backdrop-fade", "value": "700ms ease",                     "purpose": "Media-backdrop gradient cross-fade between artworks." }
     ],
     "breakpoints": [
-      { "name": "mobile", "value": "720px" },
-      { "name": "hero-collapse", "value": "900px" },
-      { "name": "shell-max", "value": "1400px" }
+      { "name": "phone",           "value": "720px" },
+      { "name": "tablet-portrait", "value": "900px" },
+      { "name": "tablet",          "value": "1100px" },
+      { "name": "ipad-pro",        "value": "1400px" },
+      { "name": "desktop",         "value": "1401px" }
     ]
   },
   "components": [
     {
-      "name": "Quicklinks Card",
+      "name": "Quicklinks card",
       "kind": "card",
       "refersTo": "card",
-      "description": "Signature component. Icon + title-with-status-dot + mono description + corner arrow. Lifts and warms title to ember on hover.",
-      "html": "<a class=\"ds-qlinks-card\" href=\"#\"><span class=\"ds-qlinks-ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\"><path d=\"M4 7h16M4 12h16M4 17h10\"/></svg></span><span class=\"ds-qlinks-body\"><span class=\"ds-qlinks-title\">Plex<span class=\"ds-status-dot ds-up\"></span></span><span class=\"ds-qlinks-desc\">media · 192.168.1.40:32400</span></span><span class=\"ds-qlinks-arrow\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M7 17 17 7M9 7h8v8\"/></svg></span></a>",
-      "css": ".ds-qlinks-card { position: relative; display: flex; align-items: center; gap: 12px; padding: 13px 14px; background: oklch(0.235 0.014 50); border: 1px solid oklch(0.28 0.01 50 / 0.6); border-radius: 10px; color: oklch(0.95 0.01 60); text-decoration: none; height: 68px; box-shadow: 0 1px 0 oklch(1 0 0 / .04) inset, 0 8px 24px oklch(0 0 0 / .28); transition: transform 180ms cubic-bezier(.2,.7,.2,1), box-shadow 180ms ease, border-color 180ms ease, background 180ms ease; font-family: 'Inter', system-ui, sans-serif; } .ds-qlinks-card:hover { transform: translateY(-2px); border-color: oklch(0.32 0.012 50); background: oklch(0.275 0.016 50); box-shadow: 0 1px 0 oklch(1 0 0 / .06) inset, 0 14px 36px oklch(0 0 0 / .38), 0 0 0 1px oklch(0.73 0.14 50 / 0.14); } .ds-qlinks-card:hover .ds-qlinks-title { color: oklch(0.80 0.15 55); } .ds-qlinks-card:hover .ds-qlinks-arrow { opacity: 1; transform: translate(2px, -2px); } .ds-qlinks-ico { width: 38px; height: 38px; border-radius: 8px; display: grid; place-items: center; flex: 0 0 auto; background: oklch(1 0 0 / 0.04); border: 1px solid oklch(0.28 0.01 50 / 0.6); color: oklch(0.95 0.01 60); padding: 6px; } .ds-qlinks-ico svg { width: 100%; height: 100%; } .ds-qlinks-body { flex: 1; min-width: 0; } .ds-qlinks-title { font-weight: 600; font-size: 13.5px; letter-spacing: -0.005em; display: flex; align-items: center; gap: 8px; transition: color 160ms; } .ds-qlinks-desc { color: oklch(0.55 0.01 55); font-size: 11.5px; font-family: 'JetBrains Mono', ui-monospace, monospace; letter-spacing: 0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; } .ds-status-dot { width: 7px; height: 7px; border-radius: 50%; flex: 0 0 auto; } .ds-status-dot.ds-up { background: oklch(0.74 0.15 145); box-shadow: 0 0 0 0 color-mix(in oklch, oklch(0.74 0.15 145) 60%, transparent); animation: ds-pulse 2.6s ease-out infinite; } .ds-qlinks-arrow { position: absolute; top: 10px; right: 10px; color: oklch(0.55 0.01 55); opacity: 0; transition: 180ms ease; } .ds-qlinks-arrow svg { width: 12px; height: 12px; } @keyframes ds-pulse { 0% { box-shadow: 0 0 0 0 color-mix(in oklch, oklch(0.74 0.15 145) 70%, transparent); } 70% { box-shadow: 0 0 0 6px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }"
+      "description": "Signature jump-off tile: icon well, title with status dot, mono description, corner arrow on hover.",
+      "html": "<a class=\"ds-qlink\" href=\"#\"><span class=\"ds-qlink-icon\"><svg viewBox='0 0 24 24' width='20' height='20' fill='none' stroke='currentColor' stroke-width='1.6'><path d='M4 7h16M4 12h16M4 17h10'/></svg></span><span class=\"ds-qlink-body\"><span class=\"ds-qlink-title\">Plex<span class=\"ds-status-dot ds-status-up\"></span></span><span class=\"ds-qlink-desc\">media.local:32400</span></span><span class=\"ds-qlink-arrow\"><svg viewBox='0 0 16 16' width='14' height='14' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M5 11l6-6M6 5h5v5'/></svg></span></a>",
+      "css": ".ds-qlink{display:flex;align-items:center;gap:12px;width:240px;height:68px;padding:12px 14px;background:var(--bg-card);border:1px solid var(--line-soft);border-radius:var(--radius);box-shadow:0 1px 0 oklch(1 0 0 / .04) inset,0 8px 24px oklch(0 0 0 / .28);text-decoration:none;color:var(--ink);transition:transform 180ms cubic-bezier(.2,.7,.2,1),background 140ms,border-color 140ms,box-shadow 180ms;position:relative}.ds-qlink:hover{transform:translateY(-2px);background:var(--bg-card-hi);border-color:var(--line);box-shadow:0 1px 0 oklch(1 0 0 / .06) inset,0 14px 36px oklch(0 0 0 / .38),0 0 0 1px var(--ember-soft)}.ds-qlink-icon{display:grid;place-items:center;width:38px;height:38px;background:oklch(1 0 0 / .04);border:1px solid var(--line-soft);border-radius:8px;color:var(--ink-dim);flex:none}.ds-qlink-body{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}.ds-qlink-title{display:inline-flex;align-items:center;gap:8px;font:600 13.5px/1.3 Inter,sans-serif;letter-spacing:-0.005em;transition:color 140ms}.ds-qlink:hover .ds-qlink-title{color:var(--ember-hi)}.ds-qlink-desc{font:500 11px/1.2 'JetBrains Mono',monospace;letter-spacing:0.08em;color:var(--ink-faint)}.ds-status-dot{width:7px;height:7px;border-radius:999px;background:var(--status-up);animation:ds-pulse 2.6s cubic-bezier(.2,.7,.2,1) infinite}.ds-qlink-arrow{position:absolute;top:10px;right:10px;color:var(--ember-hi);opacity:0;transform:translate(0,0);transition:opacity 180ms,transform 180ms cubic-bezier(.2,.7,.2,1)}.ds-qlink:hover .ds-qlink-arrow{opacity:1;transform:translate(2px,-2px)}@keyframes ds-pulse{0%{box-shadow:0 0 0 0 color-mix(in oklch,var(--status-up) 60%,transparent)}70%{box-shadow:0 0 0 6px color-mix(in oklch,var(--status-up) 0%,transparent)}100%{box-shadow:0 0 0 0 color-mix(in oklch,var(--status-up) 0%,transparent)}}"
     },
     {
-      "name": "Icon Button",
+      "name": "Icon button",
       "kind": "button",
       "refersTo": "icon-btn",
-      "description": "36×36 chrome button. ink-dim glyph, no fill. Hovers to ink + bg-card-hi. Used in topbar.",
-      "html": "<button class=\"ds-icon-btn\" aria-label=\"Settings\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\"><circle cx=\"12\" cy=\"12\" r=\"3\"/><path d=\"M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z\"/></svg></button>",
-      "css": ".ds-icon-btn { width: 36px; height: 36px; border-radius: 9px; background: oklch(0.235 0.014 50); border: 1px solid oklch(0.28 0.01 50 / 0.6); color: oklch(0.72 0.01 55); display: grid; place-items: center; cursor: pointer; padding: 0; transition: 140ms ease; } .ds-icon-btn:hover { color: oklch(0.95 0.01 60); border-color: oklch(0.32 0.012 50); background: oklch(0.275 0.016 50); } .ds-icon-btn:focus-visible { outline: 2px solid oklch(0.73 0.14 50); outline-offset: 2px; } .ds-icon-btn svg { width: 16px; height: 16px; }"
+      "description": "36x36 chrome control. Resting bg-card, hover bg-card-hi, no ember warm.",
+      "html": "<button class=\"ds-icon-btn\" aria-label=\"Refresh\"><svg viewBox='0 0 24 24' width='16' height='16' fill='none' stroke='currentColor' stroke-width='1.7'><path d='M4 12a8 8 0 0 1 14-5.3M20 4v4h-4M20 12a8 8 0 0 1-14 5.3M4 20v-4h4'/></svg></button>",
+      "css": ".ds-icon-btn{display:grid;place-items:center;width:36px;height:36px;background:var(--bg-card);color:var(--ink-dim);border:1px solid var(--line-soft);border-radius:8px;cursor:pointer;transition:background 140ms,color 140ms,border-color 140ms}.ds-icon-btn:hover{background:var(--bg-card-hi);color:var(--ink);border-color:var(--line)}.ds-icon-btn:focus-visible{outline:none;box-shadow:0 0 0 4px var(--ember-soft);border-color:var(--ember)}"
     },
     {
-      "name": "Nav Pill",
+      "name": "Nav pill",
       "kind": "nav",
       "refersTo": "nav-pill",
-      "description": "Top-bar nav link. The only chrome that warms to ember-hi on hover.",
-      "html": "<a class=\"ds-nav-pill\" href=\"#\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\"><path d=\"M3 12 12 3l9 9M5 10v10h14V10\"/></svg>HOME</a>",
-      "css": ".ds-nav-pill { display: inline-flex; align-items: center; gap: 6px; padding: 0 10px; height: 36px; background: oklch(0.235 0.014 50); border: 1px solid oklch(0.28 0.01 50 / 0.6); border-radius: 9px; color: oklch(0.72 0.01 55); font-family: 'Inter', system-ui, sans-serif; font-size: 13px; text-decoration: none; font-weight: 500; transition: 140ms ease; } .ds-nav-pill:hover { color: oklch(0.80 0.15 55); border-color: oklch(0.32 0.012 50); background: oklch(0.275 0.016 50); } .ds-nav-pill svg { width: 14px; height: 14px; }"
+      "description": "The single chrome control that warms to ember on hover. Reserved for primary navigation.",
+      "html": "<a class=\"ds-nav-pill\" href=\"#\"><svg viewBox='0 0 24 24' width='14' height='14' fill='none' stroke='currentColor' stroke-width='1.7'><path d='M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z'/></svg><span>Home</span></a>",
+      "css": ".ds-nav-pill{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 12px;background:var(--bg-card);color:var(--ink-dim);border:1px solid var(--line-soft);border-radius:8px;text-decoration:none;font:600 13px/1 Inter,sans-serif;letter-spacing:-0.005em;transition:background 140ms,color 140ms,border-color 140ms}.ds-nav-pill:hover{background:var(--bg-card-hi);color:var(--ember-hi);border-color:var(--line)}.ds-nav-pill:focus-visible{outline:none;box-shadow:0 0 0 4px var(--ember-soft);border-color:var(--ember)}"
     },
     {
-      "name": "Search Bar",
+      "name": "Searchbar",
       "kind": "input",
       "refersTo": "searchbar",
-      "description": "Page-wide search input with mono kbd hint. Ember focus halo.",
-      "html": "<div class=\"ds-searchbar\"><svg class=\"ds-q\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"m20 20-3.5-3.5\"/></svg><input placeholder=\"Search services, hosts, files…\"/><span class=\"ds-kbd\">⌘K</span></div>",
-      "css": ".ds-searchbar { display: flex; align-items: center; gap: 10px; background: oklch(0.235 0.014 50); border: 1px solid oklch(0.28 0.01 50 / 0.6); border-radius: 12px; padding: 10px 14px; box-shadow: 0 1px 0 oklch(1 0 0 / .04) inset, 0 8px 24px oklch(0 0 0 / .28); transition: 160ms ease; font-family: 'Inter', system-ui, sans-serif; } .ds-searchbar:focus-within { border-color: oklch(0.73 0.14 50); box-shadow: 0 1px 0 oklch(1 0 0 / .04) inset, 0 8px 24px oklch(0 0 0 / .28), 0 0 0 4px oklch(0.73 0.14 50 / 0.14); } .ds-searchbar .ds-q { width: 16px; height: 16px; color: oklch(0.55 0.01 55); flex: 0 0 auto; } .ds-searchbar input { flex: 1; background: transparent; border: 0; outline: 0; color: oklch(0.95 0.01 60); font: inherit; font-size: 15px; padding: 4px 0; } .ds-searchbar input::placeholder { color: oklch(0.55 0.01 55); } .ds-kbd { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: oklch(0.55 0.01 55); padding: 3px 6px; border: 1px solid oklch(0.28 0.01 50 / 0.6); border-radius: 5px; background: oklch(0.19 0.01 50); }"
+      "description": "12px radius pill. Focus shifts stroke to ember and adds 4px ember-soft halo.",
+      "html": "<label class=\"ds-search\"><svg viewBox='0 0 16 16' width='16' height='16' fill='none' stroke='currentColor' stroke-width='1.7' class=\"ds-search-icon\"><circle cx='7' cy='7' r='5'/><path d='M11 11l3 3'/></svg><input type=\"text\" placeholder=\"Search services, hosts, flows...\" /><span class=\"ds-kbd\">Ctrl K</span></label>",
+      "css": ".ds-search{display:inline-flex;align-items:center;gap:10px;width:420px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--line-soft);border-radius:12px;box-shadow:0 1px 0 oklch(1 0 0 / .04) inset,0 8px 24px oklch(0 0 0 / .28);color:var(--ink-dim);transition:border-color 140ms,box-shadow 180ms}.ds-search:focus-within{border-color:var(--ember);box-shadow:0 1px 0 oklch(1 0 0 / .04) inset,0 8px 24px oklch(0 0 0 / .28),0 0 0 4px var(--ember-soft)}.ds-search-icon{color:var(--ink-faint);flex:none}.ds-search input{flex:1;background:transparent;border:0;outline:0;color:var(--ink);font:400 14px/1.5 Inter,sans-serif;letter-spacing:-0.003em}.ds-search input::placeholder{color:var(--ink-faint)}.ds-kbd{padding:3px 6px;background:var(--bg);color:var(--ink-faint);border:1px solid var(--line-soft);border-radius:5px;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:0.08em}"
     },
     {
-      "name": "Statusbar Pill",
+      "name": "Statusbar pill",
       "kind": "chip",
       "refersTo": "statusbar",
-      "description": "Compact mono pill with pulsing status dot. Ambient system heartbeat.",
-      "html": "<div class=\"ds-statusbar\"><span class=\"ds-dot\"></span><b>online</b>&nbsp;· 23.4 TB · 14 services</div>",
-      "css": ".ds-statusbar { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; background: oklch(0.235 0.014 50); border: 1px solid oklch(0.28 0.01 50 / 0.6); border-radius: 9px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; color: oklch(0.72 0.01 55); letter-spacing: 0.04em; } .ds-statusbar b { color: oklch(0.95 0.01 60); font-weight: 600; } .ds-statusbar .ds-dot { width: 7px; height: 7px; border-radius: 50%; background: oklch(0.74 0.15 145); box-shadow: 0 0 0 0 color-mix(in oklch, oklch(0.74 0.15 145) 60%, transparent); animation: ds-statusbar-pulse 2.6s ease-out infinite; } @keyframes ds-statusbar-pulse { 0% { box-shadow: 0 0 0 0 color-mix(in oklch, oklch(0.74 0.15 145) 70%, transparent); } 70% { box-shadow: 0 0 0 6px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }"
+      "description": "Mono pill with pulsing dot. The ambient heartbeat readout.",
+      "html": "<span class=\"ds-statusbar\"><span class=\"ds-status-dot ds-status-up\"></span><span>ALL SYSTEMS NOMINAL . 47ms</span></span>",
+      "css": ".ds-statusbar{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;background:var(--bg-card);color:var(--ink-dim);border:1px solid var(--line-soft);border-radius:8px;font:500 11px/1.2 'JetBrains Mono',monospace;letter-spacing:0.1em;text-transform:uppercase}.ds-statusbar .ds-status-dot{width:7px;height:7px;border-radius:999px;background:var(--status-up);animation:ds-pulse 2.6s cubic-bezier(.2,.7,.2,1) infinite}@keyframes ds-pulse{0%{box-shadow:0 0 0 0 color-mix(in oklch,var(--status-up) 60%,transparent)}70%{box-shadow:0 0 0 6px color-mix(in oklch,var(--status-up) 0%,transparent)}100%{box-shadow:0 0 0 0 color-mix(in oklch,var(--status-up) 0%,transparent)}}"
     },
     {
-      "name": "Section Head",
+      "name": "Section head",
       "kind": "custom",
-      "description": "Numeric eyebrow + Inter title left, mono meta right, hairline rule beneath. Used everywhere a content section opens.",
-      "html": "<header class=\"ds-section-head\"><div class=\"ds-section-title\"><span class=\"ds-numeral\">02 /</span><h2>Services</h2></div><span class=\"ds-section-meta\">14 ONLINE · <a href=\"#\">manage</a></span></header>",
-      "css": ".ds-section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid oklch(0.28 0.01 50 / 0.6); font-family: 'Inter', system-ui, sans-serif; } .ds-section-title { display: flex; align-items: center; gap: 12px; } .ds-numeral { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; color: oklch(0.73 0.14 50); letter-spacing: 0.1em; } .ds-section-title h2 { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: -0.015em; color: oklch(0.95 0.01 60); } .ds-section-meta { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; color: oklch(0.55 0.01 55); text-transform: uppercase; letter-spacing: 0.1em; } .ds-section-meta a { color: oklch(0.80 0.15 55); text-decoration: none; } .ds-section-meta a:hover { color: oklch(0.73 0.14 50); }"
+      "refersTo": null,
+      "description": "Mono numeral eyebrow + Inter title, 1px hairline rule beneath. The system's wayfinding.",
+      "html": "<header class=\"ds-section\"><div class=\"ds-section-row\"><span class=\"ds-section-num\">02 / </span><h2 class=\"ds-section-title\">Infrastructure</h2><span class=\"ds-section-meta\">5 hosts . all up</span></div></header>",
+      "css": ".ds-section{padding-bottom:8px;border-bottom:1px solid var(--line-soft);margin-bottom:14px}.ds-section-row{display:flex;align-items:baseline;gap:10px}.ds-section-num{color:var(--ember);font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:0.1em}.ds-section-title{margin:0;color:var(--ink);font:600 17px/1.3 Inter,sans-serif;letter-spacing:-0.015em;flex:1}.ds-section-meta{color:var(--ink-faint);font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:0.1em;text-transform:uppercase}"
     },
     {
-      "name": "Hero Stat Card",
+      "name": "Bento tile (media)",
       "kind": "card",
-      "refersTo": "hero-card",
-      "description": "Glance metric tile. Ember-soft icon well + mono value + mono uppercase label. Home page only.",
-      "html": "<div class=\"ds-hero-card\"><span class=\"ds-ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\"><path d=\"M3 12h4l3-8 4 16 3-8h4\"/></svg></span><div><div class=\"ds-val\">142ms</div><div class=\"ds-lab\">UPLINK</div></div></div>",
-      "css": ".ds-hero-card { background: oklch(0.235 0.014 50); border: 1px solid oklch(0.28 0.01 50 / 0.6); border-radius: 10px; padding: 12px 14px; display: inline-flex; align-items: center; gap: 12px; font-family: 'Inter', system-ui, sans-serif; } .ds-hero-card .ds-val { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; color: oklch(0.95 0.01 60); } .ds-hero-card .ds-lab { font-size: 10px; color: oklch(0.55 0.01 55); text-transform: uppercase; letter-spacing: 0.1em; font-family: 'JetBrains Mono', ui-monospace, monospace; margin-top: 2px; } .ds-hero-card .ds-ico { width: 34px; height: 34px; border-radius: 8px; background: oklch(0.73 0.14 50 / 0.14); color: oklch(0.80 0.15 55); display: grid; place-items: center; flex: 0 0 auto; } .ds-hero-card .ds-ico svg { width: 16px; height: 16px; }"
+      "refersTo": "bento-tile",
+      "description": "Music / Plex signature. Translucent over an ambient blurred artwork backdrop. The sole sanctioned glass surface.",
+      "html": "<div class=\"ds-bento-stage\"><div class=\"ds-bento-bg\"></div><article class=\"ds-bento-tile\"><span class=\"ds-section-num\">01 / </span><h3 class=\"ds-bento-title\">Now Playing</h3><p class=\"ds-bento-body\">A blurred album-cover gradient sits behind this tile at z-index -1. The tile is translucent over it.</p></article></div>",
+      "css": ".ds-bento-stage{position:relative;width:360px;height:200px;isolation:isolate;border-radius:18px;overflow:hidden}.ds-bento-bg{position:absolute;inset:-40px -20px;z-index:-1;background:radial-gradient(circle at 30% 30%,oklch(0.55 0.18 35),oklch(0.30 0.10 280) 60%,oklch(0.20 0.05 50));filter:blur(20px) saturate(1.1);opacity:0.85;pointer-events:none}.ds-bento-tile{padding:18px;background:color-mix(in oklch,var(--bg-card) 78%,transparent);border:1px solid var(--line-soft);border-radius:18px;backdrop-filter:blur(14px) saturate(1.15);-webkit-backdrop-filter:blur(14px) saturate(1.15);transition:border-color 300ms ease}.ds-bento-tile:hover{border-color:color-mix(in oklch,var(--ember) 35%,var(--line-soft))}.ds-bento-title{margin:6px 0 4px;color:var(--ink);font:600 17px/1.3 Inter,sans-serif;letter-spacing:-0.015em}.ds-bento-body{margin:0;color:var(--ink-dim);font:400 13px/1.5 Inter,sans-serif;letter-spacing:-0.003em}"
     }
   ],
   "narrative": {
     "northStar": "The Forge at Night",
-    "overview": "A private operations console, not a product. One operator (the homeowner) sits at it after dark to glance at Plex queues, NAS pools, Homey zones, Docker stacks, and a wall of bookmarked services. The aesthetic is a warm-graphite workshop lit by a single banked ember, not a glassy SaaS dashboard, not a neon ops center, not the macOS native vocabulary. Surfaces are dim, slightly browned, never blue-grey; typography is Inter for prose, JetBrains Mono for any number, label, or technical readout. Every accent is the same copper-ember hue, used sparingly enough that lighting it up means something.\n\nDensity matters here. The user can flip a global density switch and a per-page variant attribute; the system must respect both without re-theming. The grid prefers many small calm cells over few large dramatic ones. Read time is measured in seconds, not minutes.\n\nWhat this system explicitly rejects: cobalt-blue developer-tool palettes, neon cyberpunk overlays, pure black backgrounds, decorative glassmorphism, identical icon-heading-text card grids, gradient text as default emphasis, side-stripe accent borders, and anything that reads as AI-generated SaaS landing page.",
+    "overview": "A private operations console, not a product. One operator (the homeowner) sits at it after dark to glance at Plex queues, NAS pools, Homey zones, Docker stacks, and a wall of bookmarked services. The aesthetic is a warm-graphite workshop lit by a single banked ember, not a glassy SaaS dashboard, not a neon ops center, not the macOS native vocabulary. Density matters: a global density switch and per-page variant attribute must keep the system legible across phone, tablet, and desktop. The Home page also reshuffles itself by time of day. Media surfaces (Plex, Music) are the single carve-out from no-glass: a blurred ambient artwork backdrop sits behind translucent foreground tiles. Chrome glass on dashboard, infrastructure, or settings surfaces is still forbidden.",
     "keyCharacteristics": [
-      "Warm graphite (chroma 0.01–0.016, hue 50–60) underneath, never neutral grey, never blue-shifted.",
+      "Warm graphite (chroma 0.01-0.016, hue 50-60) underneath, never neutral grey, never blue-shifted.",
       "A single ember accent across every page; semantic-only sage/steel/alarm for state.",
       "Mono font carries the technical voice: counters, labels, status text, eyebrows.",
       "Cards are uniform, low-shadow, hover lifts 2px and warms by one chroma step.",
-      "Section heads use a numeric eyebrow (02 /) plus a hairline rule, never a solid bar."
+      "Section heads use a numeric eyebrow (02 / ) plus a hairline rule, never a solid bar.",
+      "Media pages get translucent bento tiles over a blurred artwork backdrop. Nowhere else."
     ],
     "rules": [
-      { "name": "The One Voice Rule", "body": "Ember is the only decorative color. Sage, steel, and alarm are reserved for semantic state and data viz. Adding a fourth decorative hue is the single fastest way to break the system.", "section": "colors" },
-      { "name": "The Warm Graphite Rule", "body": "No background, border, or text color may have hue outside the 50–60 range. Hue 230 (steel) is permitted only inside a data-viz frame; hue 145 / 85 / 28 (status) only when bound to a live system state.", "section": "colors" },
-      { "name": "The No-Pure-Black Rule", "body": "--bg is oklch(0.19 0.01 50), never #000. Even the deepest scrollbar track keeps a chroma of 0.01.", "section": "colors" },
-      { "name": "The Two Voices Rule", "body": "Inter for prose and chrome, JetBrains Mono for any value, identifier, label, status timestamp, or technical readout.", "section": "typography" },
-      { "name": "The Tracked-Mono Rule", "body": "Mono is always tracked open (letter-spacing 0.08–0.14em) and usually uppercased. Tight or mixed-case mono in a label slot reads as a bug.", "section": "typography" },
-      { "name": "The No-Italic Rule", "body": "<em> is reserved for ember-colored emphasis at display scale; it is never rendered italic. Other italics are forbidden.", "section": "typography" },
-      { "name": "The Lift-On-Touch Rule", "body": "Cards rest flat-with-shadow, and they lift translateY(-2px) plus the ember-soft ring on hover. The transition is 180ms cubic-bezier(.2,.7,.2,1). No bounce, no scale, no glow without contact.", "section": "elevation" },
-      { "name": "The Inset Highlight Rule", "body": "Every elevated surface includes the 1px inset white-04 stroke at the top edge. It's what reads the surface as lit from above, not stuck onto the page.", "section": "elevation" }
+      { "name": "The One Voice Rule",        "section": "colors",     "body": "Ember is the only decorative color. Sage, steel, and alarm are reserved for semantic state and data viz. Adding a fourth decorative hue is the single fastest way to break the system." },
+      { "name": "The Warm Graphite Rule",    "section": "colors",     "body": "No background, border, or text color may have hue outside the 50-60 range. Hue 230 (steel) is permitted only inside a data-viz frame; hue 145 / 85 / 28 (status) only when bound to a live system state." },
+      { "name": "The No-Pure-Black Rule",    "section": "colors",     "body": "--bg is oklch(0.19 0.01 50), never #000. Even the deepest scrollbar track keeps a chroma of 0.01." },
+      { "name": "The Two Voices Rule",       "section": "typography", "body": "Inter for prose and chrome, JetBrains Mono for any value, identifier, label, status timestamp, or technical readout." },
+      { "name": "The Tracked-Mono Rule",     "section": "typography", "body": "Mono is always tracked open (letter-spacing 0.08-0.14em) and usually uppercased. Tight or mixed-case mono in a label slot reads as a bug." },
+      { "name": "The No-Italic Rule",        "section": "typography", "body": "<em> is reserved for ember-colored emphasis at display scale; it is never rendered italic." },
+      { "name": "The Lift-On-Touch Rule",    "section": "elevation",  "body": "Cards rest flat-with-shadow, and they lift translateY(-2px) plus the ember-soft ring on hover. 180ms cubic-bezier(.2,.7,.2,1). Bento tiles on media pages warm the border instead of lifting." },
+      { "name": "The Inset Highlight Rule",  "section": "elevation",  "body": "Every elevated surface includes the 1px inset white-04 stroke at the top edge. Without it, cards look pasted on." },
+      { "name": "The Media-Glass Carve-out", "section": "elevation",  "body": "Glass (backdrop-filter) is permitted only when a blurred ambient artwork backdrop sits at z-index -1 behind the surface. Plex hero and Music bento qualify; infrastructure, Homey, Docker, NAS, settings, and Home tiles do not." }
     ],
     "dos": [
-      "Do keep every neutral inside hue 50–60 with chroma 0.01–0.016. Warm graphite, never blue-grey, never neutral.",
+      "Do keep every neutral inside hue 50-60 with chroma 0.01-0.016. Warm graphite, never blue-grey, never neutral.",
       "Do use ember as the single decorative voice. If a screen feels flat, lift one element with ember-hi text on hover, not a second accent color.",
-      "Do set every number, label, identifier, status timestamp, and eyebrow in JetBrains Mono, tracked open at 0.08–0.14em.",
+      "Do set every number, label, identifier, status timestamp, and eyebrow in JetBrains Mono, tracked open at 0.08-0.14em.",
       "Do wrap status pills around .status-dot and let up pulse on a 2.6s ease-out cadence. The pulse is the system's heartbeat.",
       "Do use the inset white-04 + drop oklch(0/.28) shadow pair on every resting card, and add the ember-soft ring on hover.",
       "Do lift cards translateY(-2px) over 180ms cubic-bezier(.2,.7,.2,1) on hover. Same curve every time.",
-      "Do preface section titles with a mono numeral eyebrow in ember (01 /, 02 /).",
-      "Do respect both html[data-density='dense'] and body[data-variant='dense|playful'].",
+      "Do preface section titles with a mono numeral eyebrow in ember (01 / , 02 / ).",
+      "Do respect both html[data-density=dense] and body[data-variant=dense|playful]. Both must keep working, and neither may re-theme.",
       "Do use OKLCH everywhere. The palette is computed in OKLCH; hex is a deliverable, not a source."
     ],
     "donts": [
       "Don't use #000 or #fff. The bg floor is oklch(0.19 0.01 50), the ink ceiling is oklch(0.95 0.01 60).",
-      "Don't introduce a second decorative accent. No teals, no purples, no second oranges.",
-      "Don't use side-stripe borders (border-left: 3px solid …). Borders are full-perimeter, 1px, in line-soft or line.",
-      "Don't apply gradient text by default. The only sanctioned gradient text is the playful-variant greeting <em>.",
-      "Don't add glassmorphism. No backdrop-filter, no translucent panels stacked over wallpaper.",
+      "Don't introduce a second decorative accent. No teals, no purples, no second oranges. Sage / steel / alarm are state-only and data-viz-only.",
+      "Don't use side-stripe borders (border-left: 3px solid ...). Borders are full-perimeter, 1px, in line-soft or line.",
+      "Don't apply gradient text by default. The only sanctioned gradient text is the playful-variant greeting <em>, and only there.",
+      "Don't add glassmorphism on chrome surfaces. The Plex / Music media-backdrop pairing is the sole carve-out: backdrop-filter over an ambient blurred artwork backdrop, and only there.",
       "Don't ship hero-metric templates: big-gradient-number above small-label above supporting-stats.",
       "Don't italicize text. <em> is colored, never slanted.",
-      "Don't use solid filled primary buttons. Action emphasis comes from hover-warming and lift.",
-      "Don't nest cards. A panel inside a card inside the shell is always wrong.",
+      "Don't use solid filled primary buttons. Action emphasis comes from hover-warming and lift, not a permanent ember fill.",
+      "Don't nest cards. A panel inside a card inside the shell is always wrong; flatten or use bg-raised for the inner surface.",
       "Don't animate layout properties (width, padding, margin). Animate transform, opacity, box-shadow, color, border-color, background.",
-      "Don't use bouncy or elastic easing. The system curve is cubic-bezier(.2,.7,.2,1).",
+      "Don't use bouncy or elastic easing. The system curve is cubic-bezier(.2,.7,.2,1). Nothing overshoots.",
       "Don't use em dashes in copy. Commas, colons, semicolons, periods, parentheses."
     ]
   }

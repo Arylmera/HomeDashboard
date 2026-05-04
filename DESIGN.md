@@ -58,6 +58,7 @@ rounded:
   md: "8px"
   base: "10px"
   lg: "14px"
+  xl: "18px"
   pill: "999px"
 spacing:
   xs: "6px"
@@ -112,6 +113,16 @@ components:
     textColor: "{colors.ink-faint}"
     rounded: "5px"
     padding: "3px 6px"
+  bento-tile:
+    backgroundColor: "{colors.bg-card}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.xl}"
+    padding: "18px"
+  bento-tile-hover:
+    backgroundColor: "{colors.bg-card-hi}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.xl}"
+    padding: "18px"
 ---
 
 # Design System: HomeDashboard
@@ -122,9 +133,11 @@ components:
 
 This is a private operations console, not a product. One operator (the homeowner) sits at it after dark to glance at Plex queues, NAS pools, Homey zones, Docker stacks, and a wall of bookmarked services. The aesthetic is a warm-graphite workshop lit by a single banked ember, not a glassy SaaS dashboard, not a neon ops center, not the macOS native vocabulary. Surfaces are dim, slightly browned, never blue-grey; typography is Inter for prose, JetBrains Mono for any number, label, or technical readout. Every accent is the same copper-ember hue, used sparingly enough that lighting it up means something.
 
-Density matters here. The user can flip a global density switch (`html[data-density="dense"]`) and a per-page variant attribute (`body[data-variant="dense|playful"]`); the system must respect both without re-theming. The grid prefers many small calm cells over few large dramatic ones. Read time is measured in seconds, not minutes.
+Density matters here. The user can flip a global density switch (`html[data-density="dense"]`) and a per-page variant attribute (`body[data-variant="dense|playful"]`); the system must respect both without re-theming. The grid prefers many small calm cells over few large dramatic ones. Read time is measured in seconds, not minutes. The Home page also reshuffles itself by time of day (morning, afternoon, evening, late) so the surfaces that matter at that hour rise to the top.
 
-What this system explicitly rejects: cobalt-blue developer-tool palettes, neon cyberpunk overlays, pure black backgrounds, decorative glassmorphism, identical icon-heading-text card grids, gradient text as default emphasis, side-stripe accent borders, and anything that reads as "AI-generated SaaS landing page".
+Media surfaces are the single carve-out from "no glass". On Plex and Music, an ambient blurred artwork backdrop sits at z-index -1 behind the panel and the foreground tiles are translucent over it (`backdrop-filter: blur(14–18px) saturate(1.15–1.2)`). That is the only sanctioned glass in the system, and only when the artwork itself is the warmth source. Chrome glass on dashboard, infrastructure, or settings surfaces is still forbidden.
+
+What this system explicitly rejects: cobalt-blue developer-tool palettes, neon cyberpunk overlays, pure black backgrounds, decorative glassmorphism on chrome surfaces, identical icon-heading-text card grids, gradient text as default emphasis, side-stripe accent borders, and anything that reads as "AI-generated SaaS landing page".
 
 **Key Characteristics:**
 - Warm graphite (chroma 0.01–0.016, hue 50–60) underneath, never neutral grey, never blue-shifted.
@@ -204,7 +217,9 @@ Surfaces are flat at rest. Depth comes from a tight three-step warm-graphite ram
 
 ### Named Rules
 
-**The Lift-On-Touch Rule.** Cards rest flat-with-shadow, and they lift `translateY(-2px)` plus the ember-soft ring on hover. The transition is 180ms cubic-bezier(.2,.7,.2,1). No bounce, no scale, no glow without contact.
+**The Lift-On-Touch Rule.** Cards rest flat-with-shadow, and they lift `translateY(-2px)` plus the ember-soft ring on hover. The transition is 180ms cubic-bezier(.2,.7,.2,1). No bounce, no scale, no glow without contact. Bento tiles on media pages are the exception: depth comes from the artwork backdrop behind them, so they warm the border on hover instead of lifting.
+
+**The Media-Glass Carve-out.** Glass (`backdrop-filter: blur(...) saturate(...)`) is permitted only when a blurred ambient artwork backdrop sits at z-index -1 behind the surface. No artwork, no glass. Plex hero and Music bento qualify; infrastructure, Homey, Docker, NAS, settings, and Home tiles do not.
 
 **The Inset Highlight Rule.** Every elevated surface includes the 1px inset white-04 stroke at the top edge. It's what reads the surface as "lit from above", not "stuck onto the page". Without it, cards look pasted on.
 
@@ -251,6 +266,18 @@ Cards are uniform, calm, and many. Every interactive primitive shares the same w
 ### Hero card (`.hero-card`)
 - A row of small at-a-glance stat tiles next to the greeting. Mono 20px value, mono 10px uppercase label, 34×34 ember-soft icon well. Used only on the Home page.
 
+### Bento tile (`.bento-tile`) — Music / Plex signature
+- 18px radius (`rounded.xl`), 18px internal padding, background `color-mix(in oklch, var(--bg-card) 78%, transparent)`.
+- `backdrop-filter: blur(14px) saturate(1.15)` over a page-level artwork backdrop (`.bento-bg`, absolutely positioned at `inset: -40px -20px`, z-index -1, blurred album-cover gradient via `--music-bg-grad`). The tile alone is not glass; the tile-plus-backdrop pair is.
+- Border `line-soft` resting, warms to `color-mix(accent 35%, line-soft)` on hover. No `translateY` lift here; the warmth of the artwork carries the depth.
+- Permitted only on media-driven pages (Plex, Music). Reusing this on infrastructure or settings is a doctrine violation.
+
+### Media backdrop (`.bento-bg`, Plex hero bg)
+- Absolutely positioned, inset negative (`inset: -40px -20px`), z-index -1, `pointer-events: none`.
+- `filter: blur(20px) saturate(1.1)`, opacity ~0.85, ambient gradient sourced from current artwork.
+- Transitions on `background` over 600–800ms ease so the room mood shifts smoothly when a new track or item lands.
+- Never used as a hero treatment on non-media pages.
+
 ### Quicklinks card (`.qlinks-card`) — signature component
 - 240×68 (200×54 dense), one row of icon + title-with-status-dot + mono description + corner arrow.
 - Icon well is 38×38, white-04 background, `line-soft` stroke, 6px inset padding to fit dashboard-icons SVG/PNG sources without bleeding.
@@ -275,7 +302,7 @@ Cards are uniform, calm, and many. Every interactive primitive shares the same w
 - **Don't** introduce a second decorative accent. No teals, no purples, no second oranges. Sage / steel / alarm are state-only and data-viz-only.
 - **Don't** use side-stripe borders (`border-left: 3px solid …`). Borders are full-perimeter, 1px, in `line-soft` or `line`.
 - **Don't** apply gradient text by default. The only sanctioned gradient text is the playful-variant greeting `<em>`, and only there.
-- **Don't** add glassmorphism. No `backdrop-filter`, no translucent panels stacked over wallpaper. The bg is opaque graphite by design.
+- **Don't** add glassmorphism on chrome surfaces. The Plex / Music media-backdrop pairing is the sole carve-out: `backdrop-filter` over an ambient blurred artwork backdrop, and only there. Translucent panels over the page bg or over a generic wallpaper are still forbidden.
 - **Don't** ship hero-metric templates: big-gradient-number above small-label above supporting-stats. The Home hero already serves that role with smaller mono values.
 - **Don't** italicize text. `<em>` is colored, never slanted.
 - **Don't** use solid filled "primary" buttons. Action emphasis comes from hover-warming and lift, not a permanent ember fill.

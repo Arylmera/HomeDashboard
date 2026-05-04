@@ -162,13 +162,6 @@ export const GLASS_CSS = `
     -webkit-backdrop-filter: none !important;
   }
 
-  /* ---- Topbar: thin frosted strip --------------------------------- */
-  body.style-glass .topbar {
-    background-color: oklch(0.10 0.01 270 / 0.45);
-    border-bottom: 1px solid oklch(1 0 0 / 0.08);
-    backdrop-filter: blur(24px) saturate(1.3);
-    -webkit-backdrop-filter: blur(24px) saturate(1.3);
-  }
   body.style-glass .section-head { background: transparent; box-shadow: none; }
 
   /* ---- Inputs: subtle dark fill, not glowing white --------------- */

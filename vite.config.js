@@ -14,6 +14,7 @@ import { spotifyOAuthPlugin } from './src/server/spotify-oauth.js';
 import { sonosLanPlugin } from './src/server/sonos-lan.js';
 import { precompressPlugin, precompressServePlugin } from './src/server/precompress.js';
 import { multiPlugin } from './src/server/multi.js';
+import { gamingPlugin } from './src/server/gaming.js';
 
 /**
  * Build a proxy entry that:
@@ -196,7 +197,7 @@ export default defineConfig(({ mode }) => {
       ...(process.env.DEV_HTTPS === 'false' || process.env.NODE_ENV === 'production' ? [] : [basicSsl()]),
       prefsPlugin(), homeyOAuthPlugin(), spotifyOAuthPlugin(), sonosLanPlugin(),
       healthPlugin(), icloudPlugin(), npmPlugin(), asusPlugin(), wanPlugin(), metricsPlugin(),
-      multiPlugin(),
+      multiPlugin(), gamingPlugin(),
       precompressPlugin(), precompressServePlugin(),
     ],
     server: { proxy: proxies, host: '127.0.0.1', https: process.env.DEV_HTTPS === 'false' ? false : {} },

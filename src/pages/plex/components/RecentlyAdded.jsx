@@ -27,7 +27,7 @@ export function RecentlyAdded({ items, loading }) {
         <span className="meta">{showSkeleton ? '…' : `${items.length} latest`}</span>
       </div>
       <div className="recent-track" role="list">
-        {list.map((it, i) => {
+        {list.map((it) => {
           if (it.skeleton) {
             return <div key={`sk-${it._k}`} className="recent-card skeleton" role="listitem" aria-hidden="true" />;
           }
@@ -44,11 +44,11 @@ export function RecentlyAdded({ items, loading }) {
             </>
           );
           return href ? (
-            <a key={`${it.ratingKey}-${i}`} className="recent-card linked" href={href} target="_blank" rel="noopener noreferrer" role="listitem">
+            <a key={it.ratingKey} className="recent-card linked" href={href} target="_blank" rel="noopener noreferrer" role="listitem">
               {inner}
             </a>
           ) : (
-            <div key={`${it.ratingKey}-${i}`} className="recent-card" role="listitem">{inner}</div>
+            <div key={it.ratingKey} className="recent-card" role="listitem">{inner}</div>
           );
         })}
       </div>

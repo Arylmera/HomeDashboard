@@ -178,6 +178,60 @@ const MENU_CSS = `
   @media (prefers-reduced-motion: reduce) {
     .am-overlay, .am-drawer { transition: none; }
   }
+
+  .gaming-trigger {
+    height: 36px; padding: 0 12px 0 10px; border-radius: 9px;
+    background: var(--bg-card); border: 1px solid var(--line-soft);
+    color: var(--ink-dim); display: inline-flex; align-items: center; gap: 8px;
+    font: inherit; font-size: 12px; cursor: pointer;
+    font-family: var(--font-mono, ui-monospace, Menlo, monospace);
+    letter-spacing: 0.06em; text-transform: lowercase;
+    transition: background 90ms ease, color 90ms ease, border-color 90ms ease, box-shadow 90ms ease, transform 90ms ease;
+  }
+  .gaming-trigger:active:not(:disabled) { transform: scale(0.96); }
+  .gaming-trigger:hover:not(:disabled) { color: var(--ink); border-color: var(--line); background: var(--bg-card-hi); }
+  .gaming-trigger:disabled { opacity: 0.45; cursor: not-allowed; }
+  .gaming-trigger svg { width: 16px; height: 16px; }
+  .gaming-trigger .gaming-label { line-height: 1; }
+  .gaming-trigger .gaming-count {
+    min-width: 18px; padding: 2px 6px; border-radius: 999px;
+    background: var(--bg); border: 1px solid var(--line-soft);
+    color: var(--ink-dim); font-size: 10.5px; line-height: 1;
+    text-align: center; letter-spacing: 0;
+  }
+  .gaming-trigger .gaming-count:empty { display: none; }
+  .gaming-trigger .gaming-count.on { color: var(--ember-hi); border-color: var(--ember); background: var(--ember-soft); }
+  .gaming-trigger.gaming-on .gaming-count { color: var(--ember-hi); border-color: var(--ember); background: var(--ember-soft); }
+  .gaming-trigger.gaming-on {
+    color: var(--ember-hi); border-color: var(--ember);
+    background: var(--ember-soft);
+    box-shadow: 0 0 0 1px var(--ember-soft);
+  }
+  /* Busy = server confirming. Don't dim — the optimistic flip is the visible signal. */
+  .gaming-trigger.gaming-busy { pointer-events: none; }
+  .gaming-trigger.gaming-busy .gaming-count {
+    animation: gaming-pulse 0.9s ease-in-out infinite;
+  }
+  @keyframes gaming-pulse {
+    50% { opacity: 0.55; }
+  }
+  .gaming-trigger.gaming-idle { opacity: 0.55; }
+  .gaming-trigger.gaming-error {
+    border-color: oklch(0.65 0.18 25);
+    color: oklch(0.85 0.15 25);
+    animation: gaming-shake 0.42s ease;
+  }
+  @keyframes gaming-shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-3px); }
+    40% { transform: translateX(3px); }
+    60% { transform: translateX(-2px); }
+    80% { transform: translateX(2px); }
+  }
+  @media (max-width: 520px) {
+    .gaming-trigger .gaming-label { display: none; }
+    .gaming-trigger { padding: 0; width: 36px; justify-content: center; }
+  }
 `;
 
 

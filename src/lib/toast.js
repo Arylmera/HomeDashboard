@@ -3,16 +3,25 @@
 import { useEffect, useState } from 'react';
 
 const subs = new Set();
+const timers = new Map();
 let nextId = 1;
 
 export function toast(msg, { ttl = 2400, kind = 'info' } = {}) {
   const id = nextId++;
   const t = { id, message: msg, kind };
   for (const cb of subs) cb({ type: 'add', toast: t });
-  setTimeout(() => {
+  const handle = setTimeout(() => {
+    timers.delete(id);
     for (const cb of subs) cb({ type: 'remove', id });
   }, ttl);
+  timers.set(id, handle);
   return id;
+}
+
+export function dismissToast(id) {
+  const h = timers.get(id);
+  if (h) { clearTimeout(h); timers.delete(id); }
+  for (const cb of subs) cb({ type: 'remove', id });
 }
 
 export function useToasts() {

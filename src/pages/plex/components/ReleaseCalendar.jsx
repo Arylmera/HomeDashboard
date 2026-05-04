@@ -171,27 +171,61 @@ function DayView({ cursor, byDay, todayKey }) {
   );
 }
 
+function fmtRuntime(min) {
+  if (!Number.isFinite(min) || min <= 0) return null;
+  if (min < 60) return `${min}m`;
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return m ? `${h}h ${m}m` : `${h}h`;
+}
+
 function Pill({ u, large = false }) {
   const epTitle = u.kind === 'sonarr' ? u.sub.split(' · ').slice(1).join(' · ') : null;
-  const className = `cal-pill ${u.kind}${large ? ' large' : ''}${u.href ? ' linked' : ''}`;
-  const title = `${u.title} — ${u.sub}${u.href ? ` · open in ${u.kind}` : ''}`;
+  const code = u.kind === 'sonarr' ? u.sub.split(' · ')[0] : null;
+  const className = `cal-pill ${u.kind}${large ? ' large' : ''}${u.href ? ' linked' : ''}${u.poster ? ' has-poster' : ''}`;
   const inner = (
     <>
-      <span className="dot" />
+      {u.poster
+        ? <img className="pill-poster" src={u.poster} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
+        : <span className="dot" aria-hidden="true" />}
       <span className="body">
         <span className="t">{epTitle || u.title}</span>
-        {epTitle && <span className="ep">{u.title}</span>}
+        {epTitle && <span className="ep">{code ? `${code} · ${u.title}` : u.title}</span>}
       </span>
+      <PreviewCard u={u} />
     </>
   );
   if (u.href) {
     return (
-      <a className={className} title={title} href={u.href} target="_blank" rel="noreferrer noopener">
+      <a className={className} href={u.href} target="_blank" rel="noreferrer noopener">
         {inner}
       </a>
     );
   }
-  return <div className={className} title={title}>{inner}</div>;
+  return <div className={className}>{inner}</div>;
+}
+
+function PreviewCard({ u }) {
+  const rt = fmtRuntime(u.runtime);
+  const overview = (u.overview || '').trim();
+  const truncated = overview.length > 280 ? overview.slice(0, 277) + '…' : overview;
+  return (
+    <div className="cal-preview" role="tooltip">
+      {u.poster && (
+        <img className="cal-preview-poster" src={u.poster} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
+      )}
+      <div className="cal-preview-body">
+        <div className="cal-preview-title">{u.title}</div>
+        <div className="cal-preview-sub">{u.sub}</div>
+        <div className="cal-preview-meta">
+          {u.network && <span>{u.network}</span>}
+          {rt && <span>{rt}</span>}
+          <span className="kind">{u.kind}</span>
+        </div>
+        {truncated && <p className="cal-preview-overview">{truncated}</p>}
+      </div>
+    </div>
+  );
 }
 
 function SectionTitle({ count }) {

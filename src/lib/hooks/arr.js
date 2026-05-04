@@ -2,13 +2,30 @@ import { usePolling } from './usePolling.js';
 import { getJson, getJsonAll } from './_fetcher.js';
 
 /* Aggregator hook for *arr (Sonarr/Radarr/Lidarr) services.
- * Combines queue + calendar + status + missing + library counts in
- * one polling loop so the dashboard makes a single round-trip per
- * service per tick. Individual sub-fetches that fail return null
- * (state still becomes "live") — only a status failure flips to
- * "error" since that's the canonical "is this service alive" check.
- */
+ * Combines queue + calendar + status + missing + library counts +
+ * health in one polling loop. Maintains a small in-memory history
+ * ring (per service) for sparkline rendering — survives the page
+ * lifecycle, not browser reloads. */
 const LIB_PATH = { sonarr: 'series', radarr: 'movie' };
+const HISTORY_MAX = 30;
+const HISTORY = new Map(); // svc -> [{ t, missing, queue }]
+
+function pushHistory(svc, sample) {
+  const list = HISTORY.get(svc) ?? [];
+  const last = list[list.length - 1];
+  if (last && last.missing === sample.missing && last.queue === sample.queue) {
+    last.t = sample.t;
+    return list;
+  }
+  list.push(sample);
+  while (list.length > HISTORY_MAX) list.shift();
+  HISTORY.set(svc, list);
+  return list;
+}
+
+export function getArrHistory(svc) {
+  return HISTORY.get(svc) ?? [];
+}
 
 function buildUrls(svc) {
   const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -21,37 +38,39 @@ function buildUrls(svc) {
     `/api/${svc}/api/v3/system/status`,
     `/api/${svc}/api/v3/wanted/missing?pageSize=1`,
     `/api/${svc}/api/v3/${lib}`,
+    `/api/${svc}/api/v3/health`,
   ];
 }
 
 export function useArr(svc, { poll = 60_000 } = {}) {
   const { data, state } = usePolling(
     async (signal) => {
-      const [queue, calendar, status, missing, library] =
+      const [queue, calendar, status, missing, library, health] =
         await getJsonAll(buildUrls(svc), { signal });
-      // status == null is the canonical health probe — propagate as
-      // error so the UI badge can flip red even though we have stale
-      // queue/calendar data from a previous tick.
       if (!status) throw new Error('arr_status_unavailable');
+      const sample = {
+        t: Date.now(),
+        missing: missing?.totalRecords ?? 0,
+        queue: queue?.totalRecords ?? 0,
+      };
+      pushHistory(svc, sample);
       return {
         queue,
         calendar,
         status,
         missing: missing?.totalRecords ?? null,
         total: Array.isArray(library) ? library.length : null,
+        health: Array.isArray(health) ? health : [],
+        history: HISTORY.get(svc) ?? [],
       };
     },
     { poll, deps: [svc], cacheKey: `arr:${svc}` }
   );
   return data
     ? { ...data, state }
-    : { queue: null, calendar: null, status: null, missing: null, total: null, state };
+    : { queue: null, calendar: null, status: null, missing: null, total: null, health: [], history: [], state };
 }
 
-// Legacy wrapper kept for Home.jsx; one less full polling loop than
-// useArr() since we only need the queue total. If Home is ever
-// refactored to share state with NAS/Plex pages, drop this and read
-// from a context provider instead.
 export function useArrQueue(svc) {
   const { queue } = useArr(svc);
   return queue?.totalRecords ?? null;

@@ -1,6 +1,12 @@
 import { ServiceRow, badge } from './ServiceRow.jsx';
 import { useQui } from '../../../lib/hooks.js';
 
+const DOWN_ICON = (
+  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M8 2.5 L8 11" /><path d="M4.5 7.5 L8 11 L11.5 7.5" /><path d="M3 13 L13 13" />
+  </svg>
+);
+
 function fmtSpeed(b) {
   if (!Number.isFinite(b)) return null;
   if (b < 1024) return `${b} B/s`;
@@ -17,8 +23,9 @@ export function AcquireColumn() {
   return (
     <div className="plex-col">
       <div className="col-head">
+        <span className="col-head-icon" aria-hidden="true">{DOWN_ICON}</span>
         <span className="num">03 · acquire</span>
-        <h3>Download &amp; index</h3>
+        <h3>Download & index</h3>
         <span className="meta">3</span>
       </div>
 

@@ -1,13 +1,26 @@
 import { ServiceRow, badge, libCount } from './ServiceRow.jsx';
 
+function ColHead({ num, label, count, icon }) {
+  return (
+    <div className="col-head">
+      <span className="col-head-icon" aria-hidden="true">{icon}</span>
+      <span className="num">{num}</span>
+      <h3>{label}</h3>
+      <span className="meta">{count}</span>
+    </div>
+  );
+}
+
+const PLAY_ICON = (
+  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M5 3.5 L12 8 L5 12.5 Z" />
+  </svg>
+);
+
 export function WatchColumn({ plex, seerr, tautulli }) {
   return (
     <div className="plex-col">
-      <div className="col-head">
-        <span className="num">01 · watch</span>
-        <h3>Stream &amp; request</h3>
-        <span className="meta">2</span>
-      </div>
+      <ColHead num="01 · watch" label="Stream & request" count="2" icon={PLAY_ICON} />
 
       <ServiceRow icon="plex" name="Plex" desc="Watch movies and TV shows."
         port="32400" url="https://plex.arylmera.duckdns.org"

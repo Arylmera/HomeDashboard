@@ -30,6 +30,14 @@ export function buildMonthGrid(year, month) {
 const SONARR_BASE = (import.meta.env.VITE_SONARR_URL || '').replace(/\/$/, '');
 const RADARR_BASE = (import.meta.env.VITE_RADARR_URL || '').replace(/\/$/, '');
 
+function pickPoster(images) {
+  if (!Array.isArray(images)) return null;
+  const p = images.find((i) => i.coverType === 'poster')
+    || images.find((i) => i.coverType === 'fanart')
+    || images[0];
+  return p ? (p.remoteUrl || p.url || null) : null;
+}
+
 export function useUpcoming(sonarr, radarr) {
   return useMemo(() => {
     const items = [];
@@ -44,6 +52,10 @@ export function useUpcoming(sonarr, radarr) {
           sub: `${code} · ${epTitle}`,
           kind: 'sonarr',
           href: SONARR_BASE && slug ? `${SONARR_BASE}/series/${slug}` : null,
+          poster: pickPoster(ep.series?.images),
+          overview: ep.overview || ep.series?.overview || '',
+          runtime: ep.series?.runtime ?? null,
+          network: ep.series?.network || '',
         });
       }
     }
@@ -55,6 +67,10 @@ export function useUpcoming(sonarr, radarr) {
           sub: `${m.year} · ${m.studio || 'release'}`,
           kind: 'radarr',
           href: RADARR_BASE && m.titleSlug ? `${RADARR_BASE}/movie/${m.titleSlug}` : null,
+          poster: pickPoster(m.images),
+          overview: m.overview || '',
+          runtime: m.runtime ?? null,
+          network: m.studio || '',
         });
       }
     }

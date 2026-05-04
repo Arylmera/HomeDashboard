@@ -98,4 +98,6 @@ EXPOSE 4173
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD wget -qO- http://127.0.0.1:4173/ >/dev/null 2>&1 || exit 1
 
-CMD ["npx", "vite", "preview", "--host", "0.0.0.0", "--port", "4173"]
+# Filter the per-interface "Network:" banner — container attaches to many
+# docker networks and prints one line per address, flooding logs.
+CMD ["sh", "-c", "npx vite preview --host 0.0.0.0 --port 4173 2>&1 | grep -v '➜  Network:'"]

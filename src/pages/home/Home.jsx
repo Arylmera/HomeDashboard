@@ -22,8 +22,7 @@ import { PAGES, QUICK_APP_IDS } from './pages.jsx';
 import Search from './components/Search.jsx';
 import PageTile from './components/PageTile.jsx';
 import QuickApp from './components/QuickApp.jsx';
-import NetworkPanel from './components/NetworkPanel.jsx';
-import NASPanel from './components/NASPanel.jsx';
+import InfraPanel from './components/InfraPanel.jsx';
 import Forecast from './components/Forecast.jsx';
 // TODO: re-enable CalendarCard and TasksCard once Google integration is fixed
 // import CalendarCard from './components/CalendarCard.jsx';
@@ -222,10 +221,7 @@ export default function Home() {
     ),
     bottom: (
       <div className="section" key="bottom">
-        <div className="bottom-row">
-          <NetworkPanel nas={nas} pi={pi} st={st} wan={wan} />
-          <NASPanel nas={nas} state={nasState} />
-        </div>
+        <InfraPanel nas={nas} state={nasState} pi={pi} st={st} wan={wan} />
       </div>
     ),
   };

@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0a0f24"/>
+      <stop offset="1" stop-color="#141a3a"/>
+    </linearGradient>
+    <radialGradient id="blobA" cx=".15" cy=".15" r=".7">
+      <stop offset="0" stop-color="#a78bfa" stop-opacity=".85"/>
+      <stop offset="1" stop-color="#a78bfa" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="blobB" cx=".9" cy=".95" r=".75">
+      <stop offset="0" stop-color="#22d3ee" stop-opacity=".75"/>
+      <stop offset="1" stop-color="#22d3ee" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="blobC" cx=".85" cy=".15" r=".5">
+      <stop offset="0" stop-color="#f472b6" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#f472b6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".18"/>
+      <stop offset=".5" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="horizon" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#e0e7ff" stop-opacity="0"/>
+      <stop offset=".5" stop-color="#e0e7ff" stop-opacity=".9"/>
+      <stop offset="1" stop-color="#e0e7ff" stop-opacity="0"/>
+    </linearGradient>
+    <clipPath id="clip">
+      <rect width="64" height="64" rx="14"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#clip)">
+    <rect width="64" height="64" fill="url(#bg)"/>
+    <rect width="64" height="64" fill="url(#blobA)"/>
+    <rect width="64" height="64" fill="url(#blobB)"/>
+    <rect width="64" height="64" fill="url(#blobC)"/>
+    <rect width="64" height="64" fill="url(#sheen)"/>
+    <circle cx="14" cy="14" r="1" fill="#ffffff" opacity=".85"/>
+    <circle cx="48" cy="10" r="1.2" fill="#ffffff" opacity=".8"/>
+    <circle cx="54" cy="22" r=".8" fill="#ffffff" opacity=".7"/>
+    <circle cx="22" cy="8" r=".7" fill="#ffffff" opacity=".6"/>
+    <path d="M12 52 L12 30 L32 12 L52 30 L52 52 Q52 54 50 54 L38 54 L38 40 Q38 38 36 38 L28 38 Q26 38 26 40 L26 54 L14 54 Q12 54 12 52 Z"
+          fill="#ffffff"/>
+    <rect x="6" y="56" width="52" height="1.2" fill="url(#horizon)"/>
+  </g>
+  <rect x=".5" y=".5" width="63" height="63" rx="13.5" fill="none" stroke="#ffffff" stroke-opacity=".12"/>
+</svg>

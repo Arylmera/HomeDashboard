@@ -47,14 +47,10 @@ function StickyBar({ healthTone, healthLabel, streams }) {
   );
 }
 
-export function PlexHeader({ heroBg, healthTone, healthLabel, streams }) {
+export function PlexHeader({ healthTone, healthLabel, streams }) {
   return (
     <>
       <StickyBar healthTone={healthTone} healthLabel={healthLabel} streams={streams} />
-
-      {heroBg && (
-        <div className="plex-hero-bg" aria-hidden="true" style={{ backgroundImage: `url(${heroBg})` }} />
-      )}
 
       <div className="topbar">
         <div className="brand">

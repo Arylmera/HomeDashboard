@@ -15,15 +15,6 @@ import { ReleaseCalendar } from './components/ReleaseCalendar.jsx';
 import { Pipeline } from './components/Pipeline.jsx';
 import { RecentlyAdded } from './components/RecentlyAdded.jsx';
 
-function heroArtUrl(plex) {
-  const items = plex.recentlyAdded;
-  if (!Array.isArray(items) || !items.length) return null;
-  const first = items.find((i) => i.art) || items[0];
-  const path = first?.art || first?.thumb;
-  if (!path) return null;
-  return `/api/plex/photo/:/transcode?width=1400&height=420&minSize=1&blur=80&url=${encodeURIComponent(path)}`;
-}
-
 function aggregateHealth(arrs) {
   let err = 0, warn = 0;
   for (const a of arrs) {
@@ -49,7 +40,6 @@ function PlexInner() {
   const abs      = useAudiobookshelf();
 
   const upcoming = useUpcoming(sonarr, radarr);
-  const heroBg = useMemo(() => heroArtUrl(plex), [plex.recentlyAdded]); // eslint-disable-line react-hooks/exhaustive-deps
   const health = useMemo(() => aggregateHealth([sonarr, radarr, lidarr]),
     [sonarr.health, radarr.health, lidarr.health]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -66,7 +56,7 @@ function PlexInner() {
 
   return (
     <div className={`shell plex-shell density-${density}`}>
-      <PlexHeader heroBg={heroBg} healthTone={health.tone} healthLabel={health.label} streams={streams} />
+      <PlexHeader healthTone={health.tone} healthLabel={health.label} streams={streams} />
 
       <RecentlyAdded items={plex.recentlyAdded} loading={plex.state === 'loading'} />
 

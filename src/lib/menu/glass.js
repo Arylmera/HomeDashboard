@@ -234,10 +234,6 @@ export const GLASS_CSS = `
 
   /* ---- Plex page exceptions -------------------------------------- */
   body.style-glass .plex-sticky { display: none !important; }
-  body.style-glass .plex-hero-bg {
-    opacity: 0.18 !important;
-    filter: saturate(0.7) blur(2px);
-  }
 
   /* ---- Modern interactive feel ----------------------------------- */
   body.style-glass .page-tile,

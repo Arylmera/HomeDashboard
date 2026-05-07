@@ -550,24 +550,6 @@ a.cal-pill:focus-visible {
 .plex-shell.density-compact .pipeline .stage { padding: 10px 14px; }
 .plex-shell.density-compact .nas-section-title { margin-top: 14px; margin-bottom: 8px; }
 
-/* --- hero background blur (jellyfin-ish) --- */
-.plex-shell { position: relative; isolation: isolate; }
-.plex-hero-bg {
-  position: absolute;
-  top: 0; left: 50%;
-  width: min(1500px, 100vw);
-  height: 460px;
-  transform: translateX(-50%);
-  background-size: cover;
-  background-position: center top;
-  pointer-events: none;
-  z-index: -1;
-  opacity: .35;
-  mask-image: linear-gradient(to bottom, oklch(0 0 0 / .9) 0%, oklch(0 0 0 / .55) 45%, transparent 95%);
-  -webkit-mask-image: linear-gradient(to bottom, oklch(0 0 0 / .9) 0%, oklch(0 0 0 / .55) 45%, transparent 95%);
-  filter: saturate(120%);
-}
-
 /* --- calendar pill: poster thumb + hover preview --- */
 .cal-pill { position: relative; }
 .cal-pill .pill-poster {

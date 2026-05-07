@@ -385,9 +385,6 @@ html[data-density="dense"] body .pool-row { padding: 7px 10px; }
 .shell.mode-night .hero { opacity: 0.88; }
 .shell.mode-night .page-tile { box-shadow: none; }
 
-/* Morning — pop the day-row */
-.shell.mode-morning .day-row { box-shadow: 0 0 0 1px color-mix(in oklch, var(--accent) 22%, transparent); border-radius: var(--radius-lg); }
-
 /* Evening — let recently-added breathe */
 .shell.mode-evening .recently-added { margin-top: 4px; }
 

@@ -24,9 +24,6 @@ import PageTile from './components/PageTile.jsx';
 import QuickApp from './components/QuickApp.jsx';
 import InfraPanel from './components/InfraPanel.jsx';
 import Forecast from './components/Forecast.jsx';
-// TODO: re-enable CalendarCard and TasksCard once Google integration is fixed
-// import CalendarCard from './components/CalendarCard.jsx';
-// import TasksCard from './components/TasksCard.jsx';
 import RecentlyAdded from './components/RecentlyAdded.jsx';
 import EnergyCard from './components/EnergyCard.jsx';
 import SunCard from './components/SunCard.jsx';
